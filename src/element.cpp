@@ -9,7 +9,7 @@ using std::endl;
 using std::ios;
 
 char *st;
-extern list<polygon> poly_list;
+// extern list<polygon> poly_list;
 extern vector view;
 extern vector n_light;
 extern matrix UNIT_MAT;
@@ -30,7 +30,13 @@ element::~element()
 {
 }
 
-element *element::find_elem(char *s)
+int elem_comp(const void *node)
+{
+	element *p = (element *)node;
+	return (!strcmp(st, p->name));
+}
+
+element *element::find_elem(const char *s)
 {
 	element *p;
 	cmp fptr = elem_comp;
@@ -39,12 +45,6 @@ element *element::find_elem(char *s)
 	p = (element *)this->search(this, fptr);
 	delete[] st;
 	return p;
-}
-
-int elem_comp(const void *node)
-{
-	element *p = (element *)node;
-	return (!strcmp(st, p->name));
 }
 
 void element::update(const attrib &a)

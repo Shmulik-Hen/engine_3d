@@ -25,7 +25,7 @@ public:
 
 	element();
 	~element();
-	element *find_elem(char *);
+	element *find_elem(const char *);
 	void update(const attrib &);
 	friend int elem_comp(const void *);
 	friend void update_tree(element *, matrix, matrix);

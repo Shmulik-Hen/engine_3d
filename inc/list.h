@@ -3,14 +3,14 @@
 
 template <class T> class list
 {
-	typedef struct tag_link
+	struct link
 	{
 		T *item;
-		tag_link *next;
-	} link;
+		link *next;
+	};
 
 	link *head;
-	*link *current;
+	link *current;
 
 public:
 

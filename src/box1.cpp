@@ -3,6 +3,8 @@
 #include "polyelem.h"
 #include "utils.h"
 #include "attrib.h"
+#include "list.h"
+#include "polygon.h"
 
 // #include <graphics.h>
 // #include "graphics.h"
@@ -12,7 +14,7 @@
 
 using std::ios;
 
-extern list<polygon> poly_list;
+// extern list<polygon> poly_list;
 extern matrix UNIT_MAT;
 vector view(0, 0, -1000000);
 vector n_light(0, 0, -1024);
@@ -32,14 +34,14 @@ void get_palette(palette buff[], int colors);
 void set_palette(palette buff[], int colors);
 // int huge DetectVGA256();
 
-void main()
+int main()
 {
 	char filename[] = "box.dat";
 	ifstream f;
 	LINE line;
 	polygon *poly;
 	element *root = NULL, *elem1, *elem2;
-	polyelem *pe;
+	polyelem *pe = new polyelem;
 	attrib a(1, 1, 1, 0, 0, 0, 1024);
 
 	f.open(filename, ios::in);
@@ -81,25 +83,26 @@ void main()
 	initgraph(&Gd, &Gm, "");
 	init_palette();
 	setviewport(1, 1, 319, 199, 1);
+#endif // 0
 
 	elem1 = root->find_elem("world");
 	elem2 = root->find_elem("box");
 	elem2->update(attrib(-32, 0, 0, 0, 0, 0, 2048));
-	while (!kbhit()) {
-		elem2->update(attrib(0, 3, 7, 0, 0, 0, 1024));
-		update_tree(root, UNIT_MAT, UNIT_MAT);
-		pe->merge_sort();
-		clearviewport();
-		while (pe) {
-			polyelem *tmp = pe;
-			pe = pe->next;
-			tmp->show();
-			delete tmp;
-		}
-		delay(17);
+	// while (!kbhit()) {
+	elem2->update(attrib(0, 3, 7, 0, 0, 0, 1024));
+	update_tree(root, UNIT_MAT, UNIT_MAT);
+	pe->merge_sort();
+	// clearviewport();
+	while (pe) {
+		polyelem *tmp = pe;
+		pe = pe->next;
+		tmp->show();
+		delete tmp;
 	}
-	closegraph();
-#endif // 0
+	// delay(17);
+	// }
+	// closegraph();
+	return 0;
 }
 
 #if 0

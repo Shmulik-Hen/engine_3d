@@ -9,7 +9,7 @@ using std::cout;
 
 void error(const char *s1, const char *s2)
 {
-	closegraph();
+	// closegraph();
 	cerr << s1 << ' ' << s2;
 	exit(0);
 }

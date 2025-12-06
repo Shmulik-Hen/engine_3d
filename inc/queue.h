@@ -12,7 +12,7 @@ public:
 	queue();
 	~queue();
 	void push();
-	friend queue *pop();
+	queue *pop();
 };
 
 #endif //__QUEUE_H__

@@ -71,6 +71,10 @@ polyelem *merge_sort()
 	return l1;
 }
 
+void drawpoly(int i, int *arr)
+{
+}
+
 void polyelem::show()
 {
 	vector *original, transformed, projected;
@@ -84,8 +88,8 @@ void polyelem::show()
 	}
 	// scratch_poly[i++]=scratch_poly[0];
 	// scratch_poly[i++]=scratch_poly[1];
-	setcolor(color);
-	setfillstyle(1, color);
-	fillpoly(i / 2, scratch_poly);
-	// drawpoly(i/2,scratch_poly);
+	// setcolor(color);
+	// setfillstyle(1, color);
+	// fillpoly(i / 2, scratch_poly);
+	drawpoly(i / 2, scratch_poly);
 }

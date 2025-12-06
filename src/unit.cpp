@@ -202,7 +202,7 @@ unit sqrt(const unit &u)
 	int iter = 10;
 	if (!x)
 		return 0;
-	temp = x + x >> 1;
+	temp = x + (x >> 1);
 	root = x;
 	while (temp & y) {
 		root = root >> 1;

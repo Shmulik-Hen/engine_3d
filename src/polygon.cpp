@@ -49,6 +49,12 @@ vector polygon::find_normal()
 	return v;
 }
 
+int poly_comp(const void *link)
+{
+	polygon *p = (polygon *)link;
+	return (!strcmp(str, p->name));
+}
+
 polygon *find_poly(list<polygon> &lst, char *s)
 {
 	polygon *p;
@@ -58,12 +64,6 @@ polygon *find_poly(list<polygon> &lst, char *s)
 	p = lst.search(fptr);
 	delete[] str;
 	return p;
-}
-
-int poly_comp(const void *link)
-{
-	polygon *p = (polygon *)link;
-	return (!strcmp(str, p->name));
 }
 /*
 int name_comp(const polygon& p,NAME n)
