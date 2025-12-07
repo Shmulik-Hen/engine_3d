@@ -1,19 +1,20 @@
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
 
-#include "unit.h"
 #include "attrib.h"
+#include "unit.h"
 #include "vector.h"
 
+const int mat_dim = 4;
 class matrix
 {
-	unit mat[4][4];
+	unit mat[mat_dim][mat_dim];
 
 public:
 
 	matrix();
 	~matrix();
-	matrix(unit[4][4]);
+	matrix(unit[mat_dim][mat_dim]);
 	matrix &operator*=(const matrix &);
 	friend matrix operator*(const matrix &a, const matrix &b);
 	friend void prep_gen_mat(matrix &, const attrib &);

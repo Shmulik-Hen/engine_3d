@@ -7,27 +7,10 @@ attrib::attrib()
 attrib::~attrib()
 {
 }
-/*
-attrib::attrib(long dx,long dy,long dz,long ox,long oy,long oz,long z)
+
+attrib::attrib(unit dx, unit dy, unit dz, unit ox, unit oy, unit oz, unit z) :
+	deg_x{dx}, deg_y{dy}, deg_z{dz}, off_x{ox}, off_y{oy}, off_z{oz}, zoom{z}
 {
- deg_x=unit(dx);
- deg_y=unit(dy);
- deg_z=unit(dz);
- off_x=unit(ox<<10);
- off_y=unit(oy<<10);
- off_z=unit(oz<<10);
- zoom=unit(z<<10);
-}
-*/
-attrib::attrib(unit dx, unit dy, unit dz, unit ox, unit oy, unit oz, unit z)
-{
-	deg_x = dx;
-	deg_y = dy;
-	deg_z = dz;
-	off_x = ox;
-	off_y = oy;
-	off_z = oz;
-	zoom = z;
 }
 
 attrib operator+(const attrib &a, const attrib &b)
@@ -69,6 +52,7 @@ istream &operator>>(istream &i, attrib &a)
 
 void attrib::read(ifstream &f)
 {
+	printf("attrib: \n");
 	deg_x.read(f);
 	deg_y.read(f);
 	deg_z.read(f);
@@ -76,4 +60,15 @@ void attrib::read(ifstream &f)
 	off_y.read(f);
 	off_z.read(f);
 	zoom.read(f);
+}
+void attrib::print()
+{
+	printf("attrib:\n");
+	deg_x.print();
+	deg_y.print();
+	deg_z.print();
+	off_x.print();
+	off_y.print();
+	off_z.print();
+	zoom.print();
 }

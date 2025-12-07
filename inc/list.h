@@ -6,8 +6,8 @@ template <class T> class list
 {
 	struct link
 	{
-		T *item;
-		link *next;
+		T *item{NULL};
+		link *next{NULL};
 	};
 
 	link *head;

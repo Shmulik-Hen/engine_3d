@@ -8,6 +8,8 @@ using std::ifstream;
 using std::istream;
 using std::ostream;
 
+const int vec_dim = 3;
+
 enum coords
 {
 	X,
@@ -21,7 +23,7 @@ class vector
 {
 public:
 
-	unit coord[3];
+	unit coord[vec_dim];
 
 	vector();
 	~vector();
@@ -38,6 +40,7 @@ public:
 	friend ostream &operator<<(ostream &, const vector &);
 	friend istream &operator>>(istream &, vector &);
 	void read(ifstream &);
+	void print();
 };
 
 #endif //__VECTOR_H__

@@ -23,12 +23,14 @@ int read_word(ifstream &f, char *word)
 
 	while ((!finish) && (!f.eof()) && (length < MAX_LINE)) {
 		f >> c;
+		// printf("read_word: %c\n", c);
 		if ((c <= 32) || (c == ',') || (c == '(') || (c == ')') || (c == '{') || (c == '}'))
 			finish = 1;
 		else
 			word[length++] = c;
 	}
 	word[length] = '\0';
+	// printf("read_word: %s, %d\n", word, length);
 	return length;
 }
 

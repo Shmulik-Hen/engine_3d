@@ -9,11 +9,12 @@ using std::cout;
 using std::endl;
 using std::ios;
 
-// list<polygon> polygon::poly_list;
-char *str;
+list<polygon> polygon::poly_list;
+NAME poly_comp_name;
 
 polygon::polygon()
 {
+	poly_comp_name[0] = '\0';
 }
 
 polygon::~polygon()
@@ -52,18 +53,13 @@ vector polygon::find_normal()
 int poly_comp(const void *link)
 {
 	polygon *p = (polygon *)link;
-	return (!strcmp(str, p->name));
+	return (!strncmp(poly_comp_name, p->name, MAX_NAME));
 }
 
 polygon *find_poly(list<polygon> &lst, char *s)
 {
-	polygon *p;
-	cmp fptr = poly_comp;
-	str = new char[strlen(s) + 1];
-	strcpy(str, s);
-	p = lst.search(fptr);
-	delete[] str;
-	return p;
+	snprintf(poly_comp_name, MAX_NAME, "%s", s);
+	return lst.search(poly_comp);
 }
 /*
 int name_comp(const polygon& p,NAME n)
@@ -78,6 +74,7 @@ void polygon::read(ifstream &f)
 	int finish = 0;
 
 	while (!f.eof() && !finish) {
+		printf("polygon: \n");
 		while ((!read_word(f, line)) && (!f.eof()))
 			;
 		if (f.eof())
@@ -86,24 +83,30 @@ void polygon::read(ifstream &f)
 		case 'n':
 			read_word(f, line);
 			strcpy(name, line);
+			printf("polygon: n: %s, %s\n", line, name);
 			break;
 		case 'c':
 			read_word(f, line);
 			color = atoi(line);
+			printf("polygon: c: %s, %d\n", line, color);
 			break;
 		case 'f':
 			read_word(f, line);
 			force = atoi(line);
+			printf("polygon: f: %s, %d\n", line, force);
 			break;
 		case 'o':
+			printf("polygon: o: \n");
 			normal.read(f);
 			break;
 		case 'v':
+			printf("polygon: v: \n");
 			vp = new vector;
 			vp->read(f);
 			points.insert(vp);
 			break;
 		default:
+			printf("polygon: def: \n");
 			finish = 1;
 			f.seekg(-4, ios::cur);
 			break;
@@ -116,7 +119,7 @@ void polygon::read(ifstream &f)
 void polygon::print()
 {
 	vector *p;
-
+#if 0
 	cout << name << endl;
 	// cout<<color<<endl;
 	// cout<<force<<endl;
@@ -124,4 +127,17 @@ void polygon::print()
 	cout << "normal:" << normal << endl;
 	for (p = points.first(); p; p = points.next())
 		cout << *p << endl;
+#else
+	printf("      polygon:\n");
+	printf("      name: %s\n", name);
+	printf("      force: %d\n", (int)force);
+	printf("      color: %c\n", color);
+	printf("      fill:\n");
+	fill.print();
+	printf("      normal:\n");
+	normal.print();
+	printf("      points:\n");
+	for (p = points.first(); p; p = points.next())
+		p->print();
+#endif
 }

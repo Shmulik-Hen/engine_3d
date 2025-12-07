@@ -1,41 +1,41 @@
 #include "matrix.h"
 
 // clang-format off
-unit unt[4][4]={
+unit unt[mat_dim][mat_dim]={
 	{UNIT,  0,     0,     0  },
 	{ 0,   UNIT,   0,     0  },
 	{ 0,    0,    UNIT,   0  },
 	{ 0,    0,     0,    UNIT} };
+
+unit zero[mat_dim][mat_dim]={
+	{ 0, 0, 0, 0  },
+	{ 0, 0, 0, 0  },
+	{ 0, 0, 0, 0  },
+	{ 0, 0, 0, 0} };
 // clang-format on
 
 matrix UNIT_MAT(unt);
 
 matrix::matrix()
 {
+	for (int i = 0; i < mat_dim; i++) {
+		for (int j = 0; j < mat_dim; j++) {
+			mat[i][j] = zero[i][j];
+		}
+	}
 }
 
 matrix::~matrix()
 {
 }
 
-matrix::matrix(unit n[4][4])
+matrix::matrix(unit n[mat_dim][mat_dim])
 {
-	mat[0][0] = n[0][0];
-	mat[0][1] = n[0][1];
-	mat[0][2] = n[0][2];
-	mat[0][3] = n[0][3];
-	mat[1][0] = n[1][0];
-	mat[1][1] = n[1][1];
-	mat[1][2] = n[1][2];
-	mat[1][3] = n[1][3];
-	mat[2][0] = n[2][0];
-	mat[2][1] = n[2][1];
-	mat[2][2] = n[2][2];
-	mat[2][3] = n[2][3];
-	mat[3][0] = n[3][0];
-	mat[3][1] = n[3][1];
-	mat[3][2] = n[3][2];
-	mat[3][3] = n[3][3];
+	for (int i = 0; i < mat_dim; i++) {
+		for (int j = 0; j < mat_dim; j++) {
+			mat[i][j] = n[i][j];
+		}
+	}
 }
 
 matrix operator*(const matrix &a, const matrix &b)

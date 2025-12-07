@@ -5,7 +5,7 @@ class queue
 {
 	static queue *head;
 	static queue *tail;
-	queue *nextq;
+	queue *nextq{NULL};
 
 public:
 

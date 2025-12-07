@@ -6,7 +6,6 @@ queue *queue::tail = NULL;
 
 queue::queue()
 {
-	nextq = NULL;
 }
 
 queue::~queue()

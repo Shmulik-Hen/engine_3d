@@ -9,7 +9,7 @@ using std::ostream;
 
 class unit
 {
-	long num;
+	long num{0};
 
 public:
 
@@ -39,6 +39,7 @@ public:
 	friend ostream &operator<<(ostream &, const unit &);
 	friend istream &operator>>(istream &, unit &);
 	void read(ifstream &);
+	void print();
 };
 
 const unit UNIT(1024);

@@ -256,7 +256,14 @@ istream &operator>>(istream &i, unit &u)
 void unit::read(ifstream &f)
 {
 	LINE line;
+	printf("unit: \n");
 	while (!read_word(f, line))
 		;
 	num = convert(line);
+	printf("unit: %s, %d\n", line, (int)num);
+}
+
+void unit::print()
+{
+	printf("          unit: %d\n", (int)num);
 }

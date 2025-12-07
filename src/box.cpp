@@ -1,10 +1,10 @@
 #include <ios>
 #include "element.h"
 #include "polyelem.h"
+#include "polygon.h"
 #include "utils.h"
 #include "attrib.h"
 #include "list.h"
-#include "polygon.h"
 
 // #include <graphics.h>
 // #include "graphics.h"
@@ -15,7 +15,6 @@
 using std::ios;
 
 // extern list<polygon> poly_list;
-list<polygon> polygon::poly_list;
 extern matrix UNIT_MAT;
 vector view(0, 0, -1000000);
 vector n_light(0, 0, -1024);
@@ -51,18 +50,23 @@ int main()
 
 	f.unsetf(ios::skipws);
 
+	printf("start parsing\n");
 	while (!f.eof()) {
+		printf("box: \n");
 		while ((!read_word(f, line)) && (!f.eof()))
 			;
 		switch (line[1]) {
 		case '#':
+			printf("box: #: \n");
 			read_remark(f);
 		case 'p':
+			printf("box: p: \n");
 			poly = new polygon;
 			poly->read(f);
 			polygon::poly_list.insert(poly);
 			break;
 		case 'e':
+			printf("box: e: \n");
 			elem1 = new element;
 			elem1->read(f);
 			if (!root)
@@ -72,12 +76,13 @@ int main()
 				if (elem2)
 					elem1->addnode(elem2);
 				else
-					error("element not found in tree::addnode()", elem1->parrent);
+					error("element not found in tree::addnode()");
 			}
 			break;
 		}
 	}
 	f.close();
+	printf("parsing complete\n");
 #if 0
 	int Gd = DETECT, Gm;
 	installuserdriver("SVGA256", DetectVGA256);
@@ -86,23 +91,39 @@ int main()
 	setviewport(1, 1, 319, 199, 1);
 #endif // 0
 
+	printf("find world\n");
 	elem1 = root->find_elem("world");
+	printf("find box\n");
 	elem2 = root->find_elem("box");
+	printf("update 1\n");
 	elem2->update(attrib(-32, 0, 0, 0, 0, 0, 2048));
 	// while (!kbhit()) {
+	printf("update 2\n");
 	elem2->update(attrib(0, 3, 7, 0, 0, 0, 1024));
+	printf("update tree\n");
 	update_tree(root, UNIT_MAT, UNIT_MAT);
+	printf("print tree\n");
+	printall(root);
+	printf("merge sort\n");
 	pe->merge_sort();
 	// clearviewport();
+	printf("walk list\n");
 	while (pe) {
+		printf("  0\n");
 		polyelem *tmp = pe;
+		printf("  1\n");
 		pe = pe->next;
-		tmp->show();
+		printf("  2\n");
+		printf("  print tmp\n");
+		tmp->print();
+		printf("  3\n");
 		delete tmp;
+		printf("  4\n");
 	}
 	// delay(17);
 	// }
 	// closegraph();
+	printf("done\n");
 	return 0;
 }
 

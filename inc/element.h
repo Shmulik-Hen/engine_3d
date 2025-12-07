@@ -1,18 +1,18 @@
 #ifndef __ELEMENT_H__
 #define __ELEMENT_H__
 
-#include "matrix.h"
 #include "attrib.h"
+#include "list.h"
+#include "matrix.h"
+#include "polyelem.h"
 #include "polygon.h"
 #include "tree.h"
-#include "list.h"
-#include "polyelem.h"
 
 class element : public treenode
 {
-	NAME name;
-	int dirty_flag;
-	int active_flag;
+	NAME name{""};
+	int dirty_flag{0};
+	int active_flag{0};
 	attrib att;
 	matrix gen_mat;
 	matrix rot_mat;
@@ -21,7 +21,7 @@ class element : public treenode
 
 public:
 
-	NAME parrent;
+	NAME parrent{""};
 
 	element();
 	~element();

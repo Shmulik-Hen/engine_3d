@@ -1,18 +1,20 @@
 #include <string.h>
 #include <iostream>
 #include <ios>
+#include <stdio.h>
 #include "element.h"
+#include "polygon.h"
 #include "utils.h"
 
 using std::cout;
 using std::endl;
 using std::ios;
 
-char *st;
-// extern list<polygon> poly_list;
+NAME elem_comp_name;
+// const list<polygon> poly_list;
 extern vector view;
 extern vector n_light;
-extern matrix UNIT_MAT;
+// extern matrix UNIT_MAT;
 
 char make_color(char c1, unit c2)
 {
@@ -24,6 +26,7 @@ char make_color(char c1, unit c2)
 
 element::element()
 {
+	elem_comp_name[0] = '\0';
 }
 
 element::~element()
@@ -33,18 +36,13 @@ element::~element()
 int elem_comp(const void *node)
 {
 	element *p = (element *)node;
-	return (!strcmp(st, p->name));
+	return (!strncmp(elem_comp_name, p->name, MAX_NAME));
 }
 
 element *element::find_elem(const char *s)
 {
-	element *p;
-	cmp fptr = elem_comp;
-	st = new char[strlen(s) + 1];
-	strcpy(st, s);
-	p = (element *)this->search(this, fptr);
-	delete[] st;
-	return p;
+	snprintf(elem_comp_name, MAX_NAME, "%s", s);
+	return (element *)this->search(this, elem_comp);
 }
 
 void element::update(const attrib &a)
@@ -97,6 +95,7 @@ void element::read(ifstream &f)
 	int finish = 0;
 
 	while (!f.eof() && !finish) {
+		printf("element: \n");
 		while ((!read_word(f, line)) && (!f.eof()))
 			;
 		if (f.eof())
@@ -105,21 +104,26 @@ void element::read(ifstream &f)
 		case 'n':
 			read_word(f, line);
 			strcpy(name, line);
+			printf("element: n: %s, %s\n", line, name);
 			break;
 		case 'f':
 			read_word(f, line);
 			strcpy(parrent, line);
+			printf("element: f: %s, %s\n", line, parrent);
 			break;
 		case 't':
 			read_word(f, line);
 			active_flag = atoi(line);
 			dirty_flag = 0;
+			printf("element: t: %s, %d\n", line, active_flag);
 			break;
 		case 'a':
+			printf("element: a: \n");
 			att.read(f);
 			break;
 		case 's':
 			read_word(f, line);
+			printf("element: s: %s\n", line);
 			po = find_poly(polygon::poly_list, line);
 			if (po)
 				planes.insert(po);
@@ -127,6 +131,7 @@ void element::read(ifstream &f)
 				error("polygon not found in element::read()", line);
 			break;
 		default:
+			printf("element: def: \n");
 			finish = 1;
 			f.seekg(-4, ios::cur);
 			break;

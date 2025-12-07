@@ -12,7 +12,6 @@ extern vector view;
 
 polyelem::polyelem()
 {
-	next = NULL;
 }
 
 polyelem::~polyelem()
@@ -21,9 +20,18 @@ polyelem::~polyelem()
 
 void polyelem::print()
 {
-	cout << depth << endl;
-	cout << (int)color << endl;
-	poly->print();
+	// cout << depth << endl;
+	// cout << (int)color << endl;
+	printf("    polyelem:\n");
+	printf("    depth:\n");
+	depth.print();
+	printf("    color: %d\n", (int)color);
+	if (poly) {
+		printf("    poly:\n");
+		poly->print();
+	}
+	else
+		printf("    poly is null\n");
 }
 
 polyelem *polyelem::merge(polyelem *l1, polyelem *l2)

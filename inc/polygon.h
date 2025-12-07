@@ -3,19 +3,19 @@
 
 #include <fstream>
 #include "vector.h"
-#include "list.h"
 #include "common.h"
+#include "list.h"
 
 using std::ifstream;
 class polygon : list<polygon>
 {
-	NAME name;
+	NAME name{""};
 	friend class polyelem;
 
 public:
 
-	int force;
-	char color;
+	int force{0};
+	char color{0};
 	vector fill;
 	vector normal;
 	list<vector> points;

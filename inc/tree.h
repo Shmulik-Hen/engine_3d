@@ -6,12 +6,12 @@ class treenode
 {
 protected:
 
-	treenode *next;
-	treenode *son;
+	treenode *next{NULL};
+	treenode *son{NULL};
 
 public:
 
-	treenode() { next = son = NULL; };
+	treenode() {};
 	~treenode() {};
 	void addnode(treenode *parrent);
 	treenode *search(treenode *, int (*comp)(const void *));

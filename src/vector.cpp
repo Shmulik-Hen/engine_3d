@@ -2,6 +2,8 @@
 
 vector::vector()
 {
+	for (int i = 0; i < vec_dim; i++)
+		coord[i] = 0;
 }
 
 vector::~vector()
@@ -90,7 +92,14 @@ istream &operator>>(istream &i, vector &v)
 
 void vector::read(ifstream &f)
 {
-	coord[X].read(f);
-	coord[Y].read(f);
-	coord[Z].read(f);
+	printf("vector: \n");
+	for (int i = 0; i < vec_dim; i++)
+		coord[i].read(f);
+}
+
+void vector::print()
+{
+	printf("        voctor:\n");
+	for (int i = 0; i < vec_dim; i++)
+		coord[i].print();
 }
