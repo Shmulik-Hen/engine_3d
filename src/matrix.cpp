@@ -4,22 +4,20 @@ namespace matrix_ns
 {
 
 // clang-format off
-unit unt[dim][dim] = {
-	{ UNIT, ZERO, ZERO, ZERO  },
-	{ ZERO, UNIT, ZERO, ZERO  },
-	{ ZERO, ZERO, UNIT, ZERO  },
-	{ ZERO, ZERO, ZERO, UNIT  }
-};
-
 unit zero[dim][dim] = {
 	{ ZERO, ZERO, ZERO, ZERO  },
 	{ ZERO, ZERO, ZERO, ZERO  },
 	{ ZERO, ZERO, ZERO, ZERO  },
 	{ ZERO, ZERO, ZERO, ZERO  }
 };
-// clang-format on
 
-matrix UNIT_MAT(unt);
+unit unt[dim][dim] = {
+	{ UNIT, ZERO, ZERO, ZERO  },
+	{ ZERO, UNIT, ZERO, ZERO  },
+	{ ZERO, ZERO, UNIT, ZERO  },
+	{ ZERO, ZERO, ZERO, UNIT  }
+};
+// clang-format on
 
 matrix::matrix()
 {
@@ -120,4 +118,8 @@ void matrix::prep_rot_mat(const attrib &a)
 	mat[3][3] = UNIT;
 }
 
+matrix get_unit_mat()
+{
+	return matrix(unt);
+}
 } // namespace matrix_ns

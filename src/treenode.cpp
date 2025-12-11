@@ -24,10 +24,9 @@ void treenode::update_tree(treenode *node, matrix &p_gen, matrix &p_rot)
 	}
 }
 
-bool treenode::read(ifstream &f)
+bool treenode::read(elem_list *lst, ifstream &f)
 {
 	LINE line;
-	string *s;
 	int finish = 0, len;
 	bool rc = true;
 
@@ -47,7 +46,7 @@ bool treenode::read(ifstream &f)
 			if (len) {
 				name = new string(line);
 				if (name) {
-					printf("treenode::read n: %s, %s\n", line, name);
+					printf("treenode::read n: %s, %s\n", line, name->c_str());
 				}
 				else {
 					printf("treenode::read allocation error -  name\n");
@@ -56,16 +55,16 @@ bool treenode::read(ifstream &f)
 			}
 			else {
 				printf("treenode::read error name\n");
-				rc - false;
+				rc = false;
 			}
 			break;
 		case 'p':
-			printf("treenode::read f:\n");
+			printf("treenode::read p:\n");
 			len = read_word(f, line);
 			if (len) {
 				parrent_name = new string(line);
 				if (parrent_name) {
-					printf("treenode::read f: %s, %s\n", line, parrent_name);
+					printf("treenode::read f: %s, %s\n", line, parrent_name->c_str());
 				}
 				else {
 					printf("treenode::read allocation error -  parrent_name\n");
@@ -79,8 +78,8 @@ bool treenode::read(ifstream &f)
 			if (len) {
 				elem_name = new string(line);
 				if (elem_name) {
-					printf("treenode::read f: %s, %s\n", line, elem_name);
-					elem = (element *)find_elem(elem_lst, *elem_name);
+					printf("treenode::read f: %s, %s\n", line, elem_name->c_str());
+					elem = find_elem(lst, *elem_name);
 				}
 				else {
 					printf("treenode::read allocation error -  element name\n");
@@ -114,12 +113,14 @@ bool treenode::read(ifstream &f)
 			f.seekg(-4, ios::cur);
 			break;
 		}
+
+		if (!rc) {
+			printf("treenode::read parsing error\n");
+			return false;
+		}
 	}
 
-	if (!rc) {
-		printf("treenode::read parsing error\n");
-		return false;
-	}
+	return true;
 }
 
 void treenode::print() const
@@ -179,7 +180,7 @@ int treenode_comp(const void *p)
 	return (cmp_name == *tn->name);
 }
 
-bool treenode::add_treenode(treenode *parrent)
+void treenode::add_treenode(treenode *parrent)
 {
 	cmp_name = parrent->parrent_name->c_str();
 	treenode *p = (treenode *)search(parrent, treenode_comp);
@@ -190,6 +191,7 @@ treenode *treenode::find_node(treenode *root, string &s) const
 {
 	cmp_name = s;
 	treenode *p = (treenode *)search(root, treenode_comp);
+	return p;
 }
 
 } // namespace treenode_ns

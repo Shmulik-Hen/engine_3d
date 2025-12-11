@@ -93,7 +93,7 @@ bool my_vector::read(ifstream &f)
 	printf("my_vector::read \n");
 	for (coord c = coord::__first_coord; c < coord::__last_coord; c++) {
 		if (!_coords->at(c).read(f)) {
-			printf{"vector::read error\n"};
+			printf("vector::read error\n");
 			return false;
 		}
 	}

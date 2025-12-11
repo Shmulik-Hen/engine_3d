@@ -171,7 +171,7 @@ void unit::print() const
 	printf("          unit: %d\n", (int)num);
 }
 
-long convert(const char *s)
+long unit::convert(const char *s)
 {
 	long temp = 0, sign = 1, n = 0;
 	int index = 0;
@@ -261,7 +261,7 @@ istream &operator>>(istream &i, unit &u)
 	char s[13];
 
 	i >> s;
-	u.num = convert(s);
+	u.num = u.convert(s);
 	return i;
 }
 

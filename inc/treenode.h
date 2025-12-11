@@ -25,14 +25,14 @@ public:
 
 	typedef int (*comp)(const void *);
 
-	treenode();
-	~treenode();
+	treenode() {};
+	~treenode() {};
 	void update_tree(treenode *, matrix &, matrix &);
-	bool read(ifstream &);
+	bool read(elem_list *, ifstream &);
 	void print() const;
 	void printall(treenode *) const;
 	void show() const;
-	bool add_treenode(treenode *);
+	void add_treenode(treenode *);
 	void update(const attrib &);
 	treenode *find_node(treenode *, string &) const;
 

@@ -12,6 +12,8 @@ namespace matrix_ns
 using attrib_ns::attrib;
 using my_vector_ns::my_vector;
 using unit_ns::unit;
+using unit_ns::UNIT;
+using unit_ns::ZERO;
 
 const int dim = 4;
 
@@ -31,6 +33,8 @@ public:
 	void prep_gen_mat(const attrib &);
 	void prep_rot_mat(const attrib &);
 };
+
+matrix get_unit_mat();
 
 } // namespace matrix_ns
 #endif //__MATRIX_H__

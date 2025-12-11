@@ -24,10 +24,7 @@ using polygon_ns::polygon;
 using std::ios;
 using std::string;
 using treenode_ns::treenode;
-
-extern matrix UNIT_MAT;
-my_vector view(0, 0, -1000000);
-my_vector n_light(0, 0, -1024);
+using namespace matrix_ns;
 
 typedef char palette[3];
 enum rgb
@@ -55,6 +52,7 @@ int main()
 	treenode *root = nullptr;
 	treenode *tn = nullptr;
 	attrib a(1, 1, 1, 0, 0, 0, 1024);
+	matrix UNIT_MAT = get_unit_mat();
 	bool rc;
 
 	polygon::pol_list *poly_list = new polygon::pol_list;
@@ -63,9 +61,9 @@ int main()
 
 	poly_list->clear();
 
-	element::elem_list *elem_list = new element::elem_list;
-	if (!elem_list)
-		error("elem_list allocation error");
+	element::elem_list *elem_lst = new element::elem_list;
+	if (!elem_lst)
+		error("elem_lst allocation error");
 
 	f.open(filename, ios::in);
 	if (!f)
@@ -104,7 +102,7 @@ int main()
 			if (elem) {
 				rc = elem->read(f);
 				if (rc) {
-					elem_list->push_front(*elem);
+					elem_lst->push_front(*elem);
 				}
 				else {
 					error("read element failed");
@@ -115,14 +113,11 @@ int main()
 			}
 			break;
 		case 't':
-			tn = new treenode;
+			tn = new treenode_ns::treenode;
 			if (tn) {
-				rc = tn->read(f);
+				rc = tn->read(elem_lst, f);
 				if (rc) {
-					rc = tn->add_treenode(root);
-					if (!rc) {
-						error("element not found in tree::addnode()");
-					}
+					tn->add_treenode(root);
 				}
 				else {
 					error("read treenode failed");

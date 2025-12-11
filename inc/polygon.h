@@ -30,7 +30,7 @@ public:
 
 	polygon();
 	~polygon();
-	const polygon *find_poly(const pol_list *, const string &);
+	const polygon *find_poly(pol_list *, const string &) const;
 	polygon *merge_sort();
 	polygon *pop();
 	void push();

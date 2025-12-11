@@ -32,12 +32,12 @@ polygon::~polygon()
 		delete name;
 }
 
-const polygon *polygon::find_poly(const pol_list *lst, const string &s)
+const polygon *polygon::find_poly(pol_list *lst, const string &s) const
 {
 	if (!lst)
 		return nullptr;
 
-	for (pol_it it = lst->cbegin(); it != lst->cend(); ++it) {
+	for (pol_it it = lst->begin(); it != lst->end(); ++it) {
 		const polygon *p = &*it;
 		if (!p)
 			return nullptr;

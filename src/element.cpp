@@ -15,10 +15,10 @@ using my_vector_ns::my_vector;
 using std::cout;
 using std::endl;
 using std::ios;
-using namespace unit_ns;
+// using namespace unit_ns;
 
-extern my_vector view;
-extern my_vector n_light;
+my_vector view(0, 0, -1000000);
+my_vector n_light(0, 0, -1024);
 
 element::element()
 {
@@ -40,15 +40,10 @@ char make_color(char c1, unit c2)
 	return (char)(((color >> 2) & 0x00f0) | (c1 & 0x0F));
 }
 
-const element *element::find_elem(const elem_list *lst, const string &s)
+element *element::find_elem(elem_list *lst, string &s) const
 {
-	if (!lst)
-		return nullptr;
-
-	for (elem_it it = lst->cbegin(); it != lst->cend(); ++it) {
-		const element *e = &*it;
-		if (!e)
-			return nullptr;
+	for (elem_it it = lst->begin(); it != lst->end(); ++it) {
+		element *e = &*it;
 
 		if (e->name && *e->name == s)
 			return e;
@@ -80,7 +75,7 @@ bool element::read(ifstream &f)
 			if (len) {
 				name = new string(line);
 				if (name) {
-					printf("element::read n: %s, %s\n", line, name);
+					printf("element::read n: %s, %s\n", line, name->c_str());
 				}
 				else {
 					printf("element::read allocation error -  name\n");
@@ -129,6 +124,8 @@ bool element::read(ifstream &f)
 			return false;
 		}
 	}
+
+	return true;
 }
 
 void element::print() const
@@ -163,9 +160,9 @@ void element::update(const attrib &att, matrix &p_gen, matrix &p_rot)
 
 		dist = fill - view;
 		view_angle = normal * dist;
-		if ((view_angle < ZERO) || p->get_force()) {
+		if ((view_angle < unit_ns::ZERO) || p->get_force()) {
 			light_angle = normal * n_light;
-			if ((light_angle > ZERO) || p->get_force()) {
+			if ((light_angle > unit_ns::ZERO) || p->get_force()) {
 				p->set_depth(dist * dist);
 				color = make_color(p->get_color(), abs(light_angle));
 				p->set_color(color);

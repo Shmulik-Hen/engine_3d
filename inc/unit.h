@@ -31,10 +31,10 @@ public:
 	unit &operator/=(const unit &);
 	operator int();
 	operator long();
+	long convert(const char *);
 	bool read(ifstream &);
 	void print() const;
 
-	friend long convert(const char *);
 	friend int operator>(const unit &, const unit &);
 	friend int operator>=(const unit &, const unit &);
 	friend int operator<(const unit &, const unit &);

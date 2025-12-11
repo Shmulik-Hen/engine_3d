@@ -31,7 +31,7 @@ public:
 
 	element();
 	~element();
-	const element *find_elem(const elem_list *, const string &);
+	element *find_elem(elem_list *, string &) const;
 	matrix &get_gen_matrix() { return gen_mat; };
 	matrix &get_rot_matrix() { return rot_mat; };
 	bool read(ifstream &);
@@ -40,7 +40,7 @@ public:
 
 private:
 
-	typedef elem_list::const_iterator elem_it;
+	typedef elem_list::iterator elem_it;
 
 	string *name{nullptr};
 	pol_list *polygons;
