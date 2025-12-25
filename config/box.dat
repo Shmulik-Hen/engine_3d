@@ -53,20 +53,18 @@
  #v (-20,-20,20)
  #o (0,-1,0)
 #e
+ #n world
+ #t
+ #f 1
+ #a (0,0,0,0,0,0,1)
+#e
  #n box
+ #t world
  #p front
  #p back
  #p left
  #p right
  #p top
  #p bottom
-#t
- #n world
- #f 1
- #a (0,0,0,0,0,0,1)
-#t
- #n box
- #p world
- #e box
  #f 1
  #a (0,0,0,0,0,0,1)

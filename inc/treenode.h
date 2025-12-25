@@ -1,50 +1,95 @@
 #ifndef __TREENODE_H__
 #define __TREENODE_H__
 
-#include <fstream>
-#include <string>
-
-#include "attrib.h"
-#include "element.h"
-// #include "tree.h"
-
+// Template class that has to be completely
+// implemented in header
 namespace treenode_ns
 {
 
-using attrib_ns::attrib;
-using element_ns::element;
-using std::ifstream;
-using std::string;
-// using tree_ns::tree;
-
-class treenode : public element
+template <typename Node>
+class treenode
 {
-
 public:
 
-	treenode() {};
-	~treenode();
-	bool read(elem_list *, ifstream &);
-	void print() const;
-	void printall(treenode *) const;
-	void show() const;
-	void update(const attrib &);
-	void update_tree(treenode *, matrix &, matrix &);
-	void add_treenode(treenode **);
-	treenode *find_node(treenode *, string &) const;
+	treenode() = default;
+	virtual ~treenode() = default;
+
+	void add_node(Node* parent)
+	{
+		if (!parent) {
+			return;
+		}
+
+		if (!parent->_child) {
+			parent->_child = static_cast<Node*>(this);
+		}
+		else {
+			static_cast<Node*>(this)->_sibling = parent->_child;
+			parent->_child = static_cast<Node*>(this);
+		}
+	}
+
+	Node* search_tree(bool (*cmp)(void*))
+	{
+		Node* n {nullptr};
+
+		if (!cmp) {
+			return n;
+		}
+
+		if (cmp(this)) {
+			n = static_cast<Node*>(this);
+		}
+
+		if (!n && _child) {
+			n = _child->search_tree(cmp);
+		}
+
+		if (!n && _sibling) {
+			n = _sibling->search_tree(cmp);
+		}
+
+		return n;
+	}
+
+	void print_tree(void (*prn)(void*))
+	{
+		if (!prn) {
+			return;
+		}
+
+		prn(this);
+
+		if (_child) {
+			_child->print_tree(prn);
+		}
+
+		if (_sibling) {
+			_sibling->print_tree(prn);
+		}
+	}
+
+	void update_tree(void (*upd)(void*))
+	{
+		if (!upd) {
+			return;
+		}
+
+		upd(this);
+
+		if (_child) {
+			_child->update_tree(upd);
+		}
+
+		if (_sibling) {
+			_sibling->update_tree(upd);
+		}
+	}
 
 private:
 
-	treenode *sibling{nullptr};
-	treenode *child{nullptr};
-
-	string *name{nullptr};
-	string *parrent_name{nullptr};
-	string *elem_name{nullptr};
-	element *elem{nullptr};
-	attrib att;
-	int active_flag{0};
-	int dirty_flag{0};
+	Node* _sibling {nullptr};
+	Node* _child {nullptr};
 };
 
 } // namespace treenode_ns

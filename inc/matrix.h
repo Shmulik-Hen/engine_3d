@@ -26,12 +26,12 @@ public:
 
 	matrix();
 	matrix(unit[dim][dim]);
-	~matrix();
-	matrix operator*(const matrix &);
-	matrix &operator*=(const matrix &);
-	my_vector operator*(const my_vector &);
-	void prep_gen_mat(const attrib &);
-	void prep_rot_mat(const attrib &);
+	~matrix() {}
+	matrix operator*(const matrix&);
+	matrix& operator*=(const matrix&);
+	my_vector operator*(const my_vector&);
+	void prep_gen_mat(const attrib&);
+	void prep_rot_mat(const attrib&);
 };
 
 matrix get_unit_mat();

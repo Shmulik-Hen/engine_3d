@@ -3,26 +3,20 @@
 namespace attrib_ns
 {
 
-attrib::attrib()
+attrib::attrib(unit dx, unit dy, unit dz, unit ox, unit oy, unit oz, unit z) :
+	deg_x {dx}, deg_y {dy}, deg_z {dz}, off_x {ox},
+	off_y {oy}, off_z {oz}, zoom {z}
 {
 }
 
-attrib::~attrib()
-{
-}
-
-attrib::attrib(unit dx, unit dy, unit dz, unit ox, unit oy, unit oz, unit z) : deg_x{dx}, deg_y{dy}, deg_z{dz}, off_x{ox}, off_y{oy}, off_z{oz}, zoom{z}
-{
-}
-
-attrib operator+(const attrib &a, const attrib &b)
+attrib operator+(const attrib& a, const attrib& b)
 {
 	attrib temp = a;
 	temp += b;
 	return temp;
 }
 
-attrib &attrib::operator+=(const attrib &a)
+attrib& attrib::operator+=(const attrib& a)
 {
 	deg_x += a.deg_x;
 	deg_y += a.deg_y;
@@ -34,7 +28,7 @@ attrib &attrib::operator+=(const attrib &a)
 	return *this;
 }
 
-bool attrib::read(ifstream &f)
+bool attrib::read(ifstream& f)
 {
 	bool rc = false;
 	rc += deg_x.read(f);
@@ -64,12 +58,13 @@ void attrib::print() const
 	zoom.print();
 }
 
-ostream &operator<<(ostream &o, const attrib &a)
+ostream& operator<<(ostream& o, const attrib& a)
 {
-	return o << '(' << a.deg_x << ',' << a.deg_y << ',' << a.deg_z << ',' << a.off_x << ',' << a.off_y << ',' << a.off_z << ',' << a.zoom << ')';
+	return o << '(' << a.deg_x << ',' << a.deg_y << ',' << a.deg_z << ','
+	         << a.off_x << ',' << a.off_y << ',' << a.off_z << ',' << a.zoom << ')';
 }
 
-istream &operator>>(istream &i, attrib &a)
+istream& operator>>(istream& i, attrib& a)
 {
 	i >> a.deg_x;
 	i >> a.deg_y;

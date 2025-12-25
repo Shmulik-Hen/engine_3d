@@ -23,23 +23,22 @@ using my_vector_ns::my_vector;
 using polygon_ns::polygon;
 using std::ios;
 using std::string;
-using treenode_ns::treenode;
 using namespace matrix_ns;
 
-typedef char palette[3];
-enum rgb
-{
-	R,
-	G,
-	B
-};
+// typedef char palette[3];
+// enum rgb
+// {
+// 	R,
+// 	G,
+// 	B
+// };
 
-palette pal_16_colors[16];
-palette pal_256_colors[256];
+// palette pal_16_colors[16];
+// palette pal_256_colors[256];
 
-void init_palette();
-void get_palette(palette buff[], int colors);
-void set_palette(palette buff[], int colors);
+// void init_palette();
+// void get_palette(palette buff[], int colors);
+// void set_palette(palette buff[], int colors);
 // int huge DetectVGA256();
 
 int main()
@@ -47,16 +46,15 @@ int main()
 	char filename[] = "box.dat";
 	ifstream f;
 	LINE line;
-	polygon *poly{nullptr};
-	element *elem{nullptr};
-	treenode *root{nullptr};
-	treenode *tn{nullptr};
+	polygon* poly {nullptr};
+	element* elem {nullptr};
+	element* root {nullptr};
 	attrib a(1, 1, 1, 0, 0, 0, 1024);
 	matrix UNIT_MAT = get_unit_mat();
 	bool rc;
 	int ret = 0;
 
-	polygon::poly_list *poly_lst = new polygon::poly_list;
+	polygon::poly_list* poly_lst = new polygon::poly_list;
 	if (!poly_lst) {
 		ret = 1;
 		error("poly_list allocation error");
@@ -64,7 +62,7 @@ int main()
 
 	poly_lst->clear();
 
-	element::elem_list *elem_lst = new element::elem_list;
+	element::elem_list* elem_lst = new element::elem_list;
 	if (!elem_lst) {
 		ret = 1;
 		error("elem_lst allocation error");
@@ -82,8 +80,7 @@ int main()
 
 	while (!f.eof()) {
 		rc = true;
-		while ((!read_word(f, line)) && (!f.eof()))
-			;
+		while ((!read_word(f, line)) && (!f.eof()));
 
 		if (f.eof()) {
 			break;
@@ -112,7 +109,7 @@ int main()
 		case 'e':
 			elem = new element;
 			if (elem) {
-				rc = elem->read(poly_lst, f);
+				rc = elem->read(poly_lst, root, f);
 				if (rc) {
 					elem_lst->push_front(*elem);
 				}
@@ -124,23 +121,6 @@ int main()
 			else {
 				ret = 1;
 				error("new element failed");
-			}
-			break;
-		case 't':
-			tn = new treenode_ns::treenode;
-			if (tn) {
-				rc = tn->read(elem_lst, f);
-				if (rc) {
-					tn->add_treenode(&root);
-				}
-				else {
-					ret = 1;
-					error("read treenode failed");
-				}
-			}
-			else {
-				ret = 1;
-				error("new treenode failed");
 			}
 			break;
 		}
@@ -168,50 +148,59 @@ int main()
 		error("root is null");
 	}
 
-	string *s1 = new string("world");
-	string *s2 = new string("box");
-	treenode *tn1, *tn2;
+	if (poly_lst->empty()) {
+		error("no polygons");
+	}
 
+	if (elem_lst->empty()) {
+		error("no elements");
+	}
+
+	string* s1 = new string("world");
 	if (!s1) {
 		error("string allocation error");
 	}
 
+	string* s2 = new string("box");
 	if (!s2) {
 		error("string allocation error");
 	}
 
-	tn1 = root->find_node(root, *s1);
-	if (!tn1) {
-		error("find world error");
+	element* e1 = root->find(root, *s1);
+	if (!e1) {
+		error("find world failed");
 	}
 
-	tn2 = root->find_node(root, *s2);
-	if (!tn2) {
-		error("find box error");
+	element* e2 = root->find(root, *s2);
+	if (!e2) {
+		error("find box failed");
 	}
 
-	tn2->update(attrib(-32, 0, 0, 0, 0, 0, 2048));
+	attrib att1(-32, 0, 0, 0, 0, 0, 2048);
+	attrib att2(0, 3, 7, 0, 0, 0, 1024);
+	e2->update(att1);
 
 	// while (!kbhit()) {
 	int i = 3;
 	while (i--) {
-		tn2->update(attrib(0, 3, 7, 0, 0, 0, 1024));
-		root->update_tree(root, UNIT_MAT, UNIT_MAT);
+		e2->update(att2);
+		printf("update tree\n");
+		fflush(stdout);
+		root->update_all();
 		printf("print tree\n");
 		fflush(stdout);
-		root->printall(root);
-		printf("merge sort\n");
+		root->print_all();
+		printf("sort\n");
 		fflush(stdout);
-		polygon::pol_it it = poly_lst->begin();
-		poly = &*it;
-		poly->merge_sort();
+		poly_lst->sort();
 		// clearviewport();
 		printf("walk list\n");
 		fflush(stdout);
-		for (it = poly_lst->begin(); it != poly_lst->end(); ++it) {
+		for (polygon::pol_it it = poly_lst->begin(); it != poly_lst->end(); ++it) {
 			poly = &*it;
-			if (poly)
+			if (poly) {
 				poly->print();
+			}
 		}
 		// delay(17);
 	}

@@ -14,81 +14,35 @@ using std::ios;
 
 polygon::polygon()
 {
-	points = new vec_lst;
+	points = new vec_list;
 	points->clear();
-	poly_q = new poly_queue;
 }
 
 polygon::~polygon()
 {
-	if (poly_q)
-		delete poly_q;
-
-	if (points)
+	if (points) {
 		delete points;
+	}
 
-	if (name)
+	if (name) {
 		delete name;
-}
-
-const polygon *polygon::find_poly(poly_list *lst, const string &s) const
-{
-	if (!lst)
-		return nullptr;
-
-	for (pol_it it = lst->begin(); it != lst->end(); ++it) {
-		const polygon *p = &*it;
-		if (!p)
-			return nullptr;
-
-		if (p->name && *p->name == s)
-			return p;
 	}
-
-	return nullptr;
 }
 
-polygon *polygon::pop()
-{
-	polygon *t = poly_q->front();
-	poly_q->pop();
-	return t;
-}
-
-void polygon::push()
-{
-	poly_q->push(this);
-}
-
-polygon *polygon::merge_sort()
-{
-	polygon *l1, *l2, *l3;
-	l1 = pop();
-	l2 = pop();
-	while (l2) {
-		l3 = merge(l1, l2);
-		l3->push();
-		l1 = pop();
-		l2 = pop();
-	}
-
-	return l1;
-}
-
-bool polygon::read(ifstream &f)
+bool polygon::read(ifstream& f)
 {
 	LINE line;
-	my_vector *v;
+	my_vector* v;
 	int finish = 0, len;
 	bool rc, ret = true;
 
 	while (!f.eof() && !finish) {
 		rc = true;
-		while ((!read_word(f, line)) && (!f.eof()))
-			;
+		while ((!read_word(f, line)) && (!f.eof()));
 
-		if (f.eof())
+		if (f.eof()) {
 			break;
+		}
 
 		switch (line[1]) {
 		case 'n':
@@ -192,9 +146,10 @@ void polygon::print() const
 	printf("        points:\n");
 	fflush(stdout);
 	for (vec_it it = points->cbegin(); it != points->cend(); ++it) {
-		const my_vector *v = &*it;
-		if (v)
+		const my_vector* v = &*it;
+		if (v) {
 			v->print();
+		}
 	}
 }
 
@@ -225,44 +180,20 @@ my_vector polygon::find_normal()
 		v2 = *++it;
 	}
 
-	v.get_coord(coord::X) = (v1.get_coord(coord::Y) * v2.get_coord(coord::Z) - v1.get_coord(coord::Z) * v2.get_coord(coord::Y));
-	v.get_coord(coord::Y) = (v1.get_coord(coord::Z) * v2.get_coord(coord::X) - v1.get_coord(coord::X) * v2.get_coord(coord::Z));
-	v.get_coord(coord::Z) = (v1.get_coord(coord::X) * v2.get_coord(coord::Y) - v1.get_coord(coord::Y) * v2.get_coord(coord::X));
+	v.get_coord(coord::X) = (v1.get_coord(coord::Y) * v2.get_coord(coord::Z) -
+	                         v1.get_coord(coord::Z) * v2.get_coord(coord::Y));
+	v.get_coord(coord::Y) = (v1.get_coord(coord::Z) * v2.get_coord(coord::X) -
+	                         v1.get_coord(coord::X) * v2.get_coord(coord::Z));
+	v.get_coord(coord::Z) = (v1.get_coord(coord::X) * v2.get_coord(coord::Y) -
+	                         v1.get_coord(coord::Y) * v2.get_coord(coord::X));
 
 	normalize(v);
 	return v;
 }
 
-polygon *polygon::merge(polygon *l1, polygon *l2)
+int operator<(const polygon& p1, const polygon& p2)
 {
-	polygon *first, *temp, *last = nullptr;
-
-	while (l1 && l2) {
-		if (l1->depth > l2->depth) {
-			temp = l1;
-			l1 = l1->next;
-		}
-		else {
-			temp = l2;
-			l2 = l2->next;
-		}
-		if (!last)
-			first = temp;
-		else
-			last->next = temp;
-		last = temp;
-	}
-	if (last)
-		if (l1)
-			last->next = l1;
-		else
-			last->next = l2;
-	else if (l1)
-		first = l1;
-	else
-		first = l2;
-
-	return first;
+	return (p1.depth > p2.depth);
 }
 
 } // namespace polygon_ns

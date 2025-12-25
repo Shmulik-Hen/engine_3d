@@ -5,7 +5,7 @@ namespace unit_ns
 {
 
 // clang-format off
-long SIN[]={
+int32_t SIN[]={
 	    0,   12,   25,   37,   50,   62,   75,   87,
 	  100,  112,  125,  137,  150,  162,  175,  187,
 	  199,  212,  224,  236,  248,  260,  273,  285,
@@ -89,34 +89,34 @@ long SIN[]={
 };
 // clang-format on
 
-long *COS = &SIN[128]; /* cos(x) = sin(x+"90")	*/
+int32_t* COS = &SIN[128]; /* cos(x) = sin(x+"90")	*/
 
 unit::unit()
 {
 	num = 0;
 }
 
-unit::unit(const long &n)
+unit::unit(const int32_t& n)
 {
 	num = n;
 }
 
-unit unit::operator+(const unit &u) const
+unit unit::operator+(const unit& u) const
 {
 	return unit(num + u.num);
 }
 
-unit unit::operator-(const unit &u) const
+unit unit::operator-(const unit& u) const
 {
 	return unit(num - u.num);
 }
 
-unit unit::operator*(const unit &u) const
+unit unit::operator*(const unit& u) const
 {
 	return unit(((num >> 1) * (u.num >> 1)) >> 8);
 }
 
-unit unit::operator/(const unit &u) const
+unit unit::operator/(const unit& u) const
 {
 	return unit((num << 10) / (u.num ? u.num : 1));
 }
@@ -126,25 +126,25 @@ unit unit::operator-() const
 	return unit(num * -1);
 }
 
-unit &unit::operator+=(const unit &u)
+unit& unit::operator+=(const unit& u)
 {
 	num += u.num;
 	return *this;
 }
 
-unit &unit::operator-=(const unit &u)
+unit& unit::operator-=(const unit& u)
 {
 	num -= u.num;
 	return *this;
 }
 
-unit &unit::operator*=(const unit &u)
+unit& unit::operator*=(const unit& u)
 {
 	num = ((num >> 1) * (u.num >> 1)) >> 8;
 	return *this;
 }
 
-unit &unit::operator/=(const unit &u)
+unit& unit::operator/=(const unit& u)
 {
 	num = (num << 10) / (u.num ? u.num : 1);
 	return *this;
@@ -160,24 +160,23 @@ unit::operator long()
 	return num;
 }
 
-bool unit::read(ifstream &f)
+bool unit::read(ifstream& f)
 {
 	LINE line;
-	while (!read_word(f, line))
-		;
+	while (!read_word(f, line));
 	num = convert(line);
 	return true;
 }
 
 void unit::print() const
 {
-	printf("            unit: %ld\n", num);
+	printf("            unit: %d\n", num);
 	fflush(stdout);
 }
 
-long unit::convert(const char *s)
+int32_t unit::convert(const char* s)
 {
-	long temp = 0, sign = 1, n = 0;
+	int32_t temp = 0, sign = 1, n = 0;
 	int index = 0;
 	while (s[index]) {
 		switch (s[index]) {
@@ -189,60 +188,63 @@ long unit::convert(const char *s)
 			n = 1;
 			break;
 		default:
-			temp = temp * 10 + (long)(s[index] - '0');
+			temp = temp * 10 + (int32_t)(s[index] - '0');
 			n = n * 10;
 			break;
 		}
 		index++;
 	}
 
-	if (!n)
+	if (!n) {
 		n = 1;
+	}
 
 	return (((sign * temp) << 10) / n);
 }
 
-int operator>(const unit &n1, const unit &n2)
+int operator>(const unit& n1, const unit& n2)
 {
 	return (n1.num > n2.num);
 }
 
-int operator>=(const unit &n1, const unit &n2)
+int operator>=(const unit& n1, const unit& n2)
 {
 	return (n1.num >= n2.num);
 }
 
-int operator<(const unit &n1, const unit &n2)
+int operator<(const unit& n1, const unit& n2)
 {
 	return (n1.num < n2.num);
 }
 
-int mod(const long &n)
+int mod(const int32_t& n)
 {
 	return int(n & 0x01ff);
 }
 
-unit abs(const unit &u)
+unit abs(const unit& u)
 {
 	return unit(u.num > 0 ? u.num : u.num * -1);
 }
 
-unit sin(const unit &u)
+unit sin(const unit& u)
 {
 	return unit(SIN[mod(u.num)]);
 }
 
-unit cos(const unit &u)
+unit cos(const unit& u)
 {
 	return unit(COS[mod(u.num)]);
 }
 
-unit sqrt(const unit &u)
+unit sqrt(const unit& u)
 {
-	unsigned long x = u.num << 10, y = 0xfffff800, temp, root;
+	uint32_t x = u.num << 10, y = 0xfffff800, temp, root;
 	int iter = 10;
-	if (!x)
+	if (!x) {
 		return 0;
+	}
+
 	temp = x + (x >> 1);
 	root = x;
 	while (temp & y) {
@@ -250,17 +252,20 @@ unit sqrt(const unit &u)
 		temp = temp >> 1;
 		y = y << 1;
 	}
-	while (iter--)
+
+	while (iter--) {
 		root = (x >> 1) / root + (root >> 1);
+	}
+
 	return unit(root);
 }
 
-ostream &operator<<(ostream &o, const unit &u)
+ostream& operator<<(ostream& o, const unit& u)
 {
 	return o << u.num;
 }
 
-istream &operator>>(istream &i, unit &u)
+istream& operator>>(istream& i, unit& u)
 {
 	char s[13];
 
