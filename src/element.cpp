@@ -48,7 +48,7 @@ char make_color(char c1, unit c2)
 	return (char)(((color >> 2) & 0x00f0) | (c1 & 0x0F));
 }
 
-bool element::read(poly_list* list, element* root, ifstream& f)
+bool element::read(poly_list* list, element** root, ifstream& f)
 {
 	LINE line;
 	int finish = 0, len;
@@ -80,26 +80,33 @@ bool element::read(poly_list* list, element* root, ifstream& f)
 			}
 			break;
 		case 't':
-			if (!root) {
-				root = this;
-			}
-			else {
-				len = read_word(f, line);
-				if (len) {
-					_parrent_name = new string(line);
-					if (_parrent_name) {
-						element* p = find(root, *_parrent_name);
-						if (p) {
-							add_node(p);
-							_parrent = p;
+			if (root) {
+				if (!*root) {
+					*root = this;
+				}
+				else {
+					len = read_word(f, line);
+					if (len) {
+						_parrent_name = new string(line);
+						if (_parrent_name) {
+							element* parrent = find(*root, *_parrent_name);
+							if (parrent) {
+								add_node(parrent);
+								_parrent = parrent;
+							}
+						}
+						else {
+							printf("element::read allocation error -  _parrent_name\n");
+							fflush(stdout);
+							rc = false;
 						}
 					}
-					else {
-						printf("treenode::read allocation error -  _parrent_name\n");
-						fflush(stdout);
-						rc = false;
-					}
 				}
+			}
+			else {
+				printf("element::read root is NULL\n");
+				fflush(stdout);
+				rc = false;
 			}
 			break;
 		case 'p':
@@ -136,7 +143,7 @@ bool element::read(poly_list* list, element* root, ifstream& f)
 				_dirty = 0;
 			}
 			else {
-				printf("treenode::read error flag\n");
+				printf("element::read error flag\n");
 				fflush(stdout);
 				rc = false;
 			}
@@ -144,7 +151,7 @@ bool element::read(poly_list* list, element* root, ifstream& f)
 		case 'a':
 			rc = _att.read(f);
 			if (!rc) {
-				printf("treenode::read error attrib\n");
+				printf("element::read error attrib\n");
 				fflush(stdout);
 				rc = false;
 			}
@@ -208,36 +215,6 @@ void element::print_all()
 	this->print_tree(prn);
 }
 
-const polygon* element::find(poly_list* list, const string& s) const
-{
-	if (!list) {
-		return nullptr;
-	}
-
-	for (pol_it it = list->begin(); it != list->end(); ++it) {
-		const polygon* p = &*it;
-
-		if (p && p->get_name() && *p->get_name() == s) {
-			return p;
-		}
-	}
-
-	return nullptr;
-}
-
-element* element::find(elem_list* list, string& s) const
-{
-	for (elem_it it = list->begin(); it != list->end(); ++it) {
-		element* e = &*it;
-
-		if (e && e->_name && *e->_name == s) {
-			return e;
-		}
-	}
-
-	return nullptr;
-}
-
 string cmp_str;
 
 bool cmp(void* p)
@@ -263,14 +240,14 @@ void element::update(const attrib& att)
 	_dirty = 1;
 }
 
-void element::update(const attrib& att, matrix& p_gen, matrix& p_rot)
+void element::update(const matrix& p_gen, const matrix& p_rot)
 {
 	my_vector dist, fill, normal;
 	unit view_angle, light_angle;
 	char color;
 
-	_gen_mat.prep_gen_mat(att);
-	_rot_mat.prep_rot_mat(att);
+	_gen_mat.prep_gen_mat(_att);
+	_rot_mat.prep_rot_mat(_att);
 	_gen_mat *= p_gen;
 	_rot_mat *= p_rot;
 
@@ -302,16 +279,16 @@ void element::update()
 {
 	matrix m_gen, m_rot;
 
-	if (this->_parrent) {
-		m_gen = _parrent->get_gen_mat();
-		m_rot = _parrent->get_rot_mat();
+	if (_parrent) {
+		m_gen = _parrent->_gen_mat;
+		m_rot = _parrent->_rot_mat;
 	}
 	else {
 		m_gen = matrix_ns::get_unit_mat();
 		m_rot = matrix_ns::get_unit_mat();
 	}
 
-	update(_att, m_gen, m_rot);
+	update(m_gen, m_rot);
 }
 
 void upd(void* p)
@@ -325,6 +302,23 @@ void upd(void* p)
 void element::update_all()
 {
 	this->update_tree(upd);
+}
+
+const polygon* element::find(poly_list* list, const string& s) const
+{
+	if (!list) {
+		return nullptr;
+	}
+
+	for (pol_it it = list->begin(); it != list->end(); ++it) {
+		const polygon* p = &*it;
+
+		if (p && p->get_name() && *p->get_name() == s) {
+			return p;
+		}
+	}
+
+	return nullptr;
 }
 
 } // namespace element_ns

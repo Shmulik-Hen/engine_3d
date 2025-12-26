@@ -36,23 +36,18 @@ public:
 	element();
 	~element();
 
-	bool read(poly_list*, element*, ifstream&);
-	void print_all();
+	bool read(poly_list*, element**, ifstream&);
 	void print() const;
+	void print_all();
 
-	const polygon* find(poly_list*, const string&) const;
-	element* find(elem_list*, string&) const;
 	element* find(element*, string&) const;
 
 	void update(const attrib&);
-	void update(const attrib&, matrix&, matrix&);
+	void update(const matrix&, const matrix&);
 	void update();
 	void update_all();
 
-	string* get_name() const { return _name; }
-	matrix get_gen_mat() const { return _gen_mat; }
-	matrix get_rot_mat() const { return _rot_mat; }
-	attrib get_attrib() const { return _att; }
+	const string* get_name() const { return _name; }
 
 private:
 
@@ -67,6 +62,8 @@ private:
 	attrib _att;
 	int _active {0};
 	int _dirty {0};
+
+	const polygon* find(poly_list*, const string&) const;
 };
 
 } // namespace element_ns

@@ -32,18 +32,21 @@ public:
 	};
 
 	my_vector();
-	my_vector(unit, unit, unit);
+	my_vector(const unit, const unit, const unit);
 	~my_vector();
+
+	bool read(ifstream&);
+	void print() const;
+	unit get_coord(coord) const;
+	my_vector project(const my_vector&, const my_vector&);
+	void normalize(my_vector&);
+
 	my_vector operator+(const my_vector&) const;
 	my_vector operator-(const my_vector&) const;
 	my_vector& operator+=(const my_vector&);
 	my_vector& operator-=(const my_vector&);
-	unit operator*(const my_vector&) const;
-	unit get_coord(coord) const;
-	my_vector project(const my_vector&, const my_vector&);
-	void normalize(my_vector&);
-	bool read(ifstream&);
-	void print() const;
+	const unit operator*(const my_vector&) const;
+
 	friend ostream& operator<<(ostream&, const my_vector&);
 	friend istream& operator>>(istream&, my_vector&);
 

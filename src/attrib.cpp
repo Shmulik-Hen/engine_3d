@@ -3,41 +3,23 @@
 namespace attrib_ns
 {
 
-attrib::attrib(unit dx, unit dy, unit dz, unit ox, unit oy, unit oz, unit z) :
-	deg_x {dx}, deg_y {dy}, deg_z {dz}, off_x {ox},
-	off_y {oy}, off_z {oz}, zoom {z}
+attrib::attrib(const unit dx, const unit dy, const unit dz, const unit ox, const unit oy, const unit oz, const unit z) :
+	_deg_x {dx}, _deg_y {dy}, _deg_z {dz}, _off_x {ox},
+	_off_y {oy}, _off_z {oz}, _zoom {z}
 {
-}
-
-attrib operator+(const attrib& a, const attrib& b)
-{
-	attrib temp = a;
-	temp += b;
-	return temp;
-}
-
-attrib& attrib::operator+=(const attrib& a)
-{
-	deg_x += a.deg_x;
-	deg_y += a.deg_y;
-	deg_z += a.deg_z;
-	off_x += a.off_x;
-	off_y += a.off_y;
-	off_z += a.off_z;
-	zoom *= a.zoom;
-	return *this;
 }
 
 bool attrib::read(ifstream& f)
 {
 	bool rc = false;
-	rc += deg_x.read(f);
-	rc += deg_y.read(f);
-	rc += deg_z.read(f);
-	rc += off_x.read(f);
-	rc += off_y.read(f);
-	rc += off_z.read(f);
-	rc += zoom.read(f);
+
+	rc += _deg_x.read(f);
+	rc += _deg_y.read(f);
+	rc += _deg_z.read(f);
+	rc += _off_x.read(f);
+	rc += _off_y.read(f);
+	rc += _off_z.read(f);
+	rc += _zoom.read(f);
 	if (!rc) {
 		printf("attrib::read error\n");
 		fflush(stdout);
@@ -49,30 +31,42 @@ void attrib::print() const
 {
 	printf("    attrib:\n");
 	fflush(stdout);
-	deg_x.print();
-	deg_y.print();
-	deg_z.print();
-	off_x.print();
-	off_y.print();
-	off_z.print();
-	zoom.print();
+	_deg_x.print();
+	_deg_y.print();
+	_deg_z.print();
+	_off_x.print();
+	_off_y.print();
+	_off_z.print();
+	_zoom.print();
+}
+
+attrib& attrib::operator+=(const attrib& a)
+{
+	_deg_x += a._deg_x;
+	_deg_y += a._deg_y;
+	_deg_z += a._deg_z;
+	_off_x += a._off_x;
+	_off_y += a._off_y;
+	_off_z += a._off_z;
+	_zoom *= a._zoom;
+	return *this;
 }
 
 ostream& operator<<(ostream& o, const attrib& a)
 {
-	return o << '(' << a.deg_x << ',' << a.deg_y << ',' << a.deg_z << ','
-	         << a.off_x << ',' << a.off_y << ',' << a.off_z << ',' << a.zoom << ')';
+	return o << '(' << a._deg_x << ',' << a._deg_y << ',' << a._deg_z << ','
+	         << a._off_x << ',' << a._off_y << ',' << a._off_z << ',' << a._zoom << ')';
 }
 
 istream& operator>>(istream& i, attrib& a)
 {
-	i >> a.deg_x;
-	i >> a.deg_y;
-	i >> a.deg_z;
-	i >> a.off_x;
-	i >> a.off_y;
-	i >> a.off_z;
-	i >> a.zoom;
+	i >> a._deg_x;
+	i >> a._deg_y;
+	i >> a._deg_z;
+	i >> a._off_x;
+	i >> a._off_y;
+	i >> a._off_z;
+	i >> a._zoom;
 	return i;
 }
 

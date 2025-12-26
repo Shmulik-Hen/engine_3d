@@ -12,7 +12,7 @@ my_vector::my_vector()
 	(*_coords)[coord::Z] = unit_ns::ZERO;
 }
 
-my_vector::my_vector(unit x, unit y, unit z)
+my_vector::my_vector(const unit x, const unit y, const unit z)
 {
 	_coords = new vec_entry();
 	_coords->clear();
@@ -28,41 +28,24 @@ my_vector::~my_vector()
 	}
 }
 
-my_vector my_vector::operator+(const my_vector& v) const
+bool my_vector::read(ifstream& f)
 {
-	return my_vector(_coords->at(coord::X) + v._coords->at(coord::X),
-	                 _coords->at(coord::Y) + v._coords->at(coord::Y),
-	                 _coords->at(coord::Z) + v._coords->at(coord::Z));
+	for (coord c = coord::__first_coord; c < coord::__last_coord; c++) {
+		if (!_coords->at(c).read(f)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
-my_vector my_vector::operator-(const my_vector& v) const
+void my_vector::print() const
 {
-	return my_vector(_coords->at(coord::X) - v._coords->at(coord::X),
-	                 _coords->at(coord::Y) - v._coords->at(coord::Y),
-	                 _coords->at(coord::Z) - v._coords->at(coord::Z));
-}
-
-my_vector& my_vector::operator+=(const my_vector& v)
-{
-	_coords->at(coord::X) += v._coords->at(coord::X);
-	_coords->at(coord::Y) += v._coords->at(coord::Y);
-	_coords->at(coord::Z) += v._coords->at(coord::Z);
-	return *this;
-}
-
-my_vector& my_vector::operator-=(const my_vector& v)
-{
-	_coords->at(coord::X) -= v._coords->at(coord::X);
-	_coords->at(coord::Y) -= v._coords->at(coord::Y);
-	_coords->at(coord::Z) -= v._coords->at(coord::Z);
-	return *this;
-}
-
-unit my_vector::operator*(const my_vector& v) const
-{
-	return unit(_coords->at(coord::X) * v._coords->at(coord::X) +
-	            _coords->at(coord::Y) * v._coords->at(coord::Y) +
-	            _coords->at(coord::Z) * v._coords->at(coord::Z));
+	printf("          vector:\n");
+	fflush(stdout);
+	for (coord c = coord::__first_coord; c < coord::__last_coord; ++c) {
+		_coords->at(c).print();
+	}
 }
 
 unit my_vector::get_coord(coord c) const
@@ -104,24 +87,41 @@ void my_vector::normalize(my_vector& v)
 	v._coords->at(coord::Z) /= norm;
 }
 
-bool my_vector::read(ifstream& f)
+my_vector my_vector::operator+(const my_vector& v) const
 {
-	for (coord c = coord::__first_coord; c < coord::__last_coord; c++) {
-		if (!_coords->at(c).read(f)) {
-			return false;
-		}
-	}
-
-	return true;
+	return my_vector(_coords->at(coord::X) + v._coords->at(coord::X),
+	                 _coords->at(coord::Y) + v._coords->at(coord::Y),
+	                 _coords->at(coord::Z) + v._coords->at(coord::Z));
 }
 
-void my_vector::print() const
+my_vector my_vector::operator-(const my_vector& v) const
 {
-	printf("          vector:\n");
-	fflush(stdout);
-	for (coord c = coord::__first_coord; c < coord::__last_coord; ++c) {
-		_coords->at(c).print();
-	}
+	return my_vector(_coords->at(coord::X) - v._coords->at(coord::X),
+	                 _coords->at(coord::Y) - v._coords->at(coord::Y),
+	                 _coords->at(coord::Z) - v._coords->at(coord::Z));
+}
+
+my_vector& my_vector::operator+=(const my_vector& v)
+{
+	_coords->at(coord::X) += v._coords->at(coord::X);
+	_coords->at(coord::Y) += v._coords->at(coord::Y);
+	_coords->at(coord::Z) += v._coords->at(coord::Z);
+	return *this;
+}
+
+my_vector& my_vector::operator-=(const my_vector& v)
+{
+	_coords->at(coord::X) -= v._coords->at(coord::X);
+	_coords->at(coord::Y) -= v._coords->at(coord::Y);
+	_coords->at(coord::Z) -= v._coords->at(coord::Z);
+	return *this;
+}
+
+const unit my_vector::operator*(const my_vector& v) const
+{
+	return unit(_coords->at(coord::X) * v._coords->at(coord::X) +
+	            _coords->at(coord::Y) * v._coords->at(coord::Y) +
+	            _coords->at(coord::Z) * v._coords->at(coord::Z));
 }
 
 ostream& operator<<(ostream& o, const my_vector& v)

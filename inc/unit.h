@@ -14,36 +14,38 @@ using std::ostream;
 
 class unit
 {
-	int32_t num {0};
+	int32_t _num {0};
 
 public:
 
-	unit();
+	unit() {};
 	unit(const int32_t&);
 	~unit() {};
-	unit operator+(const unit&) const;
-	unit operator-(const unit&) const;
-	unit operator*(const unit&) const;
-	unit operator/(const unit&) const;
-	unit operator-() const;
-	unit& operator+=(const unit&);
-	unit& operator-=(const unit&);
-	unit& operator*=(const unit&);
-	unit& operator/=(const unit&);
-	operator int();
-	operator long();
-	int32_t convert(const char*);
+
 	bool read(ifstream&);
 	void print() const;
 
-	friend int operator>(const unit&, const unit&);
-	friend int operator>=(const unit&, const unit&);
-	friend int operator<(const unit&, const unit&);
-	friend int mod(const int32_t&);
-	friend unit abs(const unit&);
-	friend unit sin(const unit&);
-	friend unit cos(const unit&);
-	friend unit sqrt(const unit&);
+	const unit operator+(const unit&) const;
+	const unit operator-(const unit&) const;
+	const unit operator*(const unit&) const;
+	const unit operator/(const unit&) const;
+	const unit operator-() const;
+	const unit& operator+=(const unit&);
+	const unit& operator-=(const unit&);
+	const unit& operator*=(const unit&);
+	const unit& operator/=(const unit&);
+	operator int();
+	operator long();
+
+	friend const int mod(const int32_t&);
+	friend const unit abs(const unit&);
+	friend const unit sin(const unit&);
+	friend const unit cos(const unit&);
+	friend const unit sqrt(const unit&);
+	friend bool operator>(const unit&, const unit&);
+	friend bool operator>=(const unit&, const unit&);
+	friend bool operator<(const unit&, const unit&);
+	friend bool operator<=(const unit&, const unit&);
 	friend ostream& operator<<(ostream&, const unit&);
 	friend istream& operator>>(istream&, unit&);
 };

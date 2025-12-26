@@ -49,8 +49,6 @@ int main()
 	polygon* poly {nullptr};
 	element* elem {nullptr};
 	element* root {nullptr};
-	attrib a(1, 1, 1, 0, 0, 0, 1024);
-	matrix UNIT_MAT = get_unit_mat();
 	bool rc;
 	int ret = 0;
 
@@ -61,14 +59,6 @@ int main()
 	}
 
 	poly_lst->clear();
-
-	element::elem_list* elem_lst = new element::elem_list;
-	if (!elem_lst) {
-		ret = 1;
-		error("elem_lst allocation error");
-	}
-
-	elem_lst->clear();
 
 	f.open(filename, ios::in);
 	if (!f) {
@@ -109,11 +99,8 @@ int main()
 		case 'e':
 			elem = new element;
 			if (elem) {
-				rc = elem->read(poly_lst, root, f);
-				if (rc) {
-					elem_lst->push_front(*elem);
-				}
-				else {
+				rc = elem->read(poly_lst, &root, f);
+				if (!rc) {
 					ret = 1;
 					error("read element failed");
 				}
@@ -150,10 +137,6 @@ int main()
 
 	if (poly_lst->empty()) {
 		error("no polygons");
-	}
-
-	if (elem_lst->empty()) {
-		error("no elements");
 	}
 
 	string* s1 = new string("world");

@@ -20,16 +20,18 @@ const int dim = 4;
 class matrix : public attrib,
 	       public my_vector
 {
-	unit mat[dim][dim];
+	unit _mat[dim][dim];
 
 public:
 
 	matrix();
 	matrix(unit[dim][dim]);
 	~matrix() {}
+
 	matrix operator*(const matrix&);
 	matrix& operator*=(const matrix&);
 	my_vector operator*(const my_vector&);
+
 	void prep_gen_mat(const attrib&);
 	void prep_rot_mat(const attrib&);
 };
