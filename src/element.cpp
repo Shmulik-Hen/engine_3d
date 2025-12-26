@@ -174,30 +174,31 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 
 void element::print() const
 {
+	printf("  element:\n");
 	if (_name) {
-		printf("    element:\n      _name: %s\n", _name->c_str());
+		printf("    name: %s\n", _name->c_str());
 		fflush(stdout);
 	}
 
 	if (_parrent_name) {
-		printf("    _parrent_name: %s\n", _parrent_name->c_str());
+		printf("    parrent_name: %s\n", _parrent_name->c_str());
 		fflush(stdout);
 	}
 
-	printf("    _active: %d\n", _active);
+	printf("    active: %d\n", _active);
 	fflush(stdout);
-	printf("    _dirty: %d\n", _dirty);
-	fflush(stdout);
-	printf("  attrib:\n");
+	printf("    dirty: %d\n", _dirty);
 	fflush(stdout);
 	_att.print();
 
-	printf("  _polygons:\n");
-	fflush(stdout);
-	for (pol_it it = _polygons->begin(); it != _polygons->end(); ++it) {
-		const polygon* p = &*it;
-		if (p) {
-			p->print();
+	if (!_polygons->empty()) {
+		printf("    polygons:\n");
+		fflush(stdout);
+		for (pol_it it = _polygons->begin(); it != _polygons->end(); ++it) {
+			const polygon* p = &*it;
+			if (p) {
+				p->print();
+			}
 		}
 	}
 }

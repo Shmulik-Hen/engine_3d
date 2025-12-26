@@ -53,7 +53,7 @@ public:
 private:
 
 	typedef map<coord, unit> vec_entry;
-	vec_entry* _coords {nullptr};
+	vec_entry _coords;
 
 	bool is_valid_coord(coord) const;
 };

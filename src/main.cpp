@@ -166,6 +166,8 @@ int main()
 	// while (!kbhit()) {
 	int i = 3;
 	while (i--) {
+		printf("%d\n", i);
+		fflush(stdout);
 		e2->update(att2);
 		printf("update tree\n");
 		fflush(stdout);

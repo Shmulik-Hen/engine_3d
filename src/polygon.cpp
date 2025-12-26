@@ -133,9 +133,9 @@ void polygon::print() const
 	fflush(stdout);
 	printf("        name: %s\n", _name->c_str());
 	fflush(stdout);
-	// printf("        force: %d\n", (int)_force);
-	// fflush(stdout);
-	printf("        color: %c\n", _color);
+	printf("        force: %d\n", (int)_force);
+	fflush(stdout);
+	printf("        color: %d\n", (int)_color);
 	fflush(stdout);
 	printf("        depth:\n");
 	fflush(stdout);
@@ -146,14 +146,16 @@ void polygon::print() const
 	printf("        normal:\n");
 	fflush(stdout);
 	_normal.print();
-	// printf("        points:\n");
-	// fflush(stdout);
-	// for (vec_it it = _points->cbegin(); it != _points->cend(); ++it) {
-	// 	const my_vector* v = &*it;
-	// 	if (v) {
-	// 		v->print();
-	// 	}
-	// }
+	if (!_points->empty()) {
+		printf("        points:\n");
+		fflush(stdout);
+		for (vec_it it = _points->cbegin(); it != _points->cend(); ++it) {
+			const my_vector* v = &*it;
+			if (v) {
+				v->print();
+			}
+		}
+	}
 }
 
 my_vector polygon::find_fill()
@@ -170,6 +172,7 @@ my_vector polygon::find_fill()
 	v.get_coord(coord::X) /= n;
 	v.get_coord(coord::Y) /= n;
 	v.get_coord(coord::Z) /= n;
+
 	return v;
 }
 
@@ -191,6 +194,7 @@ my_vector polygon::find_normal()
 	                         v1.get_coord(coord::Y) * v2.get_coord(coord::X));
 
 	normalize(v);
+
 	return v;
 }
 
