@@ -50,14 +50,12 @@ bool polygon::read(ifstream& f)
 			if (len) {
 				_name = new string(line);
 				if (!_name) {
-					printf("polygon::read allocation error -  polygon\n");
-					fflush(stdout);
+					ERR("polygon::read allocation error -  polygon");
 					rc = false;
 				}
 			}
 			else {
-				printf("polygon::read error polygon\n");
-				fflush(stdout);
+				ERR("polygon::read error polygon");
 				rc = false;
 			}
 			break;
@@ -67,8 +65,7 @@ bool polygon::read(ifstream& f)
 				_color = atoi(line);
 			}
 			else {
-				printf("polygon::read error polygon\n");
-				fflush(stdout);
+				ERR("polygon::read error polygon");
 				rc = false;
 			}
 			break;
@@ -78,8 +75,7 @@ bool polygon::read(ifstream& f)
 				_force = atoi(line);
 			}
 			else {
-				printf("polygon::read error polygon\n");
-				fflush(stdout);
+				ERR("polygon::read error polygon");
 				rc = false;
 			}
 			break;
@@ -93,14 +89,12 @@ bool polygon::read(ifstream& f)
 					_points->push_front(*v);
 				}
 				else {
-					printf("polygon::read error polygon\n");
-					fflush(stdout);
+					ERR("polygon::read error polygon");
 					rc = false;
 				}
 			}
 			else {
-				printf("element::read allocation error -  polygon\n");
-				fflush(stdout);
+				ERR("element::read allocation error -  polygon");
 				rc = false;
 			}
 			break;
@@ -111,8 +105,7 @@ bool polygon::read(ifstream& f)
 		}
 
 		if (!rc) {
-			printf("polygon::read parsing error\n");
-			fflush(stdout);
+			ERR("polygon::read parsing error");
 			ret = false;
 		}
 	}
@@ -129,26 +122,18 @@ bool polygon::read(ifstream& f)
 
 void polygon::print() const
 {
-	printf("      polygon:\n");
-	fflush(stdout);
-	printf("        name: %s\n", _name->c_str());
-	fflush(stdout);
-	printf("        force: %d\n", (int)_force);
-	fflush(stdout);
-	printf("        color: %d\n", (int)_color);
-	fflush(stdout);
-	printf("        depth:\n");
-	fflush(stdout);
+	DBG("      polygon:");
+	DBG(STR("        name: ", 1) << *_name);
+	DBG(STR("        force: ", 1) << DEC(_force, 4));
+	DBG(STR("        color: ", 1) << DEC((int)_color, 4));
+	DBG(STR("        depth:", 1));
 	_depth.print();
-	printf("        fill:\n");
-	fflush(stdout);
+	DBG(STR("        fill:", 1));
 	_fill.print();
-	printf("        normal:\n");
-	fflush(stdout);
+	DBG(STR("        normal:", 1));
 	_normal.print();
 	if (!_points->empty()) {
-		printf("        points:\n");
-		fflush(stdout);
+		DBG("        points:");
 		for (vec_it it = _points->cbegin(); it != _points->cend(); ++it) {
 			const my_vector* v = &*it;
 			if (v) {

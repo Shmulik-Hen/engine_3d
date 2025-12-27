@@ -7,14 +7,14 @@
 using std::cerr;
 using std::cout;
 
-void error(const char *s1, const char *s2)
+void error(const char* s1, const char* s2)
 {
 	// closegraph();
 	cerr << s1 << ' ' << s2;
 	exit(0);
 }
 
-int read_word(ifstream &f, char *word)
+int read_word(ifstream& f, char* word)
 {
 	int finish = 0;
 	int length = 0;
@@ -23,17 +23,19 @@ int read_word(ifstream &f, char *word)
 	bzero(word, MAX_LINE);
 	while ((!finish) && (!f.eof()) && (length < MAX_LINE)) {
 		f >> c;
-		// printf("read_word: %c\n", c);
-		if ((c <= 32) || (c == ',') || (c == '(') || (c == ')') || (c == '{') || (c == '}'))
+		// DBG(STR("read_word: ", 1) << c);
+		if ((c <= 32) || (c == ',') || (c == '(') || (c == ')') || (c == '{') || (c == '}')) {
 			finish = 1;
-		else
+		}
+		else {
 			word[length++] = c;
+		}
 	}
 	word[length] = '\0';
-	// printf("read_word: %s, %d\n", word, length);
+	// DBG(STR("read_word: ", 1) << word, DEC(length, 4));
 	return length;
 }
 
-void read_remark(ifstream &f)
+void read_remark(ifstream& f)
 {
 }

@@ -21,16 +21,14 @@ bool attrib::read(ifstream& f)
 	rc += _off_z.read(f);
 	rc += _zoom.read(f);
 	if (!rc) {
-		printf("attrib::read error\n");
-		fflush(stdout);
+		ERR("attrib::read error");
 	}
 	return rc;
 }
 
 void attrib::print() const
 {
-	printf("    attrib:\n");
-	fflush(stdout);
+	DBG("    attrib:");
 	_deg_x.print();
 	_deg_y.print();
 	_deg_z.print();

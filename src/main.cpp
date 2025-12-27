@@ -144,7 +144,12 @@ int main()
 		error("string allocation error");
 	}
 
-	string* s2 = new string("box");
+	string* s2 = new string("gimble");
+	if (!s2) {
+		error("string allocation error");
+	}
+
+	string* s3 = new string("box");
 	if (!s2) {
 		error("string allocation error");
 	}
@@ -156,31 +161,34 @@ int main()
 
 	element* e2 = root->find(root, *s2);
 	if (!e2) {
+		error("find gimble failed");
+	}
+
+	element* e3 = root->find(root, *s3);
+	if (!e2) {
 		error("find box failed");
 	}
 
 	attrib att1(-32, 0, 0, 0, 0, 0, 2048);
 	attrib att2(0, 3, 7, 0, 0, 0, 1024);
+	attrib att3(0, 4, 8, 0, 0, 0, 1024);
 	e2->update(att1);
+	e3->update(att1);
 
 	// while (!kbhit()) {
-	int i = 3;
+	int i = 5;
 	while (i--) {
-		printf("%d\n", i);
-		fflush(stdout);
+		DBG(DEC(i, 8));
 		e2->update(att2);
-		printf("update tree\n");
-		fflush(stdout);
+		e3->update(att3);
+		DBG("update tree");
 		root->update_all();
-		printf("print tree\n");
-		fflush(stdout);
+		DBG("print tree");
 		root->print_all();
-		printf("sort\n");
-		fflush(stdout);
+		DBG("sort");
 		poly_lst->sort();
 		// clearviewport();
-		printf("walk list\n");
-		fflush(stdout);
+		DBG("walk list");
 		for (polygon::pol_it it = poly_lst->begin(); it != poly_lst->end(); ++it) {
 			poly = &*it;
 			if (poly) {

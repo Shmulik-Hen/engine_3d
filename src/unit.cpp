@@ -136,8 +136,7 @@ bool unit::read(ifstream& f)
 
 void unit::print() const
 {
-	printf("            unit: %d\n", _num);
-	fflush(stdout);
+	DBG(STR("            unit: ", 1) << _num);
 }
 
 const unit unit::operator+(const unit& u) const

@@ -68,14 +68,12 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 			if (len) {
 				_name = new string(line);
 				if (!_name) {
-					printf("element::read allocation error -  _name\n");
-					fflush(stdout);
+					ERR("element::read allocation error -  _name");
 					rc = false;
 				}
 			}
 			else {
-				printf("element::read error _name\n");
-				fflush(stdout);
+				ERR("element::read error _name");
 				rc = false;
 			}
 			break;
@@ -94,18 +92,20 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 								add_node(parrent);
 								_parrent = parrent;
 							}
+							else {
+								ERR("element::read error -  _parrent_name");
+								rc = false;
+							}
 						}
 						else {
-							printf("element::read allocation error -  _parrent_name\n");
-							fflush(stdout);
+							ERR("element::read allocation error -  _parrent_name");
 							rc = false;
 						}
 					}
 				}
 			}
 			else {
-				printf("element::read root is NULL\n");
-				fflush(stdout);
+				ERR("element::read root is NULL");
 				rc = false;
 			}
 			break;
@@ -119,20 +119,17 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 						_polygons->push_front(*p);
 					}
 					else {
-						printf("element::read find error -  polygon\n");
-						fflush(stdout);
+						ERR("element::read find error -  polygon");
 						rc = false;
 					}
 				}
 				else {
-					printf("element::read allocation error -  polygon\n");
-					fflush(stdout);
+					ERR("element::read allocation error -  polygon");
 					rc = false;
 				}
 			}
 			else {
-				printf("element::read error polygon\n");
-				fflush(stdout);
+				ERR("element::read error polygon");
 				rc = false;
 			}
 			break;
@@ -143,16 +140,14 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 				_dirty = 0;
 			}
 			else {
-				printf("element::read error flag\n");
-				fflush(stdout);
+				ERR("element::read error flag");
 				rc = false;
 			}
 			break;
 		case 'a':
 			rc = _att.read(f);
 			if (!rc) {
-				printf("element::read error attrib\n");
-				fflush(stdout);
+				ERR("element::read error attrib");
 				rc = false;
 			}
 			break;
@@ -163,8 +158,7 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 		}
 
 		if (!rc) {
-			printf("element::read parsing error\n");
-			fflush(stdout);
+			ERR("element::read parsing error");
 			ret = false;
 		}
 	}
@@ -174,26 +168,21 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 
 void element::print() const
 {
-	printf("  element:\n");
+	DBG(STR("  element:", 1));
 	if (_name) {
-		printf("    name: %s\n", _name->c_str());
-		fflush(stdout);
+		DBG(STR("    name: ", 1) << *_name);
 	}
 
 	if (_parrent_name) {
-		printf("    parrent_name: %s\n", _parrent_name->c_str());
-		fflush(stdout);
+		DBG(STR("    parrent_name: ", 1) << *_parrent_name);
 	}
 
-	printf("    active: %d\n", _active);
-	fflush(stdout);
-	printf("    dirty: %d\n", _dirty);
-	fflush(stdout);
+	DBG(STR("    active: ", 1) << DEC(_active, 4));
+	DBG(STR("     dirty: ", 1) << DEC(_dirty, 4));
 	_att.print();
 
 	if (!_polygons->empty()) {
-		printf("    polygons:\n");
-		fflush(stdout);
+		DBG(STR("    polygons:", 1));
 		for (pol_it it = _polygons->begin(); it != _polygons->end(); ++it) {
 			const polygon* p = &*it;
 			if (p) {

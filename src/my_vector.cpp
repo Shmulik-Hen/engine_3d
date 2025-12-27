@@ -47,8 +47,7 @@ bool my_vector::read(ifstream& f)
 
 void my_vector::print() const
 {
-	printf("          vector:\n");
-	fflush(stdout);
+	DBG(STR("          vector:", 1));
 	_coords.find(coord::X)->second.print();
 	_coords.find(coord::Y)->second.print();
 	_coords.find(coord::Z)->second.print();
