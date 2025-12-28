@@ -6,41 +6,35 @@
 #include <string>
 
 #include "common.h"
+#include "matrix.h"
 #include "my_vector.h"
 #include "unit.h"
 
 namespace polygon_ns
 {
 
+using matrix_ns::matrix;
 using my_vector_ns::my_vector;
 using std::ifstream;
 using std::list;
 using std::string;
 using unit_ns::unit;
 
-class polygon : public my_vector
+class polygon : public matrix
 {
 public:
 
 	typedef list<polygon> poly_list;
 	typedef poly_list::iterator pol_it;
+	typedef poly_list::const_iterator con_pol_it;
 
 	polygon();
 	~polygon();
 
 	bool read(ifstream&);
 	void print() const;
-
-	const int get_force() const { return _force; }
-	const char get_color() const { return _color; }
-	const my_vector get_fill() const { return _fill; }
-	const my_vector get_normal() const { return _normal; }
 	const string* get_name() const { return (_name ? _name : nullptr); }
-
-	void set_fill(my_vector f) { _fill = f; }
-	void set_normal(my_vector n) { _normal = n; }
-	void set_color(char c) { _color = c; }
-	void set_depth(unit d) { _depth = d; }
+	void update(matrix&, matrix&);
 
 	friend int operator<(const polygon&, const polygon&);
 
@@ -55,7 +49,7 @@ private:
 	unit _depth {unit_ns::ZERO};
 	my_vector _fill;
 	my_vector _normal;
-	vec_list* _points {nullptr};
+	vec_list _points;
 
 	my_vector find_fill();
 	my_vector find_normal();

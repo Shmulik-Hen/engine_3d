@@ -19,10 +19,6 @@ my_vector::my_vector(const unit x, const unit y, const unit z)
 	_coords[coord::Z] = z;
 }
 
-my_vector::~my_vector()
-{
-}
-
 bool my_vector::read(ifstream& f)
 {
 	bool rc;
@@ -67,22 +63,23 @@ unit my_vector::get_coord(coord c) const
 my_vector my_vector::project(const my_vector& p, const my_vector& v)
 {
 	my_vector temp;
-	if (abs(v._coords.at(coord::Z) - p._coords.at(coord::Z)) >= unit_ns::UNIT) {
-		temp._coords.at(coord::X) = ((p._coords.at(coord::X) - v._coords.at(coord::X)) /
-		                             (v._coords.at(coord::Z) - p._coords.at(coord::Z))) *
-		                            v._coords.at(coord::Z);
-		temp._coords.at(coord::Y) = ((p._coords.at(coord::Y) - v._coords.at(coord::Y)) /
-		                             (v._coords.at(coord::Z) - p._coords.at(coord::Z))) *
-		                            v._coords.at(coord::Z);
+
+	unit px = p._coords.at(coord::X);
+	unit py = p._coords.at(coord::Y);
+	unit pz = p._coords.at(coord::Z);
+	unit vx = v._coords.at(coord::X);
+	unit vy = v._coords.at(coord::Y);
+	unit vz = v._coords.at(coord::Z);
+
+	if (abs(vz - pz) >= unit_ns::UNIT) {
+		temp._coords.at(coord::X) = ((px - vx) / (vz - pz) * vz);
+		temp._coords.at(coord::Y) = ((py - vy) / (vz - pz) * vz);
 	}
 	else {
-		temp._coords.at(coord::X) = ((p._coords.at(coord::X) - v._coords.at(coord::X)) *
-		                             v._coords.at(coord::Z)) /
-		                            (v._coords.at(coord::Z) - p._coords.at(coord::Z) + unit_ns::UNIT);
-		temp._coords.at(coord::Y) = ((p._coords.at(coord::Y) - v._coords.at(coord::Y)) *
-		                             v._coords.at(coord::Z)) /
-		                            (v._coords.at(coord::Z) - p._coords.at(coord::Z) + unit_ns::UNIT);
+		temp._coords.at(coord::X) = ((px - vx) * vz / (vz - pz + unit_ns::UNIT));
+		temp._coords.at(coord::Y) = ((py - vy) * vz / (vz - pz + unit_ns::UNIT));
 	}
+
 	return temp;
 }
 

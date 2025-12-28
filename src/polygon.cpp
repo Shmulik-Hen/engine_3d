@@ -12,18 +12,16 @@ using std::cout;
 using std::endl;
 using std::ios;
 
+my_vector view(0, 0, -1000000);
+my_vector n_light(0, 0, -1024);
+
 polygon::polygon()
 {
-	_points = new vec_list;
-	_points->clear();
+	_points.clear();
 }
 
 polygon::~polygon()
 {
-	if (_points) {
-		delete _points;
-	}
-
 	if (_name) {
 		delete _name;
 	}
@@ -81,12 +79,16 @@ bool polygon::read(ifstream& f)
 			break;
 		case 'o':
 			_normal.read(f);
+			DBG(STR("read: normal:", 1));
+			// _normal.print();
 			break;
 		case 'v':
 			v = new my_vector;
 			if (v) {
 				if (v->read(f)) {
-					_points->push_front(*v);
+					_points.push_front(*v);
+					DBG(STR("read: vector:", 1));
+					// v->print();
 				}
 				else {
 					ERR("polygon::read error polygon");
@@ -110,7 +112,11 @@ bool polygon::read(ifstream& f)
 		}
 	}
 
+	DBG(STR("read: fill: before", 1));
+	// _fill.print();
 	_fill = find_fill();
+	DBG(STR("read: fill: after:", 1));
+	// _fill.print();
 	// _normal = find_normal();
 
 	if (!_name) {
@@ -132,11 +138,12 @@ void polygon::print() const
 	_fill.print();
 	DBG(STR("        normal:", 1));
 	_normal.print();
-	if (!_points->empty()) {
+	if (!_points.empty()) {
 		DBG("        points:");
-		for (vec_it it = _points->cbegin(); it != _points->cend(); ++it) {
+		for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
 			const my_vector* v = &*it;
 			if (v) {
+				DBG(STR("        point:", 1));
 				v->print();
 			}
 		}
@@ -148,7 +155,7 @@ my_vector polygon::find_fill()
 	my_vector v;
 	long num = 0;
 
-	for (vec_it it = _points->cbegin(); it != _points->cend(); ++it) {
+	for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
 		v += *it;
 		num++;
 	}
@@ -163,10 +170,10 @@ my_vector polygon::find_fill()
 
 my_vector polygon::find_normal()
 {
-	vec_it it = _points->begin();
+	vec_it it = _points.begin();
 	my_vector v1, v2, v;
 
-	if (_points->size() >= 2) {
+	if (_points.size() >= 2) {
 		v1 = *it;
 		v2 = *++it;
 	}
@@ -181,6 +188,51 @@ my_vector polygon::find_normal()
 	normalize(v);
 
 	return v;
+}
+
+char make_color(char c1, unit c2)
+{
+	long color = (long)c2;
+	if (color >= 1024) {
+		color = 1023;
+	}
+	return (char)(((color >> 2) & 0x00f0) | (c1 & 0x0F));
+}
+
+void polygon::update(matrix& m_gen, matrix& m_rot)
+{
+	my_vector dist;
+	unit view_angle, light_angle;
+
+	DBG(STR("polygon name: ", 1) << *_name);
+	DBG("fill: before");
+	// _fill.print();
+	_fill = m_gen * _fill;
+	DBG("fill: after");
+	// _fill.print();
+	DBG("normal: before");
+	// _normal.print();
+	_normal = m_rot * _normal;
+	DBG("normal: after");
+	// _normal.print();
+
+	DBG("dist: before");
+	// dist.print();
+	dist = _fill - view;
+	DBG("dist: after");
+	// dist.print();
+	view_angle = _normal * dist;
+	if ((view_angle < unit_ns::ZERO) || _force) {
+		light_angle = _normal * n_light;
+		if ((light_angle > unit_ns::ZERO) || _force) {
+			DBG("depth: before");
+			// _depth.print();
+			_depth = dist * dist;
+			DBG("depth: after");
+			// _depth.print();
+			_color = make_color(_color, abs(light_angle));
+		}
+	}
 }
 
 int operator<(const polygon& p1, const polygon& p2)

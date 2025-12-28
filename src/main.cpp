@@ -51,14 +51,9 @@ int main()
 	element* root {nullptr};
 	bool rc;
 	int ret = 0;
+	polygon::poly_list poly_lst;
 
-	polygon::poly_list* poly_lst = new polygon::poly_list;
-	if (!poly_lst) {
-		ret = 1;
-		error("poly_list allocation error");
-	}
-
-	poly_lst->clear();
+	poly_lst.clear();
 
 	f.open(filename, ios::in);
 	if (!f) {
@@ -84,7 +79,7 @@ int main()
 			if (poly) {
 				rc = poly->read(f);
 				if (rc) {
-					poly_lst->push_front(*poly);
+					poly_lst.push_front(*poly);
 				}
 				else {
 					ret = 1;
@@ -135,7 +130,7 @@ int main()
 		error("root is null");
 	}
 
-	if (poly_lst->empty()) {
+	if (poly_lst.empty()) {
 		error("no polygons");
 	}
 
@@ -178,7 +173,7 @@ int main()
 	// while (!kbhit()) {
 	int i = 5;
 	while (i--) {
-		DBG(DEC(i, 8));
+		DBG(DEC(i, 4));
 		e2->update(att2);
 		e3->update(att3);
 		DBG("update tree");
@@ -186,10 +181,10 @@ int main()
 		DBG("print tree");
 		root->print_all();
 		DBG("sort");
-		poly_lst->sort();
+		poly_lst.sort();
 		// clearviewport();
 		DBG("walk list");
-		for (polygon::pol_it it = poly_lst->begin(); it != poly_lst->end(); ++it) {
+		for (polygon::pol_it it = poly_lst.begin(); it != poly_lst.end(); ++it) {
 			poly = &*it;
 			if (poly) {
 				poly->print();

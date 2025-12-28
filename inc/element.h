@@ -25,8 +25,7 @@ using unit_ns::unit;
 using namespace treenode_ns;
 using treenode_ns::treenode;
 
-class element : public matrix_ns::matrix,
-		public polygon_ns::polygon,
+class element : public polygon_ns::polygon,
 		public treenode<element>
 {
 public:
@@ -36,7 +35,7 @@ public:
 	element();
 	~element();
 
-	bool read(poly_list*, element**, ifstream&);
+	bool read(const poly_list&, element**, ifstream&);
 	void print() const;
 	void print_all();
 
@@ -53,17 +52,18 @@ private:
 
 	typedef elem_list::iterator elem_it;
 
-	poly_list* _polygons;
+	poly_list _polygons;
 	string* _name {nullptr};
 	string* _parrent_name {nullptr};
 	element* _parrent {nullptr};
 	matrix _gen_mat;
 	matrix _rot_mat;
 	attrib _att;
-	int _active {0};
-	int _dirty {0};
+	bool _active {false};
+	bool _dirty {false};
+	bool _mats_prepared {false};
 
-	const polygon* find(poly_list*, const string&) const;
+	const polygon* find(const poly_list&, const string&) const;
 };
 
 } // namespace element_ns

@@ -78,71 +78,78 @@ matrix& matrix::operator*=(const matrix& m)
 
 my_vector matrix::operator*(const my_vector& v)
 {
-	my_vector temp;
+	my_vector v1(_mat[0][0], _mat[0][1], _mat[0][2]);
+	my_vector v2(_mat[1][0], _mat[1][1], _mat[1][2]);
+	my_vector v3(_mat[2][0], _mat[2][1], _mat[2][2]);
 
-	temp.get_coord(coord::X) = _mat[0][0] * v.get_coord(coord::X) +
-	                           _mat[0][1] * v.get_coord(coord::Y) +
-	                           _mat[0][2] * v.get_coord(coord::Z) +
-	                           _mat[0][3];
-	temp.get_coord(coord::Y) = _mat[1][0] * v.get_coord(coord::X) +
-	                           _mat[1][1] * v.get_coord(coord::Y) +
-	                           _mat[1][2] * v.get_coord(coord::Z) +
-	                           _mat[1][3];
-	temp.get_coord(coord::Z) = _mat[2][0] * v.get_coord(coord::X) +
-	                           _mat[2][1] * v.get_coord(coord::Y) +
-	                           _mat[2][2] * v.get_coord(coord::Z) +
-	                           _mat[2][3];
-
-	return temp;
+	return my_vector((v * v1 + _mat[0][3]), (v * v2 + _mat[1][3]), (v * v3 + _mat[2][3]));
 }
 
 void matrix::prep_gen_mat(const attrib& a)
 {
-	// clang-format off
-	_mat[0][0] = a.get_zoom() * cos(a.get_deg_y()) * cos(a.get_deg_z());
-	_mat[0][1] = a.get_zoom() * -cos(a.get_deg_y()) * sin(a.get_deg_z());
-	_mat[0][2] = a.get_zoom() * -sin(a.get_deg_y());
-	_mat[0][3] = a.get_off_x();
-	_mat[1][0] = a.get_zoom() * (cos(a.get_deg_x()) * sin(a.get_deg_z()) -
-		     sin(a.get_deg_x()) * sin(a.get_deg_y()) * cos(a.get_deg_z()));
-	_mat[1][1] = a.get_zoom() * (cos(a.get_deg_x()) * cos(a.get_deg_z()) +
-		     sin(a.get_deg_x()) * sin(a.get_deg_y()) * sin(a.get_deg_z()));
-	_mat[1][2] = a.get_zoom() * -sin(a.get_deg_x()) * cos(a.get_deg_y());
-	_mat[1][3] = a.get_off_y();
-	_mat[2][0] = a.get_zoom() * (sin(a.get_deg_x()) * sin(a.get_deg_z()) +
-		     cos(a.get_deg_x()) * sin(a.get_deg_y()) * cos(a.get_deg_z()));
-	_mat[2][1] = a.get_zoom() * (sin(a.get_deg_x()) * cos(a.get_deg_z()) -
-		     cos(a.get_deg_x()) * sin(a.get_deg_y()) * sin(a.get_deg_z()));
-	_mat[2][2] = a.get_zoom() * cos(a.get_deg_x()) * cos(a.get_deg_y());
-	_mat[2][3] = a.get_off_z();
-	_mat[3][0] = 0;
-	_mat[3][1] = 0;
-	_mat[3][2] = 0;
+	unit dx = a.get_deg_x();
+	unit dy = a.get_deg_y();
+	unit dz = a.get_deg_z();
+	unit ox = a.get_off_x();
+	unit oy = a.get_off_y();
+	unit oz = a.get_off_z();
+	unit zm = a.get_zoom();
+	unit sdx = sin(dx);
+	unit sdy = sin(dy);
+	unit sdz = sin(dz);
+	unit cdx = cos(dx);
+	unit cdy = cos(dy);
+	unit cdz = cos(dz);
+
+	_mat[0][0] = (zm * cdy * cdz);
+	_mat[0][1] = (zm * -cdy * sdz);
+	_mat[0][2] = (zm * -sdy);
+	_mat[0][3] = ox;
+	_mat[1][0] = (zm * (cdx * sdz - sdx * sdy * cdz));
+	_mat[1][1] = (zm * (cdx * cdz + sdx * sdy * sdz));
+	_mat[1][2] = (zm * -sdx * cdy);
+	_mat[1][3] = oy;
+	_mat[2][0] = (zm * (sdx * sdz + cdx * sdy * cdz));
+	_mat[2][1] = (zm * (sdx * cdz - cdx * sdy * sdz));
+	_mat[2][2] = (zm * cdx * cdy);
+	_mat[2][3] = oz;
+	_mat[3][0] = ZERO;
+	_mat[3][1] = ZERO;
+	_mat[3][2] = ZERO;
 	_mat[3][3] = UNIT;
-	// clang-format on
 }
 
 void matrix::prep_rot_mat(const attrib& a)
 {
-	_mat[0][0] = cos(a.get_deg_y()) * cos(a.get_deg_z());
-	_mat[0][1] = -cos(a.get_deg_y()) * sin(a.get_deg_z());
-	_mat[0][2] = -sin(a.get_deg_y());
-	_mat[0][3] = 0;
-	_mat[1][0] = cos(a.get_deg_x()) * sin(a.get_deg_z()) -
-	             sin(a.get_deg_x()) * sin(a.get_deg_y()) * cos(a.get_deg_z());
-	_mat[1][1] = cos(a.get_deg_x()) * cos(a.get_deg_z()) +
-	             sin(a.get_deg_x()) * sin(a.get_deg_y()) * sin(a.get_deg_z());
-	_mat[1][2] = -sin(a.get_deg_x()) * cos(a.get_deg_y());
-	_mat[1][3] = 0;
-	_mat[2][0] = sin(a.get_deg_x()) * sin(a.get_deg_z()) +
-	             cos(a.get_deg_x()) * sin(a.get_deg_y()) * cos(a.get_deg_z());
-	_mat[2][1] = sin(a.get_deg_x()) * cos(a.get_deg_z()) -
-	             cos(a.get_deg_x()) * sin(a.get_deg_y()) * sin(a.get_deg_z());
-	_mat[2][2] = cos(a.get_deg_x()) * cos(a.get_deg_y());
-	_mat[2][3] = 0;
-	_mat[3][0] = 0;
-	_mat[3][1] = 0;
-	_mat[3][2] = 0;
+	unit dx = a.get_deg_x();
+	unit dy = a.get_deg_y();
+	unit dz = a.get_deg_z();
+	unit ox = a.get_off_x();
+	unit oy = a.get_off_y();
+	unit oz = a.get_off_z();
+	unit zm = a.get_zoom();
+	unit sdx = sin(dx);
+	unit sdy = sin(dy);
+	unit sdz = sin(dz);
+	unit cdx = cos(dx);
+	unit cdy = cos(dy);
+	unit cdz = cos(dz);
+
+	_mat[0][0] = (cdy * cdy);
+	_mat[0][1] = (-cdy * sdz);
+	_mat[0][2] = (-sdy);
+	_mat[0][3] = ZERO;
+	_mat[1][0] = (cdx * sdz - sdx * sdy * cdy);
+	_mat[1][1] = (cdx * cdy + sdx * sdy * sdz);
+	_mat[1][2] = (-sdx * cdy);
+	_mat[1][3] = ZERO;
+	_mat[2][0] = (sdx * sdz + cdx * sdy * cdy);
+	_mat[2][1] = (sdx * cdy - cdx * sdy * sdz);
+	_mat[2][2] = (cdx * cdy);
+	_mat[2][3] = ZERO;
+	_mat[3][0] = ZERO;
+	_mat[3][1] = ZERO;
+	_mat[3][2] = ZERO;
 	_mat[3][3] = UNIT;
 }
 

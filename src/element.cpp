@@ -13,23 +13,14 @@ using my_vector_ns::my_vector;
 using std::cout;
 using std::endl;
 using std::ios;
-// using namespace unit_ns;
-
-my_vector view(0, 0, -1000000);
-my_vector n_light(0, 0, -1024);
 
 element::element()
 {
-	_polygons = new poly_list;
-	_polygons->clear();
+	_polygons.clear();
 }
 
 element::~element()
 {
-	if (_polygons) {
-		delete _polygons;
-	}
-
 	if (_name) {
 		delete _name;
 	}
@@ -39,16 +30,7 @@ element::~element()
 	}
 }
 
-char make_color(char c1, unit c2)
-{
-	long color = (long)c2;
-	if (color >= 1024) {
-		color = 1023;
-	}
-	return (char)(((color >> 2) & 0x00f0) | (c1 & 0x0F));
-}
-
-bool element::read(poly_list* list, element** root, ifstream& f)
+bool element::read(const poly_list& list, element** root, ifstream& f)
 {
 	LINE line;
 	int finish = 0, len;
@@ -116,7 +98,7 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 				if (s) {
 					const polygon* p = find(list, *s);
 					if (p) {
-						_polygons->push_front(*p);
+						_polygons.push_front(*p);
 					}
 					else {
 						ERR("element::read find error -  polygon");
@@ -136,8 +118,7 @@ bool element::read(poly_list* list, element** root, ifstream& f)
 		case 'f':
 			len = read_word(f, line);
 			if (len) {
-				_active = atoi(line);
-				_dirty = 0;
+				_active = (bool)atoi(line);
 			}
 			else {
 				ERR("element::read error flag");
@@ -177,13 +158,13 @@ void element::print() const
 		DBG(STR("    parrent_name: ", 1) << *_parrent_name);
 	}
 
-	DBG(STR("    active: ", 1) << DEC(_active, 4));
-	DBG(STR("     dirty: ", 1) << DEC(_dirty, 4));
+	DBG(STR("    active: ", 1) << _active);
+	DBG(STR("     dirty: ", 1) << _dirty);
 	_att.print();
 
-	if (!_polygons->empty()) {
+	if (!_polygons.empty()) {
 		DBG(STR("    polygons:", 1));
-		for (pol_it it = _polygons->begin(); it != _polygons->end(); ++it) {
+		for (con_pol_it it = _polygons.cbegin(); it != _polygons.cend(); ++it) {
 			const polygon* p = &*it;
 			if (p) {
 				p->print();
@@ -227,41 +208,47 @@ element* element::find(element* root, string& s) const
 void element::update(const attrib& att)
 {
 	_att += att;
-	_dirty = 1;
+	_dirty = true;
 }
 
 void element::update(const matrix& p_gen, const matrix& p_rot)
 {
 	my_vector dist, fill, normal;
 	unit view_angle, light_angle;
-	char color;
 
-	_gen_mat.prep_gen_mat(_att);
-	_rot_mat.prep_rot_mat(_att);
-	_gen_mat *= p_gen;
-	_rot_mat *= p_rot;
+	if (!_active) {
+		return;
+	}
 
-	for (pol_it it = _polygons->begin(); it != _polygons->end(); ++it) {
-		polygon* p = &*it;
-		if (!p) {
-			return;
+	if (_parrent) {
+		// normal case
+		_gen_mat.prep_gen_mat(_att);
+		_rot_mat.prep_rot_mat(_att);
+	}
+	else {
+		// only once for root
+		if (!_mats_prepared) {
+			_gen_mat.prep_gen_mat(_att);
+			_rot_mat.prep_rot_mat(_att);
+			_mats_prepared = true;
 		}
+	}
 
-		fill = _gen_mat * p->get_fill();
-		p->set_fill(fill);
-		normal = _rot_mat * p->get_normal();
-		p->set_normal(normal);
+	if (_dirty) {
+		_gen_mat *= p_gen;
+		_rot_mat *= p_rot;
 
-		dist = fill - view;
-		view_angle = normal * dist;
-		if ((view_angle < unit_ns::ZERO) || p->get_force()) {
-			light_angle = normal * n_light;
-			if ((light_angle > unit_ns::ZERO) || p->get_force()) {
-				p->set_depth(dist * dist);
-				color = make_color(p->get_color(), abs(light_angle));
-				p->set_color(color);
+		if (!_polygons.empty()) {
+			for (pol_it it = _polygons.begin(); it != _polygons.end(); ++it) {
+				polygon* p = &*it;
+				if (p) {
+					p->update(_gen_mat, _rot_mat);
+					// p->print();
+				}
 			}
 		}
+
+		_dirty = false;
 	}
 }
 
@@ -294,13 +281,9 @@ void element::update_all()
 	this->update_tree(upd);
 }
 
-const polygon* element::find(poly_list* list, const string& s) const
+const polygon* element::find(const poly_list& list, const string& s) const
 {
-	if (!list) {
-		return nullptr;
-	}
-
-	for (pol_it it = list->begin(); it != list->end(); ++it) {
+	for (con_pol_it it = list.cbegin(); it != list.cend(); ++it) {
 		const polygon* p = &*it;
 
 		if (p && p->get_name() && *p->get_name() == s) {

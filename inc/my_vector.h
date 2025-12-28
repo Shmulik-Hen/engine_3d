@@ -33,7 +33,7 @@ public:
 
 	my_vector();
 	my_vector(const unit, const unit, const unit);
-	~my_vector();
+	~my_vector() {}
 
 	bool read(ifstream&);
 	void print() const;
