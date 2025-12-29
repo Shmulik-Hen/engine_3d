@@ -5,6 +5,79 @@
 namespace matrix_ns
 {
 
+matrix::vector_4::vector_4()
+{
+	for (int i = X_; i <= O_; i++) {
+		_coords[i] = ZERO;
+	}
+}
+
+matrix::vector_4::vector_4(const vector_4& v)
+{
+	for (int i = X_; i <= O_; i++) {
+		_coords[i] = v._coords[i];
+	}
+}
+
+matrix::vector_4::vector_4(const unit v[dim])
+{
+	for (int i = X_; i <= O_; i++) {
+		_coords[i] = v[i];
+	}
+}
+
+matrix::vector_4::vector_4(const unit x, const unit y, const unit z, const unit o)
+{
+	_coords[X_] = x;
+	_coords[Y_] = y;
+	_coords[Z_] = z;
+	_coords[O_] = o;
+}
+
+matrix::vector_4 matrix::vector_4::operator+(const vector_4& v) const
+{
+	return vector_4(_coords[X_] + v._coords[X_],
+	                _coords[Y_] + v._coords[Y_],
+	                _coords[Z_] + v._coords[Z_],
+	                _coords[O_] + v._coords[O_]);
+}
+
+matrix::vector_4 matrix::vector_4::operator-(const vector_4& v) const
+{
+	return vector_4(_coords[X_] - v._coords[X_],
+	                _coords[Y_] - v._coords[Y_],
+	                _coords[Z_] - v._coords[Z_],
+	                _coords[O_] - v._coords[O_]);
+}
+
+matrix::vector_4& matrix::vector_4::operator+=(const vector_4& v)
+{
+	_coords[X_] += v._coords[X_];
+	_coords[Y_] += v._coords[Y_];
+	_coords[Z_] += v._coords[Z_];
+	_coords[O_] += v._coords[O_];
+
+	return *this;
+}
+
+matrix::vector_4& matrix::vector_4::operator-=(const vector_4& v)
+{
+	_coords[X_] -= v._coords[X_];
+	_coords[Y_] -= v._coords[Y_];
+	_coords[Z_] -= v._coords[Z_];
+	_coords[O_] -= v._coords[O_];
+
+	return *this;
+}
+
+const unit matrix::vector_4::operator*(const vector_4& v) const
+{
+	return unit(_coords[X_] * v._coords[X_] +
+	            _coords[Y_] * v._coords[Y_] +
+	            _coords[Z_] * v._coords[Z_] +
+	            _coords[O_] * v._coords[O_]);
+}
+
 // clang-format off
 unit unt[dim][dim] = {
 	{ UNIT, ZERO, ZERO, ZERO },
@@ -14,58 +87,77 @@ unit unt[dim][dim] = {
 };
 // clang-format on
 
-matrix::matrix()
+void matrix::prep_row(int r)
 {
-	explicit_bzero(_mat, sizeof(unt));
+	_rows[r] = _mat[r];
 }
 
-matrix::matrix(unit n[dim][dim])
+void matrix::prep_cols()
 {
-	for (int i = 0; i < dim; i++) {
-		for (int j = 0; j < dim; j++) {
-			_mat[i][j] = n[i][j];
-		}
+	for (int i = X_; i <= O_; i++) {
+		_cols[i] = {_rows[X_]._coords[i],
+		            _rows[Y_]._coords[i],
+		            _rows[Z_]._coords[i],
+		            _rows[O_]._coords[i]};
 	}
+}
+
+matrix::matrix()
+{
+	for (int i = X_; i <= O_; i++) {
+		for (int j = X_; j <= O_; j++) {
+			_mat[i][j] = ZERO;
+		}
+		prep_row(i);
+	}
+
+	prep_cols();
+}
+
+matrix::matrix(const matrix& m)
+{
+	for (int i = X_; i <= O_; i++) {
+		for (int j = 0; j <= O_; j++) {
+			_mat[i][j] = m._mat[i][j];
+		}
+		prep_row(i);
+	}
+
+	prep_cols();
+}
+
+matrix::matrix(unit u[dim][dim])
+{
+	for (int i = X_; i < O_; i++) {
+		for (int j = X_; j <= O_; j++) {
+			_mat[i][j] = u[i][j];
+		}
+		prep_row(i);
+	}
+
+	prep_cols();
 }
 
 matrix matrix::operator*(const matrix& m)
 {
 	matrix temp;
 
-	// clang-format off
-	temp._mat[0][0] = _mat[0][0] * m._mat[0][0] + _mat[0][1] * m._mat[1][0] +
-			  _mat[0][2] * m._mat[2][0] + _mat[0][3] * m._mat[3][0];
-	temp._mat[0][1] = _mat[0][0] * m._mat[0][1] + _mat[0][1] * m._mat[1][1] +
-			  _mat[0][2] * m._mat[2][1] + _mat[0][3] * m._mat[3][1];
-	temp._mat[0][2] = _mat[0][0] * m._mat[0][2] + _mat[0][1] * m._mat[1][2] +
-			  _mat[0][2] * m._mat[2][2] + _mat[0][3] * m._mat[3][2];
-	temp._mat[0][3] = _mat[0][0] * m._mat[0][3] + _mat[0][1] * m._mat[1][3] +
-			  _mat[0][2] * m._mat[2][3] + _mat[0][3] * m._mat[3][3];
-	temp._mat[1][0] = _mat[1][0] * m._mat[0][0] + _mat[1][1] * m._mat[1][0] +
-			  _mat[1][2] * m._mat[2][0] + _mat[1][3] * m._mat[3][0];
-	temp._mat[1][1] = _mat[1][0] * m._mat[0][1] + _mat[1][1] * m._mat[1][1] +
-			  _mat[1][2] * m._mat[2][1] + _mat[1][3] * m._mat[3][1];
-	temp._mat[1][2] = _mat[1][0] * m._mat[0][2] + _mat[1][1] * m._mat[1][2] +
-			  _mat[1][2] * m._mat[2][2] + _mat[1][3] * m._mat[3][2];
-	temp._mat[1][3] = _mat[1][0] * m._mat[0][3] + _mat[1][1] * m._mat[1][3] +
-			  _mat[1][2] * m._mat[2][3] + _mat[1][3] * m._mat[3][3];
-	temp._mat[2][0] = _mat[2][0] * m._mat[0][0] + _mat[2][1] * m._mat[1][0] +
-			  _mat[2][2] * m._mat[2][0] + _mat[2][3] * m._mat[3][0];
-	temp._mat[2][1] = _mat[2][0] * m._mat[0][1] + _mat[2][1] * m._mat[1][1] +
-			  _mat[2][2] * m._mat[2][1] + _mat[2][3] * m._mat[3][1];
-	temp._mat[2][2] = _mat[2][0] * m._mat[0][2] + _mat[2][1] * m._mat[1][2] +
-			  _mat[2][2] * m._mat[2][2] + _mat[2][3] * m._mat[3][2];
-	temp._mat[2][3] = _mat[2][0] * m._mat[0][3] + _mat[2][1] * m._mat[1][3] +
-			  _mat[2][2] * m._mat[2][3] + _mat[2][3] * m._mat[3][3];
-	temp._mat[3][0] = _mat[3][0] * m._mat[0][0] + _mat[3][1] * m._mat[1][0] +
-			  _mat[3][2] * m._mat[2][0] + _mat[3][3] * m._mat[3][0];
-	temp._mat[3][1] = _mat[3][0] * m._mat[0][1] + _mat[3][1] * m._mat[1][1] +
-			  _mat[3][2] * m._mat[2][1] + _mat[3][3] * m._mat[3][1];
-	temp._mat[3][2] = _mat[3][0] * m._mat[0][2] + _mat[3][1] * m._mat[1][2] +
-			  _mat[3][2] * m._mat[2][2] + _mat[3][3] * m._mat[3][2];
-	temp._mat[3][3] = _mat[3][0] * m._mat[0][3] + _mat[3][1] * m._mat[1][3] +
-			  _mat[3][2] * m._mat[2][3] + _mat[3][3] * m._mat[3][3];
-	// clang-format on
+	temp._mat[X_][X_] = _rows[X_] * _cols[X_];
+	temp._mat[X_][Y_] = _rows[X_] * _cols[Y_];
+	temp._mat[X_][Z_] = _rows[X_] * _cols[Z_];
+	temp._mat[X_][O_] = _rows[X_] * _cols[O_];
+	temp._mat[Y_][X_] = _rows[Y_] * _cols[X_];
+	temp._mat[Y_][Y_] = _rows[Y_] * _cols[Y_];
+	temp._mat[Y_][Z_] = _rows[Y_] * _cols[Z_];
+	temp._mat[Y_][O_] = _rows[Y_] * _cols[O_];
+	temp._mat[Z_][X_] = _rows[Z_] * _cols[X_];
+	temp._mat[Z_][Y_] = _rows[Z_] * _cols[Y_];
+	temp._mat[Z_][Z_] = _rows[Z_] * _cols[Z_];
+	temp._mat[Z_][O_] = _rows[Z_] * _cols[O_];
+	temp._mat[O_][X_] = _rows[O_] * _cols[X_];
+	temp._mat[O_][Y_] = _rows[O_] * _cols[Y_];
+	temp._mat[O_][Z_] = _rows[O_] * _cols[Z_];
+	temp._mat[O_][O_] = _rows[O_] * _cols[O_];
 
 	return temp;
 }
@@ -76,13 +168,15 @@ matrix& matrix::operator*=(const matrix& m)
 	return *this;
 }
 
-my_vector matrix::operator*(const my_vector& v)
+vector_3 matrix::operator*(const vector_3& v)
 {
-	my_vector v1(_mat[0][0], _mat[0][1], _mat[0][2]);
-	my_vector v2(_mat[1][0], _mat[1][1], _mat[1][2]);
-	my_vector v3(_mat[2][0], _mat[2][1], _mat[2][2]);
+	vector_3 v1(_mat[X_][X_], _mat[X_][Y_], _mat[X_][Z_]);
+	vector_3 v2(_mat[Y_][X_], _mat[Y_][Y_], _mat[Y_][Z_]);
+	vector_3 v3(_mat[Z_][X_], _mat[Z_][Y_], _mat[Z_][Z_]);
 
-	return my_vector((v * v1 + _mat[0][3]), (v * v2 + _mat[1][3]), (v * v3 + _mat[2][3]));
+	return vector_3((v * v1 + _mat[X_][O_]),
+	                (v * v2 + _mat[Y_][O_]),
+	                (v * v3 + _mat[Z_][O_]));
 }
 
 void matrix::prep_gen_mat(const attrib& a)
@@ -101,22 +195,22 @@ void matrix::prep_gen_mat(const attrib& a)
 	unit cdy = cos(dy);
 	unit cdz = cos(dz);
 
-	_mat[0][0] = (zm * cdy * cdz);
-	_mat[0][1] = (zm * -cdy * sdz);
-	_mat[0][2] = (zm * -sdy);
-	_mat[0][3] = ox;
-	_mat[1][0] = (zm * (cdx * sdz - sdx * sdy * cdz));
-	_mat[1][1] = (zm * (cdx * cdz + sdx * sdy * sdz));
-	_mat[1][2] = (zm * -sdx * cdy);
-	_mat[1][3] = oy;
-	_mat[2][0] = (zm * (sdx * sdz + cdx * sdy * cdz));
-	_mat[2][1] = (zm * (sdx * cdz - cdx * sdy * sdz));
-	_mat[2][2] = (zm * cdx * cdy);
-	_mat[2][3] = oz;
-	_mat[3][0] = ZERO;
-	_mat[3][1] = ZERO;
-	_mat[3][2] = ZERO;
-	_mat[3][3] = UNIT;
+	_mat[X_][X_] = (zm * cdy * cdz);
+	_mat[X_][Y_] = (zm * -cdy * sdz);
+	_mat[X_][Z_] = (zm * -sdy);
+	_mat[X_][O_] = ox;
+	_mat[Y_][X_] = (zm * (cdx * sdz - sdx * sdy * cdz));
+	_mat[Y_][Y_] = (zm * (cdx * cdz + sdx * sdy * sdz));
+	_mat[Y_][Z_] = (zm * -sdx * cdy);
+	_mat[Y_][O_] = oy;
+	_mat[Z_][X_] = (zm * (sdx * sdz + cdx * sdy * cdz));
+	_mat[Z_][Y_] = (zm * (sdx * cdz - cdx * sdy * sdz));
+	_mat[Z_][Z_] = (zm * cdx * cdy);
+	_mat[Z_][O_] = oz;
+	_mat[O_][X_] = ZERO;
+	_mat[O_][Y_] = ZERO;
+	_mat[O_][Z_] = ZERO;
+	_mat[O_][O_] = UNIT;
 }
 
 void matrix::prep_rot_mat(const attrib& a)
@@ -135,22 +229,22 @@ void matrix::prep_rot_mat(const attrib& a)
 	unit cdy = cos(dy);
 	unit cdz = cos(dz);
 
-	_mat[0][0] = (cdy * cdy);
-	_mat[0][1] = (-cdy * sdz);
-	_mat[0][2] = (-sdy);
-	_mat[0][3] = ZERO;
-	_mat[1][0] = (cdx * sdz - sdx * sdy * cdy);
-	_mat[1][1] = (cdx * cdy + sdx * sdy * sdz);
-	_mat[1][2] = (-sdx * cdy);
-	_mat[1][3] = ZERO;
-	_mat[2][0] = (sdx * sdz + cdx * sdy * cdy);
-	_mat[2][1] = (sdx * cdy - cdx * sdy * sdz);
-	_mat[2][2] = (cdx * cdy);
-	_mat[2][3] = ZERO;
-	_mat[3][0] = ZERO;
-	_mat[3][1] = ZERO;
-	_mat[3][2] = ZERO;
-	_mat[3][3] = UNIT;
+	_mat[X_][X_] = (cdy * cdy);
+	_mat[X_][Y_] = (-cdy * sdz);
+	_mat[X_][Z_] = (-sdy);
+	_mat[X_][O_] = ZERO;
+	_mat[Y_][X_] = (cdx * sdz - sdx * sdy * cdy);
+	_mat[Y_][Y_] = (cdx * cdy + sdx * sdy * sdz);
+	_mat[Y_][Z_] = (-sdx * cdy);
+	_mat[Y_][O_] = ZERO;
+	_mat[Z_][X_] = (sdx * sdz + cdx * sdy * cdy);
+	_mat[Z_][Y_] = (sdx * cdy - cdx * sdy * sdz);
+	_mat[Z_][Z_] = (cdx * cdy);
+	_mat[Z_][O_] = ZERO;
+	_mat[O_][X_] = ZERO;
+	_mat[O_][Y_] = ZERO;
+	_mat[O_][Z_] = ZERO;
+	_mat[O_][O_] = UNIT;
 }
 
 matrix get_unit_mat()

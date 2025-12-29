@@ -12,8 +12,8 @@ using std::cout;
 using std::endl;
 using std::ios;
 
-my_vector view(0, 0, -1000000);
-my_vector n_light(0, 0, -1024);
+vector_3 view(0, 0, -1000000);
+vector_3 n_light(0, 0, -1024);
 
 polygon::polygon()
 {
@@ -30,7 +30,7 @@ polygon::~polygon()
 bool polygon::read(ifstream& f)
 {
 	LINE line;
-	my_vector* v;
+	vector_3* v;
 	int finish = 0, len;
 	bool rc, ret = true;
 
@@ -83,7 +83,7 @@ bool polygon::read(ifstream& f)
 			// _normal.print();
 			break;
 		case 'v':
-			v = new my_vector;
+			v = new vector_3;
 			if (v) {
 				if (v->read(f)) {
 					_points.push_front(*v);
@@ -141,7 +141,7 @@ void polygon::print() const
 	if (!_points.empty()) {
 		DBG("        points:");
 		for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
-			const my_vector* v = &*it;
+			const vector_3* v = &*it;
 			if (v) {
 				DBG(STR("        point:", 1));
 				v->print();
@@ -150,9 +150,9 @@ void polygon::print() const
 	}
 }
 
-my_vector polygon::find_fill()
+vector_3 polygon::find_fill()
 {
-	my_vector v;
+	vector_3 v;
 	long num = 0;
 
 	for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
@@ -161,31 +161,31 @@ my_vector polygon::find_fill()
 	}
 
 	unit n(num << 10);
-	v.get_coord(coord::X) /= n;
-	v.get_coord(coord::Y) /= n;
-	v.get_coord(coord::Z) /= n;
+	v.get(X_) /= n;
+	v.get(Y_) /= n;
+	v.get(Z_) /= n;
 
 	return v;
 }
 
-my_vector polygon::find_normal()
+vector_3 polygon::find_normal()
 {
 	vec_it it = _points.begin();
-	my_vector v1, v2, v;
+	vector_3 v1, v2, v;
 
 	if (_points.size() >= 2) {
 		v1 = *it;
 		v2 = *++it;
+
+		v.get(X_) = (v1.get(Y_) * v2.get(Z_) -
+		             v1.get(Z_) * v2.get(Y_));
+		v.get(Y_) = (v1.get(Z_) * v2.get(X_) -
+		             v1.get(X_) * v2.get(Z_));
+		v.get(Z_) = (v1.get(X_) * v2.get(Y_) -
+		             v1.get(Y_) * v2.get(X_));
+
+		normalize(v);
 	}
-
-	v.get_coord(coord::X) = (v1.get_coord(coord::Y) * v2.get_coord(coord::Z) -
-	                         v1.get_coord(coord::Z) * v2.get_coord(coord::Y));
-	v.get_coord(coord::Y) = (v1.get_coord(coord::Z) * v2.get_coord(coord::X) -
-	                         v1.get_coord(coord::X) * v2.get_coord(coord::Z));
-	v.get_coord(coord::Z) = (v1.get_coord(coord::X) * v2.get_coord(coord::Y) -
-	                         v1.get_coord(coord::Y) * v2.get_coord(coord::X));
-
-	normalize(v);
 
 	return v;
 }
@@ -201,7 +201,7 @@ char make_color(char c1, unit c2)
 
 void polygon::update(matrix& m_gen, matrix& m_rot)
 {
-	my_vector dist;
+	vector_3 dist;
 	unit view_angle, light_angle;
 
 	DBG(STR("polygon name: ", 1) << *_name);

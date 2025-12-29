@@ -2,7 +2,6 @@
 #define __UNIT_H__
 
 #include <fstream>
-#include <stdint.h>
 #include "common.h"
 
 namespace unit_ns

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <stdint.h>
 
 const std::string ERR_PFX = "Error: ";
 const std::string WARN_PFX = "Warning: ";
@@ -30,6 +31,12 @@ const std::string DBG_PFX = "Debug: ";
 
 #define MAX_NAME 10
 #define MAX_LINE 20
+
+// coordinates
+#define X_ 0
+#define Y_ 1
+#define Z_ 2
+#define O_ 3
 
 typedef char LINE[MAX_LINE + 1];
 typedef char NAME[MAX_NAME + 1];

@@ -9,10 +9,10 @@
 namespace element_ns
 {
 
-using my_vector_ns::my_vector;
 using std::cout;
 using std::endl;
 using std::ios;
+using vector_3_ns::vector_3;
 
 element::element()
 {
@@ -213,7 +213,7 @@ void element::update(const attrib& att)
 
 void element::update(const matrix& p_gen, const matrix& p_rot)
 {
-	my_vector dist, fill, normal;
+	vector_3 dist, fill, normal;
 	unit view_angle, light_angle;
 
 	if (!_active) {

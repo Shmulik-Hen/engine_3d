@@ -5,7 +5,6 @@
 #include "attrib.h"
 #include "element.h"
 #include "matrix.h"
-#include "my_vector.h"
 #include "polygon.h"
 #include "treenode.h"
 #include "utils.h"
@@ -19,7 +18,6 @@
 using attrib_ns::attrib;
 using element_ns::element;
 using matrix_ns::matrix;
-using my_vector_ns::my_vector;
 using polygon_ns::polygon;
 using std::ios;
 using std::string;

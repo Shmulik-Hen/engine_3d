@@ -10,7 +10,15 @@ using std::cout;
 void error(const char* s1, const char* s2)
 {
 	// closegraph();
-	cerr << s1 << ' ' << s2;
+	if (s1) {
+		if (s2) {
+			cerr << s1 << ' ' << s2;
+		}
+		else {
+			cerr << s1;
+		}
+	}
+
 	exit(0);
 }
 
@@ -33,6 +41,7 @@ int read_word(ifstream& f, char* word)
 	}
 	word[length] = '\0';
 	// DBG(STR("read_word: ", 1) << word, DEC(length, 4));
+
 	return length;
 }
 

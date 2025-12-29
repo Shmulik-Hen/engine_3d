@@ -7,18 +7,18 @@
 
 #include "common.h"
 #include "matrix.h"
-#include "my_vector.h"
+#include "vector_3.h"
 #include "unit.h"
 
 namespace polygon_ns
 {
 
 using matrix_ns::matrix;
-using my_vector_ns::my_vector;
 using std::ifstream;
 using std::list;
 using std::string;
 using unit_ns::unit;
+using vector_3_ns::vector_3;
 
 class polygon : public matrix
 {
@@ -40,19 +40,19 @@ public:
 
 private:
 
-	typedef list<my_vector> vec_list;
+	typedef list<vector_3> vec_list;
 	typedef vec_list::const_iterator vec_it;
 
 	string* _name {nullptr};
 	int _force {0};
 	char _color {0};
 	unit _depth {unit_ns::ZERO};
-	my_vector _fill;
-	my_vector _normal;
+	vector_3 _fill;
+	vector_3 _normal;
 	vec_list _points;
 
-	my_vector find_fill();
-	my_vector find_normal();
+	vector_3 find_fill();
+	vector_3 find_normal();
 };
 
 } // namespace polygon_ns
