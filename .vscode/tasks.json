@@ -6,7 +6,8 @@
 			"type": "process",
 			"command": "make",
 			"args": [
-				"build"
+				"build",
+				"DEBUG=1"
 			],
 			"problemMatcher": [
 				"$gcc"
@@ -17,7 +18,8 @@
 			"type": "process",
 			"command": "make",
 			"args": [
-				"rebuild"
+				"rebuild",
+				"DEBUG=1"
 			]
 		},
 		{

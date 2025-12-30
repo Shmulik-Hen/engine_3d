@@ -47,10 +47,12 @@ bool vector_3::read(ifstream& f)
 
 void vector_3::print() const
 {
+#ifdef DEBUG_GRFX
 	DBG(STR("          vector:", 1));
 	for (int i = X_; i <= Z_; i++) {
 		_coords[i].print();
 	}
+#endif // DEBUG_GRFX
 }
 
 unit vector_3::get(int c) const

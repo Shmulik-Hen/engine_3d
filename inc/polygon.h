@@ -24,9 +24,7 @@ class polygon : public matrix
 {
 public:
 
-	typedef list<polygon> poly_list;
-	typedef poly_list::iterator pol_it;
-	typedef poly_list::const_iterator con_pol_it;
+	typedef list<polygon*> poly_list;
 
 	polygon();
 	~polygon();
@@ -34,22 +32,22 @@ public:
 	bool read(ifstream&);
 	void print() const;
 	const string* get_name() const { return (_name ? _name : nullptr); }
+	unit get_depth() const { return _depth; }
 	void update(matrix&, matrix&);
-
-	friend int operator<(const polygon&, const polygon&);
 
 private:
 
-	typedef list<vector_3> vec_list;
-	typedef vec_list::const_iterator vec_it;
+	typedef list<vector_3*> vec_list;
 
 	string* _name {nullptr};
 	int _force {0};
 	char _color {0};
+	char _draw_color {0};
 	unit _depth {unit_ns::ZERO};
 	vector_3 _fill;
 	vector_3 _normal;
 	vec_list _points;
+	matrix _draw_mat;
 
 	vector_3 find_fill();
 	vector_3 find_normal();

@@ -16,7 +16,7 @@ using unit_ns::unit;
 using unit_ns::UNIT;
 using unit_ns::ZERO;
 
-const int dim = Z_;
+const int dim = Z_ + 1;
 
 class vector_3
 {

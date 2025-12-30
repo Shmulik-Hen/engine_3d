@@ -128,7 +128,7 @@ matrix::matrix(const matrix& m)
 
 matrix::matrix(unit u[dim][dim])
 {
-	for (int i = X_; i < O_; i++) {
+	for (int i = X_; i <= O_; i++) {
 		for (int j = X_; j <= O_; j++) {
 			_mat[i][j] = u[i][j];
 		}
@@ -158,6 +158,11 @@ matrix matrix::operator*(const matrix& m)
 	temp._mat[O_][Y_] = _rows[O_] * _cols[Y_];
 	temp._mat[O_][Z_] = _rows[O_] * _cols[Z_];
 	temp._mat[O_][O_] = _rows[O_] * _cols[O_];
+
+	for (int i = X_; i <= O_; i++) {
+		temp.prep_row(i);
+	}
+	temp.prep_cols();
 
 	return temp;
 }
@@ -211,6 +216,11 @@ void matrix::prep_gen_mat(const attrib& a)
 	_mat[O_][Y_] = ZERO;
 	_mat[O_][Z_] = ZERO;
 	_mat[O_][O_] = UNIT;
+
+	for (int i = X_; i <= O_; i++) {
+		prep_row(i);
+	}
+	prep_cols();
 }
 
 void matrix::prep_rot_mat(const attrib& a)
@@ -245,6 +255,11 @@ void matrix::prep_rot_mat(const attrib& a)
 	_mat[O_][Y_] = ZERO;
 	_mat[O_][Z_] = ZERO;
 	_mat[O_][O_] = UNIT;
+
+	for (int i = X_; i <= O_; i++) {
+		prep_row(i);
+	}
+	prep_cols();
 }
 
 matrix get_unit_mat()

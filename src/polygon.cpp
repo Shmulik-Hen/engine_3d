@@ -1,6 +1,5 @@
 #include <iostream>
 #include <ios>
-#include <iterator>
 #include <stdlib.h>
 #include "polygon.h"
 #include "utils.h"
@@ -79,16 +78,12 @@ bool polygon::read(ifstream& f)
 			break;
 		case 'o':
 			_normal.read(f);
-			DBG(STR("read: normal:", 1));
-			// _normal.print();
 			break;
 		case 'v':
 			v = new vector_3;
 			if (v) {
 				if (v->read(f)) {
-					_points.push_front(*v);
-					DBG(STR("read: vector:", 1));
-					// v->print();
+					_points.push_back(v);
 				}
 				else {
 					ERR("polygon::read error polygon");
@@ -112,42 +107,42 @@ bool polygon::read(ifstream& f)
 		}
 	}
 
-	DBG(STR("read: fill: before", 1));
-	// _fill.print();
-	_fill = find_fill();
-	DBG(STR("read: fill: after:", 1));
-	// _fill.print();
-	// _normal = find_normal();
-
 	if (!_name) {
-		_name = new string("");
+		error("polygon: no name");
 	}
+
+	if (_points.size() < 3) {
+		error("polygon: not enough vectors");
+	}
+
+	_fill = find_fill();
+	// _normal = find_normal();
 
 	return ret;
 }
 
 void polygon::print() const
 {
+#ifdef DEBUG_GRFX
 	DBG("      polygon:");
 	DBG(STR("        name: ", 1) << *_name);
 	DBG(STR("        force: ", 1) << DEC(_force, 4));
 	DBG(STR("        color: ", 1) << DEC((int)_color, 4));
-	DBG(STR("        depth:", 1));
-	_depth.print();
 	DBG(STR("        fill:", 1));
 	_fill.print();
 	DBG(STR("        normal:", 1));
 	_normal.print();
+	DBG(STR("        draw color: ", 1) << DEC((int)_draw_color, 4));
+	DBG(STR("        depth:", 1));
+	_depth.print();
 	if (!_points.empty()) {
 		DBG("        points:");
-		for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
-			const vector_3* v = &*it;
-			if (v) {
-				DBG(STR("        point:", 1));
-				v->print();
-			}
+		for (const auto vec : _points) {
+			DBG(STR("        point:", 1));
+			vec->print();
 		}
 	}
+#endif // DEBUG_GRFX
 }
 
 vector_3 polygon::find_fill()
@@ -155,8 +150,8 @@ vector_3 polygon::find_fill()
 	vector_3 v;
 	long num = 0;
 
-	for (vec_it it = _points.cbegin(); it != _points.cend(); ++it) {
-		v += *it;
+	for (const auto vec : _points) {
+		v += *vec;
 		num++;
 	}
 
@@ -170,19 +165,18 @@ vector_3 polygon::find_fill()
 
 vector_3 polygon::find_normal()
 {
-	vec_it it = _points.begin();
-	vector_3 v1, v2, v;
+	vector_3 *v1, *v2, v;
 
-	if (_points.size() >= 2) {
-		v1 = *it;
-		v2 = *++it;
+	if (_points.size() > 2) {
+		v1 = _points.front();
+		v2 = _points.back();
 
-		v.get(X_) = (v1.get(Y_) * v2.get(Z_) -
-		             v1.get(Z_) * v2.get(Y_));
-		v.get(Y_) = (v1.get(Z_) * v2.get(X_) -
-		             v1.get(X_) * v2.get(Z_));
-		v.get(Z_) = (v1.get(X_) * v2.get(Y_) -
-		             v1.get(Y_) * v2.get(X_));
+		v.get(X_) = (v1->get(Y_) * v2->get(Z_) -
+		             v1->get(Z_) * v2->get(Y_));
+		v.get(Y_) = (v1->get(Z_) * v2->get(X_) -
+		             v1->get(X_) * v2->get(Z_));
+		v.get(Z_) = (v1->get(X_) * v2->get(Y_) -
+		             v1->get(Y_) * v2->get(X_));
 
 		normalize(v);
 	}
@@ -193,51 +187,32 @@ vector_3 polygon::find_normal()
 char make_color(char c1, unit c2)
 {
 	long color = (long)c2;
+
 	if (color >= 1024) {
 		color = 1023;
 	}
+
 	return (char)(((color >> 2) & 0x00f0) | (c1 & 0x0F));
 }
 
 void polygon::update(matrix& m_gen, matrix& m_rot)
 {
-	vector_3 dist;
+	vector_3 dist, fill, normal;
 	unit view_angle, light_angle;
 
-	DBG(STR("polygon name: ", 1) << *_name);
-	DBG("fill: before");
-	// _fill.print();
-	_fill = m_gen * _fill;
-	DBG("fill: after");
-	// _fill.print();
-	DBG("normal: before");
-	// _normal.print();
-	_normal = m_rot * _normal;
-	DBG("normal: after");
-	// _normal.print();
-
-	DBG("dist: before");
-	// dist.print();
-	dist = _fill - view;
-	DBG("dist: after");
-	// dist.print();
-	view_angle = _normal * dist;
+	fill = m_gen * _fill;
+	normal = m_rot * _normal;
+	dist = fill - view;
+	view_angle = normal * dist;
 	if ((view_angle < unit_ns::ZERO) || _force) {
-		light_angle = _normal * n_light;
+		light_angle = normal * n_light;
 		if ((light_angle > unit_ns::ZERO) || _force) {
-			DBG("depth: before");
-			// _depth.print();
-			_depth = dist * dist;
-			DBG("depth: after");
-			// _depth.print();
-			_color = make_color(_color, abs(light_angle));
+			// _depth = dist * dist;
+			_depth = fill.get(Z_);
+			_draw_mat = m_gen;
+			_draw_color = make_color(_color, abs(light_angle));
 		}
 	}
-}
-
-int operator<(const polygon& p1, const polygon& p2)
-{
-	return (p1._depth > p2._depth);
 }
 
 } // namespace polygon_ns

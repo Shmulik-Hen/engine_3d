@@ -96,9 +96,9 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 			if (len) {
 				string* s = new string(line);
 				if (s) {
-					const polygon* p = find(list, *s);
+					polygon* p = find(list, *s);
 					if (p) {
-						_polygons.push_front(*p);
+						_polygons.push_back(p);
 					}
 					else {
 						ERR("element::read find error -  polygon");
@@ -149,6 +149,7 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 
 void element::print() const
 {
+#ifdef DEBUG_GRFX
 	DBG(STR("  element:", 1));
 	if (_name) {
 		DBG(STR("    name: ", 1) << *_name);
@@ -164,26 +165,28 @@ void element::print() const
 
 	if (!_polygons.empty()) {
 		DBG(STR("    polygons:", 1));
-		for (con_pol_it it = _polygons.cbegin(); it != _polygons.cend(); ++it) {
-			const polygon* p = &*it;
-			if (p) {
-				p->print();
-			}
+		for (const auto poly : _polygons) {
+			poly->print();
 		}
 	}
+#endif // DEBUG_GRFX
 }
 
 void prn(void* p)
 {
+#ifdef DEBUG_GRFX
 	if (p) {
 		element* e = (element*)p;
 		e->print();
 	}
+#endif // DEBUG_GRFX
 }
 
 void element::print_all()
 {
+#ifdef DEBUG_GRFX
 	this->print_tree(prn);
+#endif // DEBUG_GRFX
 }
 
 string cmp_str;
@@ -220,18 +223,12 @@ void element::update(const matrix& p_gen, const matrix& p_rot)
 		return;
 	}
 
-	if (_parrent) {
-		// normal case
-		_gen_mat.prep_gen_mat(_att);
-		_rot_mat.prep_rot_mat(_att);
-	}
-	else {
+	_gen_mat.prep_gen_mat(_att);
+	_rot_mat.prep_rot_mat(_att);
+
+	if (!_parrent && !_mats_prepared) {
 		// only once for root
-		if (!_mats_prepared) {
-			_gen_mat.prep_gen_mat(_att);
-			_rot_mat.prep_rot_mat(_att);
-			_mats_prepared = true;
-		}
+		_mats_prepared = true;
 	}
 
 	if (_dirty) {
@@ -239,12 +236,8 @@ void element::update(const matrix& p_gen, const matrix& p_rot)
 		_rot_mat *= p_rot;
 
 		if (!_polygons.empty()) {
-			for (pol_it it = _polygons.begin(); it != _polygons.end(); ++it) {
-				polygon* p = &*it;
-				if (p) {
-					p->update(_gen_mat, _rot_mat);
-					// p->print();
-				}
+			for (auto poly : _polygons) {
+				poly->update(_gen_mat, _rot_mat);
 			}
 		}
 
@@ -281,13 +274,11 @@ void element::update_all()
 	this->update_tree(upd);
 }
 
-const polygon* element::find(const poly_list& list, const string& s) const
+polygon* element::find(const poly_list& list, const string& s) const
 {
-	for (con_pol_it it = list.cbegin(); it != list.cend(); ++it) {
-		const polygon* p = &*it;
-
-		if (p && p->get_name() && *p->get_name() == s) {
-			return p;
+	for (const auto poly : list) {
+		if (poly->get_name() && *poly->get_name() == s) {
+			return poly;
 		}
 	}
 

@@ -30,8 +30,6 @@ class element : public polygon_ns::polygon,
 {
 public:
 
-	typedef list<element> elem_list;
-
 	element();
 	~element();
 
@@ -50,8 +48,6 @@ public:
 
 private:
 
-	typedef elem_list::iterator elem_it;
-
 	poly_list _polygons;
 	string* _name {nullptr};
 	string* _parrent_name {nullptr};
@@ -63,7 +59,7 @@ private:
 	bool _dirty {false};
 	bool _mats_prepared {false};
 
-	const polygon* find(const poly_list&, const string&) const;
+	polygon* find(const poly_list&, const string&) const;
 };
 
 } // namespace element_ns
