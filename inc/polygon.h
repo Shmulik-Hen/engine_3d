@@ -35,6 +35,10 @@ public:
 	unit get_depth() const { return _depth; }
 	void update(matrix&, matrix&);
 
+	void clear();
+	void sort();
+	void show_all();
+
 private:
 
 	typedef list<vector_3*> vec_list;
@@ -48,6 +52,10 @@ private:
 	vector_3 _normal;
 	vec_list _points;
 	matrix _draw_mat;
+
+	static poly_list _draw_list;
+	static vector_3 _view;
+	static vector_3 _n_light;
 
 	vector_3 find_fill();
 	vector_3 find_normal();

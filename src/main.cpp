@@ -39,11 +39,7 @@ using namespace matrix_ns;
 // void set_palette(palette buff[], int colors);
 // int huge DetectVGA256();
 
-static bool compare_depth(polygon* p1, polygon* p2)
-{
-	bool ret = ((long)p1->get_depth() < (long)p2->get_depth());
-	return ret;
-}
+polygon ctrl_poly;
 
 int main()
 {
@@ -173,27 +169,22 @@ int main()
 	e2->update(att1);
 
 	// while (!kbhit()) {
-	int i = 3;
-	while (i--) {
+	int i = 20;
+	do {
 		DBG(DEC(i, 4));
 		e2->update(att2);
 		DBG("update tree");
+		// ctrl_poly.clear();
 		root->update_all();
 		DBG("print tree");
 #ifdef DEBUG_GRFX
 		root->print_all();
 #endif // DEBUG_GRFX
 		DBG("sort");
-		poly_lst.sort(compare_depth);
+		ctrl_poly.sort();
+		ctrl_poly.show_all();
 		// clearviewport();
-#ifdef DEBUG_GRFX
-		DBG("walk list");
-		for (const auto poly : poly_lst) {
-			poly->print();
-		}
-		// delay(17);
-#endif // DEBUG_GRFX
-	}
+	} while (--i);
 	// closegraph();
 	return ret;
 }

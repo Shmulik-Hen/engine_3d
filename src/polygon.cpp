@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ios>
 #include <stdlib.h>
+
 #include "polygon.h"
 #include "utils.h"
 
@@ -13,6 +14,7 @@ using std::ios;
 
 vector_3 view(0, 0, -1000000);
 vector_3 n_light(0, 0, -1024);
+polygon::poly_list polygon::_draw_list;
 
 polygon::polygon()
 {
@@ -211,8 +213,49 @@ void polygon::update(matrix& m_gen, matrix& m_rot)
 			_depth = fill.get(Z_);
 			_draw_mat = m_gen;
 			_draw_color = make_color(_color, abs(light_angle));
+			_draw_list.push_front(this);
 		}
 	}
+}
+
+void polygon::clear()
+{
+	_draw_list.clear();
+}
+
+static bool compare_depth(polygon* p1, polygon* p2)
+{
+	long depth1 = (long)p1->get_depth();
+	long depth2 = (long)p2->get_depth();
+	bool ret = (depth1 < depth2);
+	DBG(STR("depth1: ", 1) << depth1 << STR(" depth2: ", 1) << depth2 << STR(" ret: ", 1) << ret);
+	return ret;
+}
+
+void polygon::sort()
+{
+	if (_draw_list.empty()) {
+		DBG("sort: empty");
+		return;
+	}
+
+	_draw_list.sort(compare_depth);
+}
+
+void polygon::show_all()
+{
+	DBG("walk list");
+	if (_draw_list.empty()) {
+		DBG("show_all: empty");
+		return;
+	}
+
+	while (_draw_list.size()) {
+		polygon* poly = _draw_list.front();
+		_draw_list.pop_front();
+		poly->print();
+	}
+	// delay(17);
 }
 
 } // namespace polygon_ns

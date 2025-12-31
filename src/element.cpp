@@ -276,8 +276,11 @@ void element::update_all()
 
 polygon* element::find(const poly_list& list, const string& s) const
 {
+	const string* st;
+
 	for (const auto poly : list) {
-		if (poly->get_name() && *poly->get_name() == s) {
+		st = poly->get_name();
+		if (st && *st == s) {
 			return poly;
 		}
 	}
