@@ -1,7 +1,3 @@
-#include <iostream>
-#include <ios>
-#include <stdlib.h>
-
 #include "polygon.h"
 #include "utils.h"
 

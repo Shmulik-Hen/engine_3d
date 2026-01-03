@@ -1,6 +1,3 @@
-#include <ios>
-#include <string>
-
 #include "common.h"
 #include "attrib.h"
 #include "element.h"
@@ -9,11 +6,13 @@
 #include "treenode.h"
 #include "utils.h"
 
-// #include <graphics.h>
-// #include "graphics.h"
-// #include <conio.h>
-// #include <stdlib.h>
-// #include <dos.h>
+#if 0
+#include <graphics.h>
+#include "graphics.h"
+#include <conio.h>
+#include <stdlib.h>
+#include <dos.h>
+#endif // 0
 
 using attrib_ns::attrib;
 using element_ns::element;
@@ -23,21 +22,23 @@ using std::ios;
 using std::string;
 using namespace matrix_ns;
 
-// typedef char palette[3];
-// enum rgb
-// {
-// 	R,
-// 	G,
-// 	B
-// };
+#if 0
+typedef char palette[3];
+enum rgb
+{
+	R,
+	G,
+	B
+};
 
-// palette pal_16_colors[16];
-// palette pal_256_colors[256];
+palette pal_16_colors[16];
+palette pal_256_colors[256];
 
-// void init_palette();
-// void get_palette(palette buff[], int colors);
-// void set_palette(palette buff[], int colors);
-// int huge DetectVGA256();
+void init_palette();
+void get_palette(palette buff[], int colors);
+void set_palette(palette buff[], int colors);
+int huge DetectVGA256();
+#endif // 0
 
 polygon ctrl_poly;
 
@@ -49,11 +50,9 @@ int main()
 	polygon* poly {nullptr};
 	element* elem {nullptr};
 	element* root {nullptr};
+	polygon::poly_list poly_lst;
 	bool rc;
 	int ret = 0;
-	polygon::poly_list poly_lst;
-
-	poly_lst.clear();
 
 	f.open(filename, ios::in);
 	if (!f) {
@@ -62,6 +61,8 @@ int main()
 	}
 
 	f.unsetf(ios::skipws);
+
+	poly_lst.clear();
 
 	while (!f.eof()) {
 		rc = true;
@@ -174,12 +175,9 @@ int main()
 		DBG(DEC(i, 4));
 		e2->update(att2);
 		DBG("update tree");
-		// ctrl_poly.clear();
 		root->update_all();
 		DBG("print tree");
-#ifdef DEBUG_GRFX
 		root->print_all();
-#endif // DEBUG_GRFX
 		DBG("sort");
 		ctrl_poly.sort();
 		ctrl_poly.show_all();

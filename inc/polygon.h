@@ -1,9 +1,7 @@
 #ifndef __POLYGON_H__
 #define __POLYGON_H__
 
-#include <fstream>
 #include <list>
-#include <string>
 
 #include "common.h"
 #include "matrix.h"

@@ -1,9 +1,7 @@
 #ifndef __ELEMENT_H__
 #define __ELEMENT_H__
 
-#include <fstream>
 #include <list>
-#include <string>
 
 #include "common.h"
 #include "attrib.h"

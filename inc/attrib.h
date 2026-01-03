@@ -1,7 +1,6 @@
 #ifndef __ATTRIB_H__
 #define __ATTRIB_H__
 
-#include <iostream>
 #include "common.h"
 #include "unit.h"
 

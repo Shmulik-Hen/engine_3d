@@ -1,7 +1,6 @@
 #ifndef __UNIT_H__
 #define __UNIT_H__
 
-#include <fstream>
 #include "common.h"
 
 namespace unit_ns

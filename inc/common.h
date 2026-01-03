@@ -1,11 +1,16 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#include <fstream>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <jsoncpp/json/json.h>
 
 const std::string ERR_PFX = "Error: ";
 const std::string WARN_PFX = "Warning: ";
