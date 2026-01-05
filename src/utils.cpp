@@ -44,6 +44,6 @@ int read_word(ifstream& f, char* word)
 	return length;
 }
 
-void read_remark(ifstream& f)
+void read_remark(ifstream&)
 {
 }
