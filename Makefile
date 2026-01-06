@@ -10,11 +10,22 @@ SRCS      := $(sort $(shell find $(SRC_DIR) -name '*.cpp' -printf '%p '))
 OBJS      := $(subst $(SRC_DIR),$(BLD_DIR),$(SRCS:%.cpp=%.o))
 DEPS      := $(OBJS:.o=.d)
 INC_FLAGS := $(addprefix -I,$(INC_DIR))
+SDL_FLAGS := $(shell sdl2-config --cflags)
+SDL_LIBS  := $(shell sdl2-config --libs)
 CPPFLAGS  := -MMD -MP
-# LDFLAGS   += -lX11
-CXXFLAGS  += -Wall -Werror $(INC_FLAGS) -g -fdiagnostics-color=always
+LDFLAGS   :=
+LDLIBS    := $(SDL_LIBS)
+CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_CFLAGS)
 
+DEBUG := 1
 ifeq ($(DEBUG), 1)
+CXXFLAGS += -g -O0 -fsanitize=address,undefined
+LDFLAGS += -fsanitize=address,undefined
+else
+CXXFLAGS += -O2
+endif
+
+ifeq ($(G_DEBUG), 1)
 CXXFLAGS += -DDEBUG_GRFX
 endif
 
@@ -30,7 +41,7 @@ $(BLD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BLD_DIR)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	$(CXX) $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 build: $(TARGET)
 
