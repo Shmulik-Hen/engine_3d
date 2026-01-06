@@ -32,6 +32,16 @@ matrix::vector_4::vector_4(const unit x, const unit y, const unit z, const unit 
 	_coords[O_] = o;
 }
 
+matrix::vector_4& matrix::vector_4::operator=(const vector_4& v)
+{
+	if (this != &v) {
+		for (int i = X_; i <= O_; i++) {
+			_coords[i] = v._coords[i];
+		}
+	}
+	return *this;
+}
+
 matrix::vector_4 matrix::vector_4::operator+(const vector_4& v) const
 {
 	return vector_4(_coords[X_] + v._coords[X_],
@@ -112,7 +122,9 @@ matrix::matrix()
 	prep_cols();
 }
 
-matrix::matrix(const matrix& m)
+matrix::matrix(const matrix& m) :
+	attrib(0, 0, 0, 0, 0, 0, 1),
+	vector_3(0, 0, 0)
 {
 	for (int i = X_; i <= O_; i++) {
 		for (int j = 0; j <= O_; j++) {
@@ -140,22 +152,22 @@ matrix matrix::operator*(const matrix& m)
 {
 	matrix temp;
 
-	temp._mat[X_][X_] = _rows[X_] * _cols[X_];
-	temp._mat[X_][Y_] = _rows[X_] * _cols[Y_];
-	temp._mat[X_][Z_] = _rows[X_] * _cols[Z_];
-	temp._mat[X_][O_] = _rows[X_] * _cols[O_];
-	temp._mat[Y_][X_] = _rows[Y_] * _cols[X_];
-	temp._mat[Y_][Y_] = _rows[Y_] * _cols[Y_];
-	temp._mat[Y_][Z_] = _rows[Y_] * _cols[Z_];
-	temp._mat[Y_][O_] = _rows[Y_] * _cols[O_];
-	temp._mat[Z_][X_] = _rows[Z_] * _cols[X_];
-	temp._mat[Z_][Y_] = _rows[Z_] * _cols[Y_];
-	temp._mat[Z_][Z_] = _rows[Z_] * _cols[Z_];
-	temp._mat[Z_][O_] = _rows[Z_] * _cols[O_];
-	temp._mat[O_][X_] = _rows[O_] * _cols[X_];
-	temp._mat[O_][Y_] = _rows[O_] * _cols[Y_];
-	temp._mat[O_][Z_] = _rows[O_] * _cols[Z_];
-	temp._mat[O_][O_] = _rows[O_] * _cols[O_];
+	temp._mat[X_][X_] = _rows[X_] * m._cols[X_];
+	temp._mat[X_][Y_] = _rows[X_] * m._cols[Y_];
+	temp._mat[X_][Z_] = _rows[X_] * m._cols[Z_];
+	temp._mat[X_][O_] = _rows[X_] * m._cols[O_];
+	temp._mat[Y_][X_] = _rows[Y_] * m._cols[X_];
+	temp._mat[Y_][Y_] = _rows[Y_] * m._cols[Y_];
+	temp._mat[Y_][Z_] = _rows[Y_] * m._cols[Z_];
+	temp._mat[Y_][O_] = _rows[Y_] * m._cols[O_];
+	temp._mat[Z_][X_] = _rows[Z_] * m._cols[X_];
+	temp._mat[Z_][Y_] = _rows[Z_] * m._cols[Y_];
+	temp._mat[Z_][Z_] = _rows[Z_] * m._cols[Z_];
+	temp._mat[Z_][O_] = _rows[Z_] * m._cols[O_];
+	temp._mat[O_][X_] = _rows[O_] * m._cols[X_];
+	temp._mat[O_][Y_] = _rows[O_] * m._cols[Y_];
+	temp._mat[O_][Z_] = _rows[O_] * m._cols[Z_];
+	temp._mat[O_][O_] = _rows[O_] * m._cols[O_];
 
 	for (int i = X_; i <= O_; i++) {
 		temp.prep_row(i);
@@ -163,6 +175,20 @@ matrix matrix::operator*(const matrix& m)
 	temp.prep_cols();
 
 	return temp;
+}
+
+matrix& matrix::operator=(const matrix& m)
+{
+	if (this != &m) {
+		for (int i = X_; i <= O_; i++) {
+			for (int j = X_; j <= O_; j++) {
+				_mat[i][j] = m._mat[i][j];
+			}
+			prep_row(i);
+		}
+		prep_cols();
+	}
+	return *this;
 }
 
 matrix& matrix::operator*=(const matrix& m)

@@ -34,6 +34,7 @@ public:
 	vector_3 project(const vector_3&, const vector_3&);
 	void normalize(vector_3&);
 
+	vector_3& operator=(const vector_3&) = default;
 	vector_3 operator+(const vector_3&) const;
 	vector_3 operator-(const vector_3&) const;
 	vector_3& operator+=(const vector_3&);

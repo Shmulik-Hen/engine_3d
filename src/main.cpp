@@ -1,3 +1,42 @@
+#if 1
+#include "graphics_sdl2.h"
+
+using graphics_ns::graphics;
+using input_state = graphics_ns::graphics::input_state;
+using frame_buffer = graphics_ns::graphics::frame_buffer;
+using std::string;
+
+int main()
+{
+	try {
+		graphics platform("Software 3D Engine", 320, 200, 2);
+
+		// Engine engine(...);
+
+		platform.run(
+			/* update */
+			[&](double dt [[maybe_unused]], const input_state& in) {
+				(void)in;
+				// engine.update(dt);
+			},
+
+			/* render */
+			[&](frame_buffer& fb) {
+				// engine.render(fb.pixels, fb.width, fb.height, fb.pitchBytes);
+			        // OR: engine.render(fb);
+			        // For now, a simple test pattern:
+				std::fill(fb.pixels, fb.pixels + fb.width * fb.height, 0xFFa0a0a0u);
+			});
+
+		return 0;
+	}
+	catch (const std::exception& e) {
+		// In a commercial-style app, you’d log to stderr + maybe a file
+		std::fprintf(stderr, "Fatal: %s\n", e.what());
+		return 1;
+	}
+}
+#else
 #include "common.h"
 #include "attrib.h"
 #include "element.h"
@@ -186,6 +225,7 @@ int main()
 	// closegraph();
 	return ret;
 }
+#endif // 1
 
 #if 0
 void init_palette()

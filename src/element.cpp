@@ -168,7 +168,7 @@ void element::print() const
 #endif // DEBUG_GRFX
 }
 
-void prn(void* p)
+void prn(void* p [[maybe_unused]])
 {
 #ifdef DEBUG_GRFX
 	if (p) {

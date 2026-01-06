@@ -32,6 +32,7 @@ class matrix : public attrib,
 		vector_4(const unit, const unit, const unit, const unit);
 		~vector_4() {}
 
+		vector_4& operator=(const vector_4&);
 		vector_4 operator+(const vector_4&) const;
 		vector_4 operator-(const vector_4&) const;
 		vector_4& operator+=(const vector_4&);
@@ -53,6 +54,7 @@ public:
 	matrix(unit[dim][dim]);
 	~matrix() {}
 
+	matrix& operator=(const matrix& m);
 	matrix operator*(const matrix&);
 	matrix& operator*=(const matrix&);
 	vector_3 operator*(const vector_3&);

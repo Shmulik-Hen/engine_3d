@@ -139,50 +139,50 @@ void unit::print() const
 	DBG(STR("            unit: ", 1) << _num);
 }
 
-const unit unit::operator+(const unit& u) const
+unit unit::operator+(const unit& u) const
 {
 	return unit(_num + u._num);
 }
 
-const unit unit::operator-(const unit& u) const
+unit unit::operator-(const unit& u) const
 {
 	return unit(_num - u._num);
 }
 
-const unit unit::operator*(const unit& u) const
+unit unit::operator*(const unit& u) const
 {
 	return unit(((_num >> 1) * (u._num >> 1)) >> 8);
 }
 
-const unit unit::operator/(const unit& u) const
+unit unit::operator/(const unit& u) const
 {
 	return unit((_num << 10) / (u._num ? u._num : 1));
 }
 
-const unit unit::operator-() const
+unit unit::operator-() const
 {
 	return unit(_num * -1);
 }
 
-const unit& unit::operator+=(const unit& u)
+unit& unit::operator+=(const unit& u)
 {
 	_num += u._num;
 	return *this;
 }
 
-const unit& unit::operator-=(const unit& u)
+unit& unit::operator-=(const unit& u)
 {
 	_num -= u._num;
 	return *this;
 }
 
-const unit& unit::operator*=(const unit& u)
+unit& unit::operator*=(const unit& u)
 {
 	_num = ((_num >> 1) * (u._num >> 1)) >> 8;
 	return *this;
 }
 
-const unit& unit::operator/=(const unit& u)
+unit& unit::operator/=(const unit& u)
 {
 	_num = (_num << 10) / (u._num ? u._num : 1);
 	return *this;
@@ -198,27 +198,27 @@ unit::operator long()
 	return _num;
 }
 
-const int mod(const int32_t& n)
+int mod(const int32_t& n)
 {
 	return int(n & 0x01ff);
 }
 
-const unit abs(const unit& u)
+unit abs(const unit& u)
 {
 	return unit(u._num >= 0 ? u._num : u._num * -1);
 }
 
-const unit sin(const unit& u)
+unit sin(const unit& u)
 {
 	return unit(SIN[mod(u._num)]);
 }
 
-const unit cos(const unit& u)
+unit cos(const unit& u)
 {
 	return unit(COS[mod(u._num)]);
 }
 
-const unit sqrt(const unit& u)
+unit sqrt(const unit& u)
 {
 	uint32_t x = u._num << 10, y = 0xfffff800, temp, root;
 	int iter = 10;
