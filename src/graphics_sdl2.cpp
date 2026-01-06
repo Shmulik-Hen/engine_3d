@@ -3,6 +3,9 @@
 #include "graphics_sdl2.h"
 #define DEBUG_GRFX
 
+namespace
+{
+
 uint32_t G_OFFSET = 0;
 uint32_t G_POS_X = 0;
 uint32_t G_POS_Y = 0;
@@ -12,7 +15,7 @@ uint32_t G_MAX_X = 320;
 uint32_t G_MAX_Y = 200;
 uint32_t G_COLOR = 0;
 uint32_t G_EDGE_COLOR = 0x00000000;
-uint32_t G_BLACK = 0x0000000f;
+uint32_t G_BLACK = 0x00000000;
 int vp_min_x;
 int vp_min_y;
 int vp_max_x;
@@ -20,7 +23,9 @@ int vp_max_y;
 int vp_mid_x;
 int vp_mid_y;
 
-#define offset(x, y)      ((x) + G_MIN_X + ((y) + G_MIN_Y) * MAX_X)
+} // namespace
+
+#define offset(x, y)      ((x) + G_MIN_X + ((y) + G_MIN_Y) * (G_MAX_X - G_MIN_X + 1))
 #define putpixel(x, y, c) BUFFER[offset((x), (y))] = (c)
 #define getpixel(x, y)    BUFFER[offset((x), (y))]
 #define m_setcolor(c)     G_COLOR = (c)
@@ -65,13 +70,13 @@ graphics::graphics() :
 	init_graphics();
 }
 
-graphics::graphics(const char* title, uint32_t width, uint32_t height, uint32_t scale = DEFAULT_SCALE) :
+graphics::graphics(const char* title, uint32_t width, uint32_t height, uint32_t scale) :
 	_title {title},
 	_w {min(width, MAX_X)},
 	_h {min(height, MAX_Y)},
 	_scale {scale}
 {
-	if (_w <= 0 || _h <= 0 || _scale <= 0 || _title.empty()) {
+	if (!_w || !_h || !_scale || _title.empty()) {
 		throw graphics_error("Invalid width/height/scale/title");
 	}
 
@@ -93,7 +98,7 @@ void graphics::init_graphics()
 	DBG("graphics:" << ENDL << STR("  initial values:", 1) << ENDL
 	                << STR("    title:", 14) << _title << ENDL
 	                << STR("    width:", 14) << DEC(_w, 4) << ENDL
-	                << STR("    height:", 14) << DEC(_, 4) << ENDL
+	                << STR("    height:", 14) << DEC(_h, 4) << ENDL
 	                << STR("    scale:", 14) << DEC(_scale, 4) << ENDL);
 
 	rc = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER);
@@ -190,7 +195,7 @@ graphics::frame_buffer graphics::back_buffer()
 	fb.pixels = back.data();
 	fb.width = _w;
 	fb.height = _h;
-	fb.pitch_bytes = _w * static_cast<int>(sizeof(uint32_t));
+	fb.pitch_bytes = _w * sizeof(uint32_t);
 
 	return fb;
 }

@@ -15,7 +15,7 @@ SDL_LIBS  := $(shell sdl2-config --libs)
 CPPFLAGS  := -MMD -MP
 LDFLAGS   :=
 LDLIBS    := $(SDL_LIBS)
-CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_CFLAGS)
+CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_FLAGS)
 
 DEBUG := 1
 ifeq ($(DEBUG), 1)

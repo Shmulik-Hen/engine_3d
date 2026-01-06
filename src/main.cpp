@@ -14,19 +14,19 @@ int main()
 		// Engine engine(...);
 
 		platform.run(
-			/* update */ [&](double dt [[maybe_unused]], const input_state& in) {
+			/* update */
+			[&](double dt [[maybe_unused]], const input_state& in) {
 				(void)in;
 				// engine.update(dt);
 			},
-			/* render */ [&](frame_buffer& fb) {
-			// engine.render(fb.pixels, fb.width, fb.height, fb.pitchBytes);
-			// OR: engine.render(fb);
-			// For now, a simple test pattern:
-			for (uint32_t y = 0; y < fb.height; ++y) {
-				for (uint32_t x = 0; x < fb.width; ++x) {
-					fb.pixels[y * fb.width + x] = 0xFFa0a0a0u; // opaque black
-				}
-			} });
+
+			/* render */
+			[&](frame_buffer& fb) {
+				// engine.render(fb.pixels, fb.width, fb.height, fb.pitchBytes);
+			        // OR: engine.render(fb);
+			        // For now, a simple test pattern:
+				std::fill(fb.pixels, fb.pixels + fb.width * fb.height, 0xFFa0a0a0u);
+			});
 
 		return 0;
 	}

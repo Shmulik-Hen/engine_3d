@@ -12,7 +12,7 @@ public:
 
 	// enum color_idx
 	// {
-	// 	__first_color__ = 0, // Dummy, not an qctual color
+	// 	__first_color__ = 0, // Dummy, not an actual color
 
 	// 	black = __first_color__,
 	// 	white,
@@ -43,7 +43,7 @@ public:
 	// 	purple,
 	// 	dark_purple,
 
-	// 	__last_color__ // Dummy, not an qctual color
+	// 	__last_color__ // Dummy, not an actual color
 	// };
 
 	// enum bounds_status

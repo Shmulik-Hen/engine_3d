@@ -72,8 +72,8 @@ public:
 	// Optional: allow clean stop from outside
 	void request_quit() { _input.quit = true; }
 
-	virtual void init_graphics() override;
-	virtual void close_graphics() override;
+	void init_graphics() override;
+	void close_graphics() override;
 	// virtual void set_viewport(const point&, const size&) override;
 	// virtual void clear_viewport() override;
 	// virtual void refresh() const override;
