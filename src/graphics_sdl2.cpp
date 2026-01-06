@@ -1,11 +1,12 @@
 #include <algorithm>
 #include <SDL2/SDL.h>
-#include "graphics_sdl2.h"
-#define DEBUG_GRFX
 
-namespace
+#include "graphics.h"
+
+namespace graphics_ns
 {
 
+#if 0
 uint32_t G_OFFSET = 0;
 uint32_t G_POS_X = 0;
 uint32_t G_POS_Y = 0;
@@ -22,9 +23,6 @@ int vp_max_x;
 int vp_max_y;
 int vp_mid_x;
 int vp_mid_y;
-
-} // namespace
-
 #define offset(x, y)      ((x) + G_MIN_X + ((y) + G_MIN_Y) * (G_MAX_X - G_MIN_X + 1))
 #define putpixel(x, y, c) BUFFER[offset((x), (y))] = (c)
 #define getpixel(x, y)    BUFFER[offset((x), (y))]
@@ -36,9 +34,7 @@ int vp_mid_y;
 	G_OFFSET = offset((x), (y)); \
 	G_POS_X = (x);               \
 	G_POS_Y = (y)
-
-namespace graphics_ns
-{
+#endif // 0
 
 using std::max;
 using std::min;
@@ -106,6 +102,9 @@ void graphics::init_graphics()
 		throw sdl_fail("SDL_Init failed");
 	}
 
+	/* crisp integer scaling */
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+
 	win = SDL_CreateWindow(_title.c_str(),
 	                       SDL_WINDOWPOS_CENTERED,
 	                       SDL_WINDOWPOS_CENTERED,
@@ -139,13 +138,16 @@ void graphics::init_graphics()
 	_buf_a.resize(static_cast<size_t>(_w) * static_cast<size_t>(_h));
 	_buf_b.resize(static_cast<size_t>(_w) * static_cast<size_t>(_h));
 
+	/* avoid uninitialized visuals */
+	color c = 0xff000000;
+	std::fill(_buf_a.begin(), _buf_a.end(), c);
+	std::fill(_buf_b.begin(), _buf_b.end(), c);
+
 	_perf_freq = static_cast<uint64_t>(SDL_GetPerformanceFrequency());
-	_last_counter = static_cast<uint64_t>(SDL_GetPerformanceCounter());
 
 	DBG("graphics:" << ENDL << STR("  final values:", 1) << ENDL
-	                << STR("    buff size:", 14) << DEC(_buf_a.size(), 4) << ENDL
-	                << STR("    freq:", 14) << DEC(_perf_freq, 8) << ENDL
-	                << STR("    count:", 14) << DEC(_last_counter, 8) << ENDL);
+	                << STR("    buff size: ", 14) << DEC(_buf_a.size(), 4) << ENDL
+	                << STR("    freq: ", 14) << DEC(_perf_freq, 8) << ENDL);
 }
 
 void graphics::close_graphics()
@@ -166,38 +168,56 @@ void graphics::close_graphics()
 	SDL_Quit();
 }
 
-void graphics::pump_events()
+void graphics::poll_events(input_state& io)
 {
 	SDL_Event e;
 
+	DBG("poll_events begin");
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
 		case SDL_QUIT:
-			_input.quit = true;
+			DBG("SDL_QUIT");
+			io.quit = true;
 			break;
 		case SDL_KEYDOWN:
 			if (e.key.keysym.sym == SDLK_ESCAPE) {
-				_input.key_escape = true;
-				_input.quit = true;
+				DBG("SDLK_ESCAPE");
+				io.key_escape = true;
+				io.quit = true;
 			}
 			break;
 		default:
+			DBG("default: event type: " << HEX(e.type, 8));
 			break;
 		}
 	}
+
+	_last_input = io;
+	DBG("poll_events end");
 }
 
-graphics::frame_buffer graphics::back_buffer()
+uint64_t graphics::now_ticks() const
+{
+	return static_cast<uint64_t>(SDL_GetPerformanceCounter());
+}
+
+uint64_t graphics::tick_freq() const
+{
+	return _perf_freq;
+}
+
+graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb;
-
-	fb.pixels = back.data();
-	fb.width = _w;
-	fb.height = _h;
-	fb.pitch_bytes = _w * sizeof(uint32_t);
+	frame_buffer fb {back.data(), _w, _h, _w * static_cast<uint32_t>(sizeof(uint32_t))};
 
 	return fb;
+}
+
+void graphics::clear_backbuffer(ARGB argb)
+{
+	auto fb = get_backbuffer();
+	std::fill_n(fb.pixels, static_cast<size_t>(fb.width) * static_cast<size_t>(fb.height), argb.c);
 }
 
 void graphics::swap_buffers()
@@ -205,14 +225,14 @@ void graphics::swap_buffers()
 	_a_is_front = !_a_is_front;
 }
 
-void graphics::present(const frame_buffer& fb)
+void graphics::present()
 {
-	SDL_Texture* tex = reinterpret_cast<SDL_Texture*>(_texture);
-	SDL_Renderer* ren = reinterpret_cast<SDL_Renderer*>(_renderer);
+	frame_buffer fb = get_backbuffer();
+	auto* tex = reinterpret_cast<SDL_Texture*>(_texture);
+	auto* ren = reinterpret_cast<SDL_Renderer*>(_renderer);
 	int rc;
 
-	// Upload framebuffer to streaming texture
-	// SDL_UpdateTexture expects pitch in bytes.
+	/* upload pixels to GPU-managed texture */
 	rc = SDL_UpdateTexture(tex, nullptr, fb.pixels, fb.pitch_bytes);
 	if (rc) {
 		throw sdl_fail("SDL_UpdateTexture failed");
@@ -221,11 +241,7 @@ void graphics::present(const frame_buffer& fb)
 	// Render texture scaled to window
 	SDL_RenderClear(ren);
 
-	SDL_Rect dst;
-	dst.x = 0;
-	dst.y = 0;
-	dst.w = _w * _scale;
-	dst.h = _h * _scale;
+	SDL_Rect dst {0, 0, static_cast<int>(_w * _scale), static_cast<int>(_h * _scale)};
 
 	rc = SDL_RenderCopy(ren, tex, nullptr, &dst);
 	if (rc) {
@@ -233,116 +249,9 @@ void graphics::present(const frame_buffer& fb)
 	}
 
 	SDL_RenderPresent(ren);
+
+	/* only swap AFTER we showed the completed backbuffer */
+	swap_buffers();
 }
-
-void graphics::run(const update_fn& update_fn, const render_fn& render_fn)
-{
-	if (!update_fn || !render_fn) {
-		throw graphics_error("run(): update_fn and render_fn must be set");
-	}
-
-	double accumulator = 0.0;
-
-	while (!_input.quit) {
-		pump_events();
-		if (_input.quit) {
-			break;
-		}
-
-		// Timing
-		const uint64_t now = static_cast<uint64_t>(SDL_GetPerformanceCounter());
-		const double frame_time = min(static_cast<double>(now - _last_counter) /
-		                                      static_cast<double>(_perf_freq),
-		                              _max_frame_time);
-		_last_counter = now;
-		accumulator += frame_time;
-
-		// Fixed-timestep updates
-		while (accumulator >= _fixed_dt) {
-			update_fn(_fixed_dt, _input);
-			accumulator -= _fixed_dt;
-
-			if (_input.quit) {
-				break;
-			}
-		}
-
-		if (_input.quit) {
-			break;
-		}
-
-		// Render into back_buffer then present
-		frame_buffer fb = back_buffer();
-		render_fn(fb);
-		present(fb);
-		swap_buffers();
-	}
-}
-
-// void graphics::set_viewport(const point& tl, const size& br)
-// {
-// }
-
-// void graphics::clear_viewport()
-// {
-// }
-
-// void graphics::refresh() const
-// {
-// }
-
-// bool graphics::is_in_bounds(point) const
-// {
-// 	return true;
-// }
-
-// void graphics::init_palette()
-// {
-// }
-
-// void graphics::get_palette()
-// {
-// }
-
-// void graphics::set_palette()
-// {
-// }
-
-// void graphics::set_color(const color& c)
-// {
-// }
-
-// color graphics::get_color(const point& pt) const
-// {
-// 	return 0;
-// }
-
-// void graphics::move_to(const point& pt)
-// {
-// }
-
-// void graphics::put_pixel(const point& pt) const
-// {
-// }
-
-// void graphics::put_char(const point& pt, const char& c) const
-// {
-// }
-
-// void graphics::draw_line(const point& from, const point& to) const
-// {
-// }
-
-// void graphics::draw_lineto(const point& to) const
-// {
-// }
-
-// void graphics::draw_rect(const point& pt, const size& sz) const
-// {
-// }
-
-// void graphics::draw_text(const point& pt, const string& s) const
-// {
-// }
 
 } // namespace graphics_ns

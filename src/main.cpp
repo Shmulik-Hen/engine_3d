@@ -1,32 +1,48 @@
 #if 1
-#include "graphics_sdl2.h"
+#include <chrono>
+#include <thread>
+
+#include "common.h"
+#include "graphics.h"
 
 using graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
 using frame_buffer = graphics_ns::graphics::frame_buffer;
+using ARGB = graphics_ns::graphics::ARGB;
 using std::string;
 
 int main()
 {
 	try {
-		graphics platform("Software 3D Engine", 320, 200, 2);
+		input_state in {};
+		ARGB argb {};
 
-		// Engine engine(...);
+		argb.channels.a = 0xff;
+		argb.channels.r = 0xff;
+		argb.channels.g = 0xff;
+		argb.channels.b = 0x00;
+		DBG("argb.color: " << HEX(argb.c, 8));
 
-		platform.run(
-			/* update */
-			[&](double dt [[maybe_unused]], const input_state& in) {
-				(void)in;
-				// engine.update(dt);
-			},
+		graphics gfx("Software 3D Engine", 320, 200, 2);
 
-			/* render */
-			[&](frame_buffer& fb) {
-				// engine.render(fb.pixels, fb.width, fb.height, fb.pitchBytes);
-			        // OR: engine.render(fb);
-			        // For now, a simple test pattern:
-				std::fill(fb.pixels, fb.pixels + fb.width * fb.height, 0xFFa0a0a0u);
-			});
+		while (!in.quit) {
+			gfx.poll_events(in);
+
+			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
+
+			/* engine decides timing; could be fixed dt or variable */
+			// engine.update(dt);
+
+			// frame_buffer fb = gfx.get_backbuffer();
+			// engine.render(fb.pixels, fb.width, fb.height, fb.pitch_bytes);
+
+			/* your current intentional fill: */
+			// std::fill_n(fb.pixels, fb.width * fb.height, argb.c);
+			gfx.clear_backbuffer(argb);
+
+			gfx.present();
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 
 		return 0;
 	}
