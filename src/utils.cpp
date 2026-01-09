@@ -7,7 +7,8 @@ system_error sys_error(const char* s1, const char* s2)
 {
 	string msg = string(s1);
 	if (s2) {
-		msg += string(s1) + ": " + s2;
+		msg += ": ";
+		msg += s2;
 	}
 
 	throw system_error(msg);

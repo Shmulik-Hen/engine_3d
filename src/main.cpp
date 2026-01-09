@@ -16,7 +16,7 @@ using namespace element_ns;
 using namespace graphics_ns;
 using namespace matrix_ns;
 using namespace polygon_ns;
-using namespace matrix_ns;
+
 using std::ios;
 using std::string;
 using input_state = graphics_ns::graphics::input_state;
@@ -69,6 +69,7 @@ int main()
 						poly_lst.push_back(poly);
 					}
 					else {
+						delete poly;
 						sys_error("read polygon failed");
 					}
 				}
@@ -81,6 +82,7 @@ int main()
 				if (elem) {
 					rc = elem->read(poly_lst, &root, f);
 					if (!rc) {
+						delete elem;
 						sys_error("read element failed");
 					}
 				}

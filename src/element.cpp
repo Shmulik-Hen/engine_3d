@@ -71,6 +71,7 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 								_parrent = parrent;
 							}
 							else {
+								delete parrent;
 								sys_error("element::read error -  _parrent_name");
 							}
 						}
@@ -95,6 +96,7 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 						DBG("read: " << *p->get_name());
 					}
 					else {
+						delete s;
 						sys_error("element::read find error -  polygon");
 					}
 				}

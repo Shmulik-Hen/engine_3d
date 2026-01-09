@@ -22,9 +22,6 @@ polygon::poly_list polygon::_draw_list;
 polygon::polygon(graphics& gfx)
 {
 	_gfx = &gfx;
-	if (!_gfx) {
-		sys_error("read: _gfx is null");
-	}
 
 	_clear = _gfx->get_color_val(graphics::color_idx::black);
 	_gfx->set_alpha(_clear, _gfx->get_alpha_val(graphics::alpha_idx::A16));
@@ -94,6 +91,7 @@ bool polygon::read(ifstream& f)
 					_points.push_back(v);
 				}
 				else {
+					delete v;
 					sys_error("polygon::read error polygon");
 				}
 			}
