@@ -27,12 +27,12 @@ const std::string SEP = ", ";
 #define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << FUNC << ENDL << std::flush
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << std::flush
 
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 const std::string DBG_PFX = "Debug: ";
 #define DBG(s) std::cout << STR(DBG_PFX, 1) << s << std::endl
 #else
 #define DBG(...)
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 
 #define MAX_NAME 10
 #define MAX_LINE 20

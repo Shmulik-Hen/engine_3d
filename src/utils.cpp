@@ -1,24 +1,16 @@
 #include "utils.h"
-// #include <process.h>
-// #include "graphics.h"
-// #include <graphics.h>
 
 using std::cerr;
 using std::cout;
 
-void error(const char* s1, const char* s2)
+system_error sys_error(const char* s1, const char* s2)
 {
-	// closegraph();
-	if (s1) {
-		if (s2) {
-			cerr << s1 << ' ' << s2;
-		}
-		else {
-			cerr << s1;
-		}
+	string msg = string(s1);
+	if (s2) {
+		msg += string(s1) + ": " + s2;
 	}
 
-	exit(0);
+	throw system_error(msg);
 }
 
 int read_word(ifstream& f, char* word)

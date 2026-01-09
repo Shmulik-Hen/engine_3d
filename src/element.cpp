@@ -1,3 +1,4 @@
+// #define DEBUG_PRINTS
 #include "common.h"
 #include "element.h"
 #include "utils.h"
@@ -26,14 +27,14 @@ element::~element()
 	}
 }
 
-bool element::read(const poly_list& list, element** root, ifstream& f)
+bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 {
 	LINE line;
 	int finish = 0, len;
-	bool rc, ret = true;
 
 	while (!f.eof() && !finish) {
-		rc = true;
+		bool rc;
+
 		while ((!read_word(f, line)) && (!f.eof()));
 
 		if (f.eof()) {
@@ -46,13 +47,12 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 			if (len) {
 				_name = new string(line);
 				if (!_name) {
-					ERR("element::read allocation error -  _name");
-					rc = false;
+					sys_error("element::read allocation error -  _name");
 				}
+				DBG("read: " << *_name);
 			}
 			else {
-				ERR("element::read error _name");
-				rc = false;
+				sys_error("element::read error _name");
 			}
 			break;
 		case 't':
@@ -71,20 +71,17 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 								_parrent = parrent;
 							}
 							else {
-								ERR("element::read error -  _parrent_name");
-								rc = false;
+								sys_error("element::read error -  _parrent_name");
 							}
 						}
 						else {
-							ERR("element::read allocation error -  _parrent_name");
-							rc = false;
+							sys_error("element::read allocation error -  _parrent_name");
 						}
 					}
 				}
 			}
 			else {
-				ERR("element::read root is NULL");
-				rc = false;
+				sys_error("element::read root is NULL");
 			}
 			break;
 		case 'p':
@@ -95,20 +92,18 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 					polygon* p = find(list, *s);
 					if (p) {
 						_polygons.push_back(p);
+						DBG("read: " << *p->get_name());
 					}
 					else {
-						ERR("element::read find error -  polygon");
-						rc = false;
+						sys_error("element::read find error -  polygon");
 					}
 				}
 				else {
-					ERR("element::read allocation error -  polygon");
-					rc = false;
+					sys_error("element::read allocation error -  polygon");
 				}
 			}
 			else {
-				ERR("element::read error polygon");
-				rc = false;
+				sys_error("element::read error polygon");
 			}
 			break;
 		case 'f':
@@ -117,15 +112,13 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 				_active = (bool)atoi(line);
 			}
 			else {
-				ERR("element::read error flag");
-				rc = false;
+				sys_error("element::read error flag");
 			}
 			break;
 		case 'a':
 			rc = _att.read(f);
 			if (!rc) {
-				ERR("element::read error attrib");
-				rc = false;
+				sys_error("element::read error attrib");
 			}
 			break;
 		default:
@@ -133,19 +126,14 @@ bool element::read(const poly_list& list, element** root, ifstream& f)
 			f.seekg(-4, ios::cur);
 			break;
 		}
-
-		if (!rc) {
-			ERR("element::read parsing error");
-			ret = false;
-		}
 	}
 
-	return ret;
+	return true;
 }
 
 void element::print() const
 {
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 	DBG(STR("  element:", 1));
 	if (_name) {
 		DBG(STR("    name: ", 1) << *_name);
@@ -165,24 +153,24 @@ void element::print() const
 			poly->print();
 		}
 	}
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 }
 
 void prn(void* p [[maybe_unused]])
 {
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 	if (p) {
 		element* e = (element*)p;
 		e->print();
 	}
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 }
 
 void element::print_all()
 {
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 	this->print_tree(prn);
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 }
 
 string cmp_str;
@@ -231,10 +219,13 @@ void element::update(const matrix& p_gen, const matrix& p_rot)
 		_gen_mat *= p_gen;
 		_rot_mat *= p_rot;
 
-		if (!_polygons.empty()) {
+		if (_polygons.size()) {
 			for (auto poly : _polygons) {
 				poly->update(_gen_mat, _rot_mat);
 			}
+		}
+		else {
+			DBG("_polygons is empty");
 		}
 
 		_dirty = false;
@@ -270,7 +261,7 @@ void element::update_all()
 	this->update_tree(upd);
 }
 
-polygon* element::find(const poly_list& list, const string& s) const
+polygon* element::find(const polygon::poly_list& list, const string& s) const
 {
 	const string* st;
 

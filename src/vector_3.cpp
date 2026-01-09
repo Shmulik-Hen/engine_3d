@@ -1,3 +1,4 @@
+// #define DEBUG_PRINTS
 #include "vector_3.h"
 
 namespace vector_3_ns
@@ -47,12 +48,12 @@ bool vector_3::read(ifstream& f)
 
 void vector_3::print() const
 {
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 	DBG(STR("          vector:", 1));
 	for (int i = X_; i <= Z_; i++) {
 		_coords[i].print();
 	}
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 }
 
 unit vector_3::get(int c) const

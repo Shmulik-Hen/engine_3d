@@ -23,15 +23,14 @@ using unit_ns::unit;
 using namespace treenode_ns;
 using treenode_ns::treenode;
 
-class element : public polygon_ns::polygon,
-		public treenode<element>
+class element : public treenode<element>
 {
 public:
 
 	element();
 	~element();
 
-	bool read(const poly_list&, element**, ifstream&);
+	bool read(const polygon::poly_list&, element**, ifstream&);
 	void print() const;
 	void print_all();
 
@@ -46,7 +45,7 @@ public:
 
 private:
 
-	poly_list _polygons;
+	polygon::poly_list _polygons;
 	string* _name {nullptr};
 	string* _parrent_name {nullptr};
 	element* _parrent {nullptr};
@@ -57,7 +56,7 @@ private:
 	bool _dirty {false};
 	bool _mats_prepared {false};
 
-	polygon* find(const poly_list&, const string&) const;
+	polygon* find(const polygon::poly_list&, const string&) const;
 };
 
 } // namespace element_ns

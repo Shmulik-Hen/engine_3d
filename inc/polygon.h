@@ -4,6 +4,7 @@
 #include <list>
 
 #include "common.h"
+#include "graphics.h"
 #include "matrix.h"
 #include "vector_3.h"
 #include "unit.h"
@@ -11,12 +12,15 @@
 namespace polygon_ns
 {
 
+using graphics_ns::graphics;
 using matrix_ns::matrix;
 using std::ifstream;
 using std::list;
 using std::string;
 using unit_ns::unit;
 using vector_3_ns::vector_3;
+using ARGB = graphics_ns::graphics::ARGB;
+using frame_buffer = graphics_ns::graphics::frame_buffer;
 
 class polygon : public matrix
 {
@@ -24,7 +28,7 @@ public:
 
 	typedef list<polygon*> poly_list;
 
-	polygon();
+	polygon(graphics&);
 	~polygon();
 
 	bool read(ifstream&);
@@ -35,6 +39,7 @@ public:
 
 	void clear();
 	void sort();
+	void show(frame_buffer&);
 	void show_all();
 
 private:
@@ -50,6 +55,9 @@ private:
 	vector_3 _normal;
 	vec_list _points;
 	matrix _draw_mat;
+	graphics* _gfx {nullptr};
+	ARGB _argb;
+	ARGB _clear;
 
 	static poly_list _draw_list;
 	static vector_3 _view;
@@ -57,6 +65,7 @@ private:
 
 	vector_3 find_fill();
 	vector_3 find_normal();
+	void make_color(unit);
 };
 
 } // namespace polygon_ns

@@ -1,3 +1,4 @@
+// #define DEBUG_PRINTS
 #include "matrix.h"
 
 namespace matrix_ns
