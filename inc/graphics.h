@@ -9,20 +9,82 @@
 namespace graphics_ns
 {
 
+#define MAKE_COLOR(a, r, g, b) (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
+
 using std::string;
 using std::vector;
 
 constexpr uint32_t MAX_X = 320;
 constexpr uint32_t MAX_Y = 200;
 
-struct graphics_error : std::runtime_error
-{
-	using std::runtime_error::runtime_error;
-};
-
 class graphics
 {
 public:
+
+	enum color_idx
+	{
+		__first_color__ = 0, // Dummy, not an actual color
+		black = __first_color__,
+		grey,
+		silver,
+		white,
+		red,
+		maroon,
+		// orange,
+		yellow,
+		olive,
+		lime,
+		green,
+		aqua,
+		teal,
+		blue,
+		navy,
+		magenta,
+		purple,
+		__last_color__ // Dummy, not an actual color
+	};
+
+	enum alpha_idx
+	{
+		__first_alpha__ = 0, // Dummy, not an actual alpha
+		A1 = __first_alpha__,
+		A2,
+		A3,
+		A4,
+		A5,
+		A6,
+		A7,
+		A8,
+		A9,
+		A10,
+		A11,
+		A12,
+		A13,
+		A14,
+		A15,
+		A16,
+		__last_alpha__ // Dummy, not an actual alpha
+	};
+
+	typedef uint32_t color;
+
+	union ARGB
+	{
+		color c;
+		struct _channel
+		{
+			uint32_t b : 8;
+			uint32_t g : 8;
+			uint32_t r : 8;
+			uint32_t a : 8;
+		} channel;
+	};
+
+	struct color_data
+	{
+		string name;
+		ARGB argb {};
+	};
 
 	struct frame_buffer
 	{
@@ -51,19 +113,8 @@ public:
 		uint32_t h = 0;
 	};
 
-	typedef uint32_t color;
-
-	union ARGB
-	{
-		color c {0};
-		struct
-		{
-			color b : 8;
-			color g : 8;
-			color r : 8;
-			color a : 8;
-		} channels;
-	};
+	typedef std::map<color_idx, color_data> color_map;
+	typedef std::map<alpha_idx, uint8_t> alpha_map;
 
 	graphics();
 	graphics(const char*, uint32_t, uint32_t, uint32_t);
@@ -80,8 +131,19 @@ public:
 
 	/* framebuffer flow (engine-driven) */
 	frame_buffer get_backbuffer();
-	void clear_backbuffer(ARGB);
+	void fill_buffer(frame_buffer&, ARGB&);
+	frame_buffer get_clear_backbuffer(ARGB&);
 	void present(); /* uploads backbuffer, presents, swaps buffers */
+
+	// color management
+	ARGB get_color_val(color_idx) const;
+	string get_color_name(color_idx) const;
+	uint8_t get_alpha_val(alpha_idx);
+	void set_alpha(ARGB&, uint8_t);
+	uint32_t get_num_colors() const { return __last_color__; };
+	uint32_t get_num_alphas() const { return __last_alpha__; };
+
+	bool is_in_bounds(point p) const { return !(p.x >= _w || p.y >= _h); }
 
 private:
 
@@ -90,6 +152,8 @@ private:
 	uint32_t _h {0};
 	uint32_t _scale {1};
 	input_state _last_input {};
+	color_map _colors;
+	alpha_map _alphas;
 
 	// CPU-side double buffers
 	vector<color> _buf_a;
@@ -107,6 +171,8 @@ private:
 	void init_graphics();
 	void close_graphics();
 	void swap_buffers();
+	bool is_valid_color(color_idx i) const { return (i >= __first_color__ && i < __last_color__); }
+	bool is_valid_alpha(alpha_idx a) const { return (a >= __first_alpha__ && a < __last_alpha__); }
 };
 
 } // namespace graphics_ns

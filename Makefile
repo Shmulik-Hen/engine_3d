@@ -19,14 +19,17 @@ CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_FLAGS)
 
 DEBUG := 1
 ifeq ($(DEBUG), 1)
-CXXFLAGS += -g -O0 -fsanitize=address,undefined
+CXXFLAGS += -g -O0
+ifeq ($(DBG_ASAN), 1)
+CXXFLAGS += -fsanitize=address,undefined
 LDFLAGS += -fsanitize=address,undefined
+endif
 else
 CXXFLAGS += -O2
 endif
 
-ifeq ($(G_DEBUG), 1)
-CXXFLAGS += -DDEBUG_GRFX
+ifeq ($(DBG_PRINTS), 1)
+CXXFLAGS += -DDEBUG_PRINTS
 endif
 
 .PHONY: all

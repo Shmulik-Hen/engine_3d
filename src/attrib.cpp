@@ -1,3 +1,4 @@
+// #define DEBUG_PRINTS
 #include "attrib.h"
 
 namespace attrib_ns
@@ -28,7 +29,7 @@ bool attrib::read(ifstream& f)
 
 void attrib::print() const
 {
-#ifdef DEBUG_GRFX
+#ifdef DEBUG_PRINTS
 	DBG("    attrib:");
 	_deg_x.print();
 	_deg_y.print();
@@ -37,7 +38,7 @@ void attrib::print() const
 	_off_y.print();
 	_off_z.print();
 	_zoom.print();
-#endif // DEBUG_GRFX
+#endif // DEBUG_PRINTS
 }
 
 attrib& attrib::operator+=(const attrib& a)
