@@ -28,6 +28,7 @@ public:
 
 	typedef list<polygon*> poly_list;
 
+	polygon() {};
 	polygon(graphics&);
 	~polygon();
 
@@ -36,11 +37,11 @@ public:
 	const string* get_name() const { return (_name ? _name : nullptr); }
 	unit get_depth() const { return _depth; }
 	void update(matrix&, matrix&);
-
-	void clear();
 	void sort();
-	void show(frame_buffer&);
 	void show_all();
+
+	static void sort_polygons();
+	static void show_polygons();
 
 private:
 
@@ -66,6 +67,8 @@ private:
 	vector_3 find_fill();
 	vector_3 find_normal();
 	void make_color(unit);
+	void clear();
+	void show(frame_buffer&);
 };
 
 } // namespace polygon_ns

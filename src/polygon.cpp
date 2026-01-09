@@ -270,14 +270,9 @@ void polygon::show(frame_buffer& fb)
 
 void polygon::show_all()
 {
-#if 0
 	if (_draw_list.empty()) {
 		DBG("show_all: empty");
 		return;
-	}
-
-	if (!_gfx) {
-		sys_error("show_all: _gfx is null");
 	}
 
 	frame_buffer fb = _gfx->get_clear_backbuffer(_clear);
@@ -290,26 +285,18 @@ void polygon::show_all()
 	}
 
 	_gfx->present();
-#else
-	if (_draw_list.empty()) {
-		DBG("show_all: empty");
-		return;
-	}
+}
 
-	while (_draw_list.size()) {
-		polygon* poly = _draw_list.front();
-		_draw_list.pop_front();
-		frame_buffer fb = _gfx->get_clear_backbuffer(_clear);
-		_gfx->present();
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-		fb = _gfx->get_clear_backbuffer(_clear);
-		poly->show(fb);
-		_gfx->present();
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
+void polygon::sort_polygons()
+{
+	polygon tmp;
+	tmp.sort();
+}
 
-	// _gfx->present();
-#endif // 0
+void polygon::show_polygons()
+{
+	polygon tmp;
+	tmp.show_all();
 }
 
 } // namespace polygon_ns
