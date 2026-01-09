@@ -29,17 +29,12 @@ int main()
 		LINE line;
 		element* elem {nullptr};
 		element* root {nullptr};
-		polygon* ctrl_poly {nullptr};
 		polygon* poly {nullptr};
 		polygon::poly_list poly_lst;
 		input_state in {};
 		bool rc;
 
 		graphics gfx("Software 3D Engine", 320, 200, 2);
-		ctrl_poly = new polygon(gfx);
-		if (!ctrl_poly) {
-			sys_error("ctrl_poly is null");
-		}
 
 		f.open(filename, ios::in);
 		if (!f) {
@@ -146,9 +141,10 @@ int main()
 			root->update_all();
 			// DBG("print tree");
 			// root->print_all();
-			// DBG("sort");
-			// ctrl_poly->sort();
-			ctrl_poly->show_all();
+			DBG("sort");
+			polygon::sort_polygons();
+			DBG("show");
+			polygon::show_polygons();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			return 0;
 		}
