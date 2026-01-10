@@ -1,7 +1,7 @@
 #include <chrono>
 #include <thread>
 
-#define DEBUG_PRINTS
+// #define DEBUG_PRINTS
 #include "common.h"
 #include "attrib.h"
 #include "element.h"
@@ -128,9 +128,10 @@ int main()
 		}
 #endif // DEBUG_PRINTS
 
-		// attrib att1(-32, 0, 0, 0, 0, 0, 2048);
-		attrib att2(0, 0, 0, 0, 0, 0, 1024);
-		// e2->update(att1);
+		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
+		attrib att1(0, 0, 64, 0, 0, 0, 2048);
+		attrib att2(0, 1, 0, 0, 0, 0, 1024);
+		e2->update(att1);
 
 		while (!in.quit) {
 			gfx.poll_events(in);
@@ -145,8 +146,7 @@ int main()
 			polygon::sort_polygons();
 			DBG("show");
 			polygon::show_polygons();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			return 0;
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 
 		return 0;

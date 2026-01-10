@@ -1,4 +1,4 @@
-#define DEBUG_PRINTS
+// #define DEBUG_PRINTS
 #include "unit.h"
 #include "utils.h"
 

@@ -67,11 +67,11 @@ public:
 		__last_alpha__ // Dummy, not an actual alpha
 	};
 
-	typedef uint32_t color;
+	typedef uint32_t color_t;
 
 	union ARGB
 	{
-		color c;
+		color_t c {0};
 		struct _channel
 		{
 			uint32_t b : 8;
@@ -79,17 +79,21 @@ public:
 			uint32_t r : 8;
 			uint32_t a : 8;
 		} channel;
+
+		bool operator==(const ARGB& other) { return c == other.c; }
 	};
+
+	typedef ARGB* addr_t;
 
 	struct color_data
 	{
 		string name;
-		ARGB argb {};
+		ARGB argb;
 	};
 
 	struct frame_buffer
 	{
-		uint32_t* pixels {nullptr}; // ARGB8888
+		color_t* pixels {nullptr}; // ARGB8888
 		uint32_t width {0};
 		uint32_t height {0};
 		uint32_t pitch_bytes {0}; // bytes per row (typically width * 4)
@@ -132,18 +136,19 @@ public:
 
 	/* framebuffer flow (engine-driven) */
 	frame_buffer get_backbuffer();
-	void fill_buffer(frame_buffer&, ARGB&);
-	frame_buffer get_clear_backbuffer(ARGB&);
+	void fill_buffer(frame_buffer&, const ARGB&);
+	frame_buffer get_clear_backbuffer(const ARGB&);
 	void present(); /* uploads backbuffer, presents, swaps buffers */
 
 	// color management
-	ARGB get_color_val(color_idx) const;
-	string get_color_name(color_idx) const;
-	uint8_t get_alpha_val(alpha_idx);
-	void set_alpha(ARGB&, uint8_t);
-	uint32_t get_num_colors() const { return __last_color__; };
-	uint32_t get_num_alphas() const { return __last_alpha__; };
-
+	ARGB get_color_val(const color_idx) const;
+	string get_color_name(const color_idx) const;
+	uint8_t get_alpha_val(const alpha_idx);
+	void set_alpha(ARGB&, const uint8_t);
+	uint32_t get_num_colors() const { return __last_color__; }
+	uint32_t get_num_alphas() const { return __last_alpha__; }
+	point get_min_position() const { return point {0, 0}; }
+	point get_max_position() const { return point {_w, _h}; }
 	bool is_in_bounds(point p) const { return !(p.x >= _w || p.y >= _h); }
 
 private:
@@ -157,8 +162,8 @@ private:
 	alpha_map _alphas;
 
 	// CPU-side double buffers
-	vector<color> _buf_a;
-	vector<color> _buf_b;
+	vector<color_t> _buf_a;
+	vector<color_t> _buf_b;
 	bool _a_is_front {true};
 
 	// SDL objects (opaque pointers; stored as void* in header to avoid SDL includes here)
@@ -172,8 +177,14 @@ private:
 	void init_graphics();
 	void close_graphics();
 	void swap_buffers();
-	bool is_valid_color(color_idx i) const { return (i >= __first_color__ && i < __last_color__); }
-	bool is_valid_alpha(alpha_idx a) const { return (a >= __first_alpha__ && a < __last_alpha__); }
+	bool is_valid_color(color_idx i) const
+	{
+		return (i >= __first_color__ && i < __last_color__);
+	}
+	bool is_valid_alpha(alpha_idx a) const
+	{
+		return (a >= __first_alpha__ && a < __last_alpha__);
+	}
 };
 
 } // namespace graphics_ns

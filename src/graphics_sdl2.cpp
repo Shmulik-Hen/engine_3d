@@ -1,56 +1,19 @@
 #include <algorithm>
 #include <SDL2/SDL.h>
 
-#define DEBUG_PRINTS
+// #define DEBUG_PRINTS
 #include "graphics.h"
 #include "utils.h"
 
 namespace graphics_ns
 {
 
-#if 0
-uint32_t G_OFFSET = 0;
-uint32_t G_POS_X = 0;
-uint32_t G_POS_Y = 0;
-uint32_t G_MIN_X = 0;
-uint32_t G_MIN_Y = 0;
-uint32_t G_MAX_X = 320;
-uint32_t G_MAX_Y = 200;
-uint32_t G_COLOR = 0;
-uint32_t G_EDGE_COLOR = 0x00000000;
-uint32_t G_BLACK = 0x00000000;
-int vp_min_x;
-int vp_min_y;
-int vp_max_x;
-int vp_max_y;
-int vp_mid_x;
-int vp_mid_y;
-#define offset(x, y)      ((x) + G_MIN_X + ((y) + G_MIN_Y) * (G_MAX_X - G_MIN_X + 1))
-#define putpixel(x, y, c) BUFFER[offset((x), (y))] = (c)
-#define getpixel(x, y)    BUFFER[offset((x), (y))]
-#define m_setcolor(c)     G_COLOR = (c)
-#define getcolor()        G_COLOR
-#define putdirect(o, c)   BUFFER[(o)] = (c)
-#define getdirect(o)      BUFFER[(o)]
-#define moveto(x, y)                 \
-	G_OFFSET = offset((x), (y)); \
-	G_POS_X = (x);               \
-	G_POS_Y = (y)
-#endif // 0
-
-using std::max;
 using std::min;
 using std::string;
 using ARGB = graphics::ARGB;           // bring nested type into namespace scope
 using color_idx = graphics::color_idx; // same for color_idx
 using color_map = graphics::color_map; // same for color_map
 using input_state = graphics::input_state;
-
-enum flag
-{
-	OFF,
-	ON
-};
 
 constexpr uint32_t DEFAULT_WIDTH = MAX_X;
 constexpr uint32_t DEFAULT_HEIGHT = MAX_Y;
@@ -125,17 +88,17 @@ uint64_t graphics::tick_freq() const
 graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb {back.data(), _w, _h, _w * static_cast<uint32_t>(sizeof(uint32_t))};
+	frame_buffer fb {back.data(), _w, _h, _w * (uint32_t)sizeof(color_t)};
 
 	return fb;
 }
 
-void graphics::fill_buffer(frame_buffer& fb, ARGB& argb)
+void graphics::fill_buffer(frame_buffer& fb, const ARGB& argb)
 {
 	std::fill_n(fb.pixels, static_cast<size_t>(fb.width) * static_cast<size_t>(fb.height), argb.c);
 }
 
-graphics::frame_buffer graphics::get_clear_backbuffer(ARGB& argb)
+graphics::frame_buffer graphics::get_clear_backbuffer(const ARGB& argb)
 {
 	frame_buffer fb = get_backbuffer();
 	fill_buffer(fb, argb);
@@ -171,7 +134,7 @@ void graphics::present()
 	swap_buffers();
 }
 
-ARGB graphics::get_color_val(color_idx idx) const
+ARGB graphics::get_color_val(const color_idx idx) const
 {
 	if (!is_valid_color(idx)) {
 		DBG("get_color_val: invalid color_idx");
@@ -188,7 +151,7 @@ ARGB graphics::get_color_val(color_idx idx) const
 	return ARGB {}; // fallback for unknown idx
 }
 
-string graphics::get_color_name(color_idx idx) const
+string graphics::get_color_name(const color_idx idx) const
 {
 	if (!is_valid_color(idx)) {
 		return "";
@@ -203,7 +166,7 @@ string graphics::get_color_name(color_idx idx) const
 	return "";
 }
 
-uint8_t graphics::get_alpha_val(alpha_idx idx)
+uint8_t graphics::get_alpha_val(const alpha_idx idx)
 {
 	if (!is_valid_alpha(idx)) {
 		DBG("get_alpha_val: invalid alpha_idx: " << DEC((int)idx, 2));
@@ -220,7 +183,7 @@ uint8_t graphics::get_alpha_val(alpha_idx idx)
 	return 0;
 }
 
-void graphics::set_alpha(ARGB& argb, uint8_t alpha)
+void graphics::set_alpha(ARGB& argb, const uint8_t alpha)
 {
 	argb.channel.a = alpha;
 }
@@ -254,23 +217,23 @@ void graphics::init_graphics()
 	};
 
 	const uint8_t channels[__last_color__][4] = {
-		{ 0,   0,   0,   0 }, // 0  black
-		{ 0, 128, 128, 128 }, // 1  grey
-		{ 0, 192, 192, 192 }, // 2  silver
-		{ 0, 255, 255, 255 }, // 3  white
-		{ 0, 255,   0,   0 }, // 4  red
-		{ 0, 128,   0,   0 }, // 5  maroon
-		// { 0, , ,  },       // ?  orange
-		{ 0, 255, 255,   0 }, // 6  yellow
-		{ 0, 128, 128,   0 }, // 7  olive
-		{ 0,   0, 255,   0 }, // 8  lime
-		{ 0,   0, 128,   0 }, // 9  green
-		{ 0,   0, 255, 255 }, // 10 aqua
-		{ 0,   0, 128, 128 }, // 11 teal
-		{ 0,   0,   0, 255 }, // 12 blue
-		{ 0,   0,   0, 128 }, // 13 navy
-		{ 0, 255,   0, 255 }, // 14 magenta
-		{ 0, 128,   0, 128 }  // 15 purple
+		{ 255,   0,   0,   0 }, // 0  black
+		{ 255, 128, 128, 128 }, // 1  grey
+		{ 255, 192, 192, 192 }, // 2  silver
+		{ 255, 255, 255, 255 }, // 3  white
+		{ 255, 255,   0,   0 }, // 4  red
+		{ 255, 128,   0,   0 }, // 5  maroon
+		// {255,   0,   0,   0}, // ?  orange
+		{ 255, 255, 255,   0 }, // 6  yellow
+		{ 255, 128, 128,   0 }, // 7  olive
+		{ 255,   0, 255,   0 }, // 8  lime
+		{ 255,   0, 128,   0 }, // 9  green
+		{ 255,   0, 255, 255 }, // 10 aqua
+		{ 255,   0, 128, 128 }, // 11 teal
+		{ 255,   0,   0, 255 }, // 12 blue
+		{ 255,   0,   0, 128 }, // 13 navy
+		{ 255, 255,   0, 255 }, // 14 magenta
+		{ 255, 128,   0, 128 }  // 15 purple
 	};
 
 	uint8_t alpha_vals[__last_alpha__] = {
@@ -364,7 +327,7 @@ void graphics::init_graphics()
 	_buf_b.resize(static_cast<size_t>(_w) * static_cast<size_t>(_h));
 
 	/* avoid uninitialized visuals */
-	color c = MAKE_COLOR(alpha_vals[A16], channels[black][1], channels[black][2], channels[black][3]);
+	color_t c = MAKE_COLOR(alpha_vals[A16], channels[black][1], channels[black][2], channels[black][3]);
 	std::fill(_buf_a.begin(), _buf_a.end(), c);
 	std::fill(_buf_b.begin(), _buf_b.end(), c);
 
