@@ -112,8 +112,8 @@ public:
 	const string* get_name() const { return _name; }
 	unit get_depth() const { return _depth; }
 
-	static void sort_polygons();
-	static void show_polygons();
+	void sort_polygons();
+	void show_polygons();
 
 private:
 

@@ -43,81 +43,71 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 
 		switch (line[1]) {
 		case 'n':
+			// read element's name
 			len = read_word(f, line);
-			if (len) {
-				_name = new string(line);
-				if (!_name) {
-					sys_error("element::read allocation error -  _name");
-				}
-				DBG("read: " << *_name);
-			}
-			else {
+			if (!len) {
 				sys_error("element::read error _name");
 			}
+
+			_name = new string(line);
+			DBG("read: " << *_name);
 			break;
 		case 't':
-			if (root) {
-				if (!*root) {
-					*root = this;
-				}
-				else {
-					len = read_word(f, line);
-					if (len) {
-						_parrent_name = new string(line);
-						if (_parrent_name) {
-							element* parrent = find(*root, *_parrent_name);
-							if (parrent) {
-								add_node(parrent);
-								_parrent = parrent;
-							}
-							else {
-								delete parrent;
-								sys_error("element::read error -  _parrent_name");
-							}
-						}
-						else {
-							sys_error("element::read allocation error -  _parrent_name");
-						}
-					}
-				}
+			if (!root) {
+				sys_error("element::read root is NULL");
+			}
+
+			if (!*root) {
+				// root has no parrent
+				*root = this;
 			}
 			else {
-				sys_error("element::read root is NULL");
+				// all others must have a parrent
+				len = read_word(f, line);
+				if (!len) {
+					sys_error("element::read read error -  _parrent_name");
+				}
+
+				_parrent_name = new string(line);
+				element* parrent = find(*root, *_parrent_name);
+				if (!parrent) {
+					delete _parrent_name;
+					sys_error("element::read find error -  _parrent_name");
+				}
+
+				add_node(parrent);
+				_parrent = parrent;
 			}
 			break;
 		case 'p':
+			// add a polygon to element
 			len = read_word(f, line);
 			if (len) {
 				string* s = new string(line);
-				if (s) {
-					polygon* p = find(list, *s);
-					if (p) {
-						_polygons.push_back(p);
-						DBG("read: " << *p->get_name());
-					}
-					else {
-						delete s;
-						sys_error("element::read find error -  polygon");
-					}
+				polygon* p = find(list, *s);
+				if (!p) {
+					delete s;
+					sys_error("element::read find error -  polygon");
 				}
-				else {
-					sys_error("element::read allocation error -  polygon");
-				}
+
+				_polygons.push_back(p);
+				DBG("read: " << *p->get_name());
 			}
 			else {
 				sys_error("element::read error polygon");
 			}
 			break;
 		case 'f':
+			// force flag
 			len = read_word(f, line);
-			if (len) {
-				_active = (bool)atoi(line);
-			}
-			else {
+			if (!len) {
 				sys_error("element::read error flag");
 			}
+
+			_active = (bool)atoi(line);
 			break;
 		case 'a':
+			// element's attribute
 			rc = _att.read(f);
 			if (!rc) {
 				sys_error("element::read error attrib");
