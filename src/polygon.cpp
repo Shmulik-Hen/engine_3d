@@ -321,7 +321,7 @@ bool polygon::read(ifstream& f)
 {
 	LINE line;
 	vector_3* v;
-	int finish = 0, len;
+	int finish = 0, len, rc;
 
 	while (!f.eof() && !finish) {
 		while ((!read_word(f, line)) && (!f.eof()));
@@ -333,15 +333,11 @@ bool polygon::read(ifstream& f)
 		switch (line[1]) {
 		case 'n':
 			len = read_word(f, line);
-			if (len) {
-				_name = new string(line);
-				if (!_name) {
-					sys_error("polygon::read allocation error -  polygon");
-				}
-			}
-			else {
+			if (!len) {
 				sys_error("polygon::read error polygon");
 			}
+
+			_name = new string(line);
 			break;
 		case 'c':
 			len = read_word(f, line);
@@ -367,18 +363,13 @@ bool polygon::read(ifstream& f)
 			break;
 		case 'v':
 			v = new vector_3;
-			if (v) {
-				if (v->read(f)) {
-					_points.push_back(v);
-				}
-				else {
-					delete v;
-					sys_error("polygon::read error polygon");
-				}
+			rc = v->read(f);
+			if (!rc) {
+				delete v;
+				sys_error("polygon::read error polygon");
 			}
-			else {
-				sys_error("element::read allocation error -  polygon");
-			}
+
+			_points.push_back(v);
 			break;
 		default:
 			finish = 1;
@@ -539,18 +530,12 @@ vector_3 polygon::find_normal()
 
 void polygon::sort_polygons()
 {
-	if (_draw_list.size()) {
-		polygon* poly = _draw_list.front();
-		poly->sort();
-	}
+	this->sort();
 }
 
 void polygon::show_polygons()
 {
-	if (_draw_list.size()) {
-		polygon* poly = _draw_list.front();
-		poly->show_all();
-	}
+	this->show_all();
 }
 
 } // namespace polygon_ns

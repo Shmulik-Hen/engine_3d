@@ -30,6 +30,7 @@ int main()
 		element* elem {nullptr};
 		element* root {nullptr};
 		polygon* poly {nullptr};
+		polygon* ctrl_poly {nullptr};
 		polygon::poly_list poly_lst;
 		input_state in {};
 		bool rc;
@@ -57,32 +58,27 @@ int main()
 			// case '#':
 			// 	read_remark(f);
 			case 'p':
+				// instantiate a new polygon
 				poly = new polygon(gfx);
-				if (poly) {
-					rc = poly->read(f);
-					if (rc) {
-						poly_lst.push_back(poly);
-					}
-					else {
-						delete poly;
-						sys_error("read polygon failed");
-					}
+				rc = poly->read(f);
+				if (!rc) {
+					delete poly;
+					sys_error("read polygon failed");
 				}
-				else {
-					sys_error("new polygon failed");
+
+				poly_lst.push_back(poly);
+
+				if (!ctrl_poly) {
+					ctrl_poly = new polygon(gfx);
 				}
 				break;
 			case 'e':
+				// instantiate a new element
 				elem = new element;
-				if (elem) {
-					rc = elem->read(poly_lst, &root, f);
-					if (!rc) {
-						delete elem;
-						sys_error("read element failed");
-					}
-				}
-				else {
-					sys_error("new element failed");
+				rc = elem->read(poly_lst, &root, f);
+				if (!rc) {
+					delete elem;
+					sys_error("read element failed");
 				}
 				break;
 			}
@@ -98,23 +94,17 @@ int main()
 			sys_error("no polygons");
 		}
 
-		string* s1 = new string("world");
-		if (!s1) {
-			sys_error("string allocation error");
-		}
+		// find the relevant elements to work with
+		string* world_name = new string("world");
+		string* box_name = new string("box");
 
-		string* s2 = new string("box");
-		if (!s2) {
-			sys_error("string allocation error");
-		}
-
-		element* e1 = root->find(root, *s1);
-		if (!e1) {
+		element* world = root->find(root, *world_name);
+		if (!world) {
 			sys_error("find world failed");
 		}
 
-		element* e2 = root->find(root, *s2);
-		if (!e2) {
+		element* box = root->find(root, *box_name);
+		if (!box) {
 			sys_error("find box failed");
 		}
 
@@ -129,23 +119,25 @@ int main()
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib att1(0, 0, 64, 0, 0, 0, 2048);
-		attrib att2(0, 1, 0, 0, 0, 0, 1024);
-		e2->update(att1);
+		attrib initial_att(0, 0, 64, 0, 0, 0, 2048);
+		box->update(initial_att);
 
+		attrib keep_moving(0, 1, 0, 0, 0, 0, 1024);
 		while (!in.quit) {
 			gfx.poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			e2->update(att2);
+			box->update(keep_moving);
 			DBG("update tree");
 			root->update_all();
-			// DBG("print tree");
-			// root->print_all();
+#ifdef DEBUG_PRINTS
+			DBG("print tree");
+			root->print_all();
+#endif
 			DBG("sort");
-			polygon::sort_polygons();
+			ctrl_poly->sort_polygons();
 			DBG("show");
-			polygon::show_polygons();
+			ctrl_poly->show_polygons();
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 
