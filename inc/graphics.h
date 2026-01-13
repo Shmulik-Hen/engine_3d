@@ -22,6 +22,10 @@ class graphics
 {
 public:
 
+	using coord_t = uint32_t;
+	using color_t = uint32_t;
+	using val_t = uint32_t;
+
 	enum color_idx
 	{
 		__first_color__ = 0, // Dummy, not an actual color
@@ -67,23 +71,19 @@ public:
 		__last_alpha__ // Dummy, not an actual alpha
 	};
 
-	typedef uint32_t color_t;
-
 	union ARGB
 	{
 		color_t c {0};
 		struct _channel
 		{
-			uint32_t b : 8;
-			uint32_t g : 8;
-			uint32_t r : 8;
-			uint32_t a : 8;
+			color_t b : 8;
+			color_t g : 8;
+			color_t r : 8;
+			color_t a : 8;
 		} channel;
 
 		bool operator==(const ARGB& other) { return c == other.c; }
 	};
-
-	typedef ARGB* addr_t;
 
 	struct color_data
 	{
@@ -94,9 +94,9 @@ public:
 	struct frame_buffer
 	{
 		color_t* pixels {nullptr}; // ARGB8888
-		uint32_t width {0};
-		uint32_t height {0};
-		uint32_t pitch_bytes {0}; // bytes per row (typically width * 4)
+		val_t width {0};
+		val_t height {0};
+		val_t pitch_bytes {0}; // bytes per row (typically width * 4)
 	};
 
 	struct input_state
@@ -108,21 +108,16 @@ public:
 
 	struct point
 	{
-		uint32_t x = 0;
-		uint32_t y = 0;
+		coord_t x {0};
+		coord_t y {0};
 	};
 
-	struct size
-	{
-		uint32_t w = 0;
-		uint32_t h = 0;
-	};
-
+	using addr_t = ARGB*;
 	typedef std::map<color_idx, color_data> color_map;
 	typedef std::map<alpha_idx, uint8_t> alpha_map;
 
 	graphics();
-	graphics(const char*, uint32_t, uint32_t, uint32_t);
+	graphics(const char*, val_t, val_t, val_t);
 	~graphics();
 
 	// class with allocated resource should not be copied
@@ -145,8 +140,8 @@ public:
 	string get_color_name(const color_idx) const;
 	uint8_t get_alpha_val(const alpha_idx);
 	void set_alpha(ARGB&, const uint8_t);
-	uint32_t get_num_colors() const { return __last_color__; }
-	uint32_t get_num_alphas() const { return __last_alpha__; }
+	val_t get_num_colors() const { return __last_color__; }
+	val_t get_num_alphas() const { return __last_alpha__; }
 	point get_min_position() const { return point {0, 0}; }
 	point get_max_position() const { return point {_w, _h}; }
 	bool is_in_bounds(point p) const { return !(p.x >= _w || p.y >= _h); }
@@ -154,9 +149,9 @@ public:
 private:
 
 	string _title;
-	uint32_t _w {0};
-	uint32_t _h {0};
-	uint32_t _scale {1};
+	val_t _w {0};
+	val_t _h {0};
+	val_t _scale {1};
 	input_state _last_input {};
 	color_map _colors;
 	alpha_map _alphas;
@@ -177,14 +172,11 @@ private:
 	void init_graphics();
 	void close_graphics();
 	void swap_buffers();
-	bool is_valid_color(color_idx i) const
-	{
-		return (i >= __first_color__ && i < __last_color__);
-	}
-	bool is_valid_alpha(alpha_idx a) const
-	{
-		return (a >= __first_alpha__ && a < __last_alpha__);
-	}
+
+	// clang-format off
+	bool is_valid_color(color_idx i) const { return (i >= __first_color__ && i < __last_color__); }
+	bool is_valid_alpha(alpha_idx a) const { return (a >= __first_alpha__ && a < __last_alpha__); }
+	// clang-format on
 };
 
 } // namespace graphics_ns
