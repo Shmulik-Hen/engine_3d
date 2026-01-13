@@ -29,7 +29,11 @@ CXXFLAGS += -O2
 endif
 
 ifeq ($(DBG_PRINTS), 1)
-CXXFLAGS += -DDEBUG_PRINTS
+CXXFLAGS += $(addprefix -D,DEBUG_PRINTS)
+endif
+
+ifeq ($(DBG_POLY), 1)
+CXXFLAGS += $(addprefix -D,POLYGON_DEBUG)
 endif
 
 .PHONY: all

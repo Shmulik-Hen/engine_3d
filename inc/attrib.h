@@ -1,5 +1,4 @@
-#ifndef __ATTRIB_H__
-#define __ATTRIB_H__
+#pragma once
 
 #include "common.h"
 #include "unit.h"
@@ -46,4 +45,3 @@ public:
 };
 
 } // namespace attrib_ns
-#endif //__ATTRIB_H__

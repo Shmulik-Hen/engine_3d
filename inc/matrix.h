@@ -1,5 +1,4 @@
-#ifndef __MATRIX_H__
-#define __MATRIX_H__
+#pragma once
 
 #include "common.h"
 #include "attrib.h"
@@ -66,4 +65,3 @@ public:
 matrix get_unit_mat();
 
 } // namespace matrix_ns
-#endif //__MATRIX_H__

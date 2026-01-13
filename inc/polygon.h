@@ -1,5 +1,4 @@
-#ifndef __POLYGON_H__
-#define __POLYGON_H__
+#pragma once
 
 #include <list>
 #include <utility>
@@ -159,4 +158,3 @@ private:
 };
 
 } // namespace polygon_ns
-#endif //__POLYGON_H__

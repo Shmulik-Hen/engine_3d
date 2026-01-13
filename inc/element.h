@@ -1,5 +1,4 @@
-#ifndef __ELEMENT_H__
-#define __ELEMENT_H__
+#pragma once
 
 #include <list>
 
@@ -60,4 +59,3 @@ private:
 };
 
 } // namespace element_ns
-#endif //__ELEMENT_H__

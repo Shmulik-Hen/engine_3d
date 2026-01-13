@@ -1,5 +1,4 @@
-#ifndef __VECTOR_3_H__
-#define __VECTOR_3_H__
+#pragma once
 
 #include "common.h"
 #include "unit.h"
@@ -46,5 +45,3 @@ public:
 };
 
 } // namespace vector_3_ns
-
-#endif //__VECTOR_3_H__

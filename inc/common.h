@@ -1,5 +1,4 @@
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#pragma once
 
 #include <fstream>
 #include <iomanip>
@@ -45,5 +44,3 @@ const std::string DBG_PFX = "Debug: ";
 
 typedef char LINE[MAX_LINE + 1];
 typedef char NAME[MAX_NAME + 1];
-
-#endif //__COMMON_H__

@@ -1,5 +1,4 @@
-#ifndef __UNIT_H__
-#define __UNIT_H__
+#pragma once
 
 #include "common.h"
 
@@ -52,4 +51,3 @@ const unit UNIT(1024);
 const unit ZERO(0);
 
 } // namespace unit_ns
-#endif //__UNIT_H__
