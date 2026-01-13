@@ -88,7 +88,7 @@ uint64_t graphics::tick_freq() const
 graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb {back.data(), _w, _h, _w * (uint32_t)sizeof(color_t)};
+	frame_buffer fb {back.data(), _w, _h, _w * static_cast<uint32_t>(sizeof(color_t))};
 
 	return fb;
 }
