@@ -7,7 +7,6 @@
 ### Current Status
 After thorough investigation of the repository:
 - **No "sdl2 dev branch" currently exists** in the local or remote repository
-- Only branch visible: `copilot/delete-sdl2-dev-branch`
 - The SDL2 code exists as part of the main codebase in `src/graphics_sdl2.cpp`
 
 ### How to Delete a Branch
@@ -16,7 +15,7 @@ If you need to delete a branch in the future, here are the commands:
 
 #### Delete a Local Branch
 ```bash
-# Delete a local branch (must not be checked out)
+# Delete a local branch (you must NOT be on the branch you want to delete)
 git branch -d <branch-name>
 
 # Force delete a local branch (even if not fully merged)
@@ -47,7 +46,9 @@ If an "sdl2-dev" branch existed, you would delete it with:
 
 ```bash
 # Switch to a different branch first (e.g., main or master)
-git checkout main
+# Use 'git switch' (modern) or 'git checkout' (traditional)
+git switch main
+# or: git checkout main
 
 # Delete the local sdl2-dev branch
 git branch -d sdl2-dev
