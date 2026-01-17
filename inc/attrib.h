@@ -1,25 +1,21 @@
 #pragma once
 
 #include "common.h"
-#include "unit.h"
 
 namespace attrib_ns
 {
 
-using std::ifstream;
-using std::istream;
-using std::ostream;
-using unit_ns::unit;
+// using unit_ns::unit;
 
 class attrib
 {
-	unit _deg_x {unit_ns::ZERO};
-	unit _deg_y {unit_ns::ZERO};
-	unit _deg_z {unit_ns::ZERO};
-	unit _off_x {unit_ns::ZERO};
-	unit _off_y {unit_ns::ZERO};
-	unit _off_z {unit_ns::ZERO};
-	unit _zoom {unit_ns::ZERO};
+	unit _deg_x {ZERO};
+	unit _deg_y {ZERO};
+	unit _deg_z {ZERO};
+	unit _off_x {ZERO};
+	unit _off_y {ZERO};
+	unit _off_z {ZERO};
+	unit _zoom {UNIT};
 
 public:
 
@@ -27,21 +23,21 @@ public:
 	~attrib() {}
 	attrib(const unit, const unit, const unit, const unit, const unit, const unit, const unit);
 
-	bool read(ifstream&);
+	bool read(std::ifstream&);
 	void print() const;
 
-	const unit get_deg_x() const { return _deg_x; };
-	const unit get_deg_y() const { return _deg_y; };
-	const unit get_deg_z() const { return _deg_z; };
-	const unit get_off_x() const { return _off_x; };
-	const unit get_off_y() const { return _off_y; };
-	const unit get_off_z() const { return _off_z; };
-	const unit get_zoom() const { return _zoom; };
+	unit get_deg_x() const { return _deg_x; };
+	unit get_deg_y() const { return _deg_y; };
+	unit get_deg_z() const { return _deg_z; };
+	unit get_off_x() const { return _off_x; };
+	unit get_off_y() const { return _off_y; };
+	unit get_off_z() const { return _off_z; };
+	unit get_zoom() const { return _zoom; };
 
 	attrib& operator+=(const attrib&);
 
-	friend ostream& operator<<(ostream&, const attrib&);
-	friend istream& operator>>(istream&, attrib&);
+	friend std::ostream& operator<<(std::ostream&, const attrib&);
+	friend std::istream& operator>>(std::istream&, attrib&);
 };
 
 } // namespace attrib_ns

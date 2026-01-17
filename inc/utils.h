@@ -1,10 +1,6 @@
 #pragma once
 
-#include <string>
 #include "common.h"
-
-using std::ifstream;
-using std::string;
 
 struct system_error : std::runtime_error
 {
@@ -12,5 +8,5 @@ struct system_error : std::runtime_error
 };
 
 system_error sys_error(const char* s1, const char* s2 = nullptr);
-int read_word(ifstream&, char*);
-void read_remark(ifstream&);
+int read_word(std::ifstream&, char*);
+void read_remark(std::ifstream&);

@@ -1,43 +1,53 @@
 // #define DEBUG_PRINTS
 #include "attrib.h"
+#include "utils.h"
 
 namespace attrib_ns
 {
 
-attrib::attrib(const unit dx, const unit dy, const unit dz, const unit ox, const unit oy, const unit oz, const unit z) :
-	_deg_x {dx}, _deg_y {dy}, _deg_z {dz}, _off_x {ox},
-	_off_y {oy}, _off_z {oz}, _zoom {z}
+// clang-format off
+attrib::attrib(const unit dx, const unit dy, const unit dz,
+	       const unit ox, const unit oy, const unit oz,
+	       const unit z) :
+	_deg_x {dx}, _deg_y {dy}, _deg_z {dz},
+	_off_x {ox}, _off_y {oy}, _off_z {oz},
+	_zoom {z}
 {
 }
+// clang-format on
 
-bool attrib::read(ifstream& f)
+bool attrib::read(std::ifstream& ifs)
 {
-	bool rc = false;
+	LINE line;
 
-	rc += _deg_x.read(f);
-	rc += _deg_y.read(f);
-	rc += _deg_z.read(f);
-	rc += _off_x.read(f);
-	rc += _off_y.read(f);
-	rc += _off_z.read(f);
-	rc += _zoom.read(f);
-	if (!rc) {
-		ERR("attrib::read error");
-	}
-	return rc;
+	while (!read_word(ifs, line));
+	_deg_x = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_deg_y = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_deg_z = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_off_x = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_off_y = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_off_z = strtof(line, NULL);
+	while (!read_word(ifs, line));
+	_zoom = strtof(line, NULL);
+	return true;
 }
 
 void attrib::print() const
 {
 #ifdef DEBUG_PRINTS
-	DBG("    attrib:");
-	_deg_x.print();
-	_deg_y.print();
-	_deg_z.print();
-	_off_x.print();
-	_off_y.print();
-	_off_z.print();
-	_zoom.print();
+	DBG("    attrib:" << ENDL
+	<< "deg x: "_<< _deg_x << ENDL
+	<< "deg y: "_<< _deg_y << ENDL
+	<< "deg z: "_<< _deg_z << ENDL
+	<< "off x: "_<< _off_x << ENDL
+	<< "off y: "_<< _off_y << ENDL
+	<< "off z: "_<< _off_z << ENDL
+	<< "zoom: "_<< _zoom << ENDL
 #endif // DEBUG_PRINTS
 }
 
@@ -53,22 +63,22 @@ attrib& attrib::operator+=(const attrib& a)
 	return *this;
 }
 
-ostream& operator<<(ostream& o, const attrib& a)
+std::ostream& operator<<(std::ostream& os, const attrib& a)
 {
-	return o << '(' << a._deg_x << ',' << a._deg_y << ',' << a._deg_z << ','
-	         << a._off_x << ',' << a._off_y << ',' << a._off_z << ',' << a._zoom << ')';
+	return os << '(' << a._deg_x << ',' << a._deg_y << ',' << a._deg_z << ','
+	          << a._off_x << ',' << a._off_y << ',' << a._off_z << ',' << a._zoom << ')';
 }
 
-istream& operator>>(istream& i, attrib& a)
+std::istream& operator>>(std::istream& is, attrib& a)
 {
-	i >> a._deg_x;
-	i >> a._deg_y;
-	i >> a._deg_z;
-	i >> a._off_x;
-	i >> a._off_y;
-	i >> a._off_z;
-	i >> a._zoom;
-	return i;
+	is >> a._deg_x;
+	is >> a._deg_y;
+	is >> a._deg_z;
+	is >> a._off_x;
+	is >> a._off_y;
+	is >> a._off_z;
+	is >> a._zoom;
+	return is;
 }
 
 } // namespace attrib_ns

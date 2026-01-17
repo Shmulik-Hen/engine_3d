@@ -13,19 +13,20 @@ INC_FLAGS := $(addprefix -I,$(INC_DIR))
 SDL_FLAGS := $(shell sdl2-config --cflags)
 SDL_LIBS  := $(shell sdl2-config --libs)
 CPPFLAGS  := -MMD -MP
-LDFLAGS   :=
-LDLIBS    := $(SDL_LIBS)
+#LDFLAGS   :=
+LDLIBS    += $(SDL_LIBS)
 CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_FLAGS)
 
-DEBUG := 1
+#DEBUG := 1
 ifeq ($(DEBUG), 1)
 CXXFLAGS += -g -O0
+else
+CXXFLAGS += -O2
+endif
+
 ifeq ($(DBG_ASAN), 1)
 CXXFLAGS += -fsanitize=address,undefined
 LDFLAGS += -fsanitize=address,undefined
-endif
-else
-CXXFLAGS += -O2
 endif
 
 ifeq ($(DBG_PRINTS), 1)
