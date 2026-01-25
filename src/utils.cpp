@@ -1,11 +1,9 @@
+#include "common.h"
 #include "utils.h"
-
-using std::cerr;
-using std::cout;
 
 system_error sys_error(const char* s1, const char* s2)
 {
-	string msg = string(s1);
+	std::string msg = std::string(s1);
 	if (s2) {
 		msg += ": ";
 		msg += s2;
@@ -14,15 +12,15 @@ system_error sys_error(const char* s1, const char* s2)
 	throw system_error(msg);
 }
 
-int read_word(ifstream& f, char* word)
+int read_word(std::ifstream& ifs, char* word)
 {
 	int finish = 0;
 	int length = 0;
 	char c;
 
 	bzero(word, MAX_LINE);
-	while ((!finish) && (!f.eof()) && (length < MAX_LINE)) {
-		f >> c;
+	while ((!finish) && (!ifs.eof()) && (length < MAX_LINE)) {
+		ifs >> c;
 		// DBG(STR("read_word: ", 1) << c);
 		if ((c <= 32) || (c == ',') || (c == '(') || (c == ')') || (c == '{') || (c == '}')) {
 			finish = 1;
@@ -37,6 +35,6 @@ int read_word(ifstream& f, char* word)
 	return length;
 }
 
-void read_remark(ifstream&)
+void read_remark(std::ifstream&)
 {
 }

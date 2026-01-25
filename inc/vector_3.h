@@ -1,24 +1,22 @@
-#ifndef __VECTOR_3_H__
-#define __VECTOR_3_H__
+#pragma once
 
 #include "common.h"
-#include "unit.h"
 
 namespace vector_3_ns
 {
 
-using std::ifstream;
-using std::istream;
-using std::ostream;
-using unit_ns::unit;
-using unit_ns::UNIT;
-using unit_ns::ZERO;
+// using unit_ns::unit;
+// using unit_ns::UNIT;
+// using unit_ns::ZERO;
 
 const int dim = Z_ + 1;
 
 class vector_3
 {
+private:
+
 	unit _coords[dim];
+	bool is_valid_coord(int i) const { return (i >= X_ && i <= Z_); }
 
 public:
 
@@ -28,23 +26,24 @@ public:
 	vector_3(const unit, const unit, const unit);
 	~vector_3() {}
 
-	bool read(ifstream&);
+	bool read(std::ifstream&);
 	void print() const;
 	unit get(int) const;
-	vector_3 project(const vector_3&, const vector_3&);
-	void normalize(vector_3&);
+	void set(const int, const unit&);
+	static unit dot(const vector_3&, const vector_3&);
+	static vector_3 cross(const vector_3&, const vector_3&);
+	static vector_3 project(const vector_3&, const vector_3&);
+	static vector_3 normalize(const vector_3&);
 
-	vector_3& operator=(const vector_3&) = default;
 	vector_3 operator+(const vector_3&) const;
 	vector_3 operator-(const vector_3&) const;
+	vector_3 operator*(const unit) const;
+	vector_3& operator=(const vector_3&) = default;
 	vector_3& operator+=(const vector_3&);
 	vector_3& operator-=(const vector_3&);
-	const unit operator*(const vector_3&) const;
 
-	friend ostream& operator<<(ostream&, const vector_3&);
-	friend istream& operator>>(istream&, vector_3&);
+	friend std::ostream& operator<<(std::ostream&, const vector_3&);
+	friend std::istream& operator>>(std::istream&, vector_3&);
 };
 
 } // namespace vector_3_ns
-
-#endif //__VECTOR_3_H__

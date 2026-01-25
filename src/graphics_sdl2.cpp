@@ -8,32 +8,38 @@
 namespace graphics_ns
 {
 
-using std::min;
-using std::string;
 using ARGB = graphics::ARGB;           // bring nested type into namespace scope
 using color_idx = graphics::color_idx; // same for color_idx
 using color_map = graphics::color_map; // same for color_map
 using input_state = graphics::input_state;
 
-constexpr uint32_t DEFAULT_WIDTH = MAX_X;
-constexpr uint32_t DEFAULT_HEIGHT = MAX_Y;
-constexpr uint32_t DEFAULT_SCALE = 1;
+constexpr std::int32_t DEFAULT_WIDTH = MAX_X;
+constexpr std::int32_t DEFAULT_HEIGHT = MAX_Y;
+constexpr std::int32_t DEFAULT_SCALE = 1;
 constexpr const char* DEFAULT_NAME = "Graphics_SDL2";
 
 graphics::graphics() :
 	_title {DEFAULT_NAME},
 	_w {DEFAULT_WIDTH},
 	_h {DEFAULT_HEIGHT},
-	_scale {DEFAULT_SCALE}
+	_scale {DEFAULT_SCALE},
+	_scaled_w {_w * _scale},
+	_scaled_h {_h * _scale},
+	_win_size {_w * _h},
+	_pitch {_w * (val_t)sizeof(color_t)}
 {
 	init_graphics();
 }
 
-graphics::graphics(const char* title, uint32_t width, uint32_t height, uint32_t scale) :
+graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_title {title},
-	_w {min(width, MAX_X)},
-	_h {min(height, MAX_Y)},
-	_scale {scale}
+	_w {std::min(width, MAX_X)},
+	_h {std::min(height, MAX_Y)},
+	_scale {scale},
+	_scaled_w {_w * _scale},
+	_scaled_h {_h * _scale},
+	_win_size {_w * _h},
+	_pitch {_w * (val_t)sizeof(color_t)}
 {
 	if (!_w || !_h || !_scale || _title.empty()) {
 		sys_error("Invalid width/height/scale/title");
@@ -51,7 +57,6 @@ void graphics::poll_events(input_state& io)
 {
 	SDL_Event e;
 
-	DBG("poll_events begin");
 	while (SDL_PollEvent(&e)) {
 		switch (e.type) {
 		case SDL_QUIT:
@@ -72,15 +77,14 @@ void graphics::poll_events(input_state& io)
 	}
 
 	_last_input = io;
-	DBG("poll_events end");
 }
 
-uint64_t graphics::now_ticks() const
+std::uint64_t graphics::now_ticks() const
 {
-	return static_cast<uint64_t>(SDL_GetPerformanceCounter());
+	return static_cast<std::uint64_t>(SDL_GetPerformanceCounter());
 }
 
-uint64_t graphics::tick_freq() const
+std::uint64_t graphics::tick_freq() const
 {
 	return _perf_freq;
 }
@@ -88,20 +92,20 @@ uint64_t graphics::tick_freq() const
 graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb {back.data(), _w, _h, _w * static_cast<uint32_t>(sizeof(color_t))};
+	frame_buffer fb {back.data(), _w, _h, _pitch};
 
 	return fb;
 }
 
-void graphics::fill_buffer(frame_buffer& fb, const ARGB& argb)
+void graphics::fill_buffer(frame_buffer& fb, const ARGB& color)
 {
-	std::fill_n(fb.pixels, static_cast<size_t>(fb.width) * static_cast<size_t>(fb.height), argb.c);
+	std::fill_n(fb.pixels, _win_size, color.c);
 }
 
-graphics::frame_buffer graphics::get_clear_backbuffer(const ARGB& argb)
+graphics::frame_buffer graphics::get_clear_backbuffer(const ARGB& color)
 {
 	frame_buffer fb = get_backbuffer();
-	fill_buffer(fb, argb);
+	fill_buffer(fb, color);
 	return fb;
 }
 
@@ -112,7 +116,7 @@ void graphics::present()
 	auto* ren = reinterpret_cast<SDL_Renderer*>(_renderer);
 	int rc;
 
-	/* upload pixels to GPU-managed texture */
+	// upload pixels to GPU-managed texture
 	rc = SDL_UpdateTexture(tex, nullptr, fb.pixels, fb.pitch_bytes);
 	if (rc) {
 		sys_error("SDL_UpdateTexture failed");
@@ -121,7 +125,7 @@ void graphics::present()
 	// Render texture scaled to window
 	SDL_RenderClear(ren);
 
-	SDL_Rect dst {0, 0, static_cast<int>(_w * _scale), static_cast<int>(_h * _scale)};
+	SDL_Rect dst {0, 0, _scaled_w, _scaled_h};
 
 	rc = SDL_RenderCopy(ren, tex, nullptr, &dst);
 	if (rc) {
@@ -130,62 +134,55 @@ void graphics::present()
 
 	SDL_RenderPresent(ren);
 
-	/* only swap AFTER we showed the completed backbuffer */
+	// only swap AFTER we showed the completed backbuffer
 	swap_buffers();
 }
 
 ARGB graphics::get_color_val(const color_idx idx) const
 {
-	if (!is_valid_color(idx)) {
-		DBG("get_color_val: invalid color_idx");
-		return ARGB {};
+	if (is_valid_color(idx)) {
+		auto it = _colors.find(idx);
+		if (it != _colors.end()) {
+			color_data d = it->second;
+			return d.color;
+		}
 	}
 
-	auto it = _colors.find(idx);
-	if (it != _colors.end()) {
-		color_data d = it->second;
-		return d.argb;
-	}
-
-	DBG("get_color_val: return fallback");
-	return ARGB {}; // fallback for unknown idx
+	DBG("get_color_val: return default");
+	return ARGB {};
 }
 
-string graphics::get_color_name(const color_idx idx) const
+std::string graphics::get_color_name(const color_idx idx) const
 {
-	if (!is_valid_color(idx)) {
-		return "";
+	if (is_valid_color(idx)) {
+		auto it = _colors.find(idx);
+		if (it != _colors.end()) {
+			color_data d = it->second;
+			return d.name;
+		}
 	}
 
-	auto it = _colors.find(idx);
-	if (it != _colors.end()) {
-		color_data d = it->second;
-		return d.name;
-	}
-
+	DBG("get_color_name: returning default");
 	return "";
 }
 
 uint8_t graphics::get_alpha_val(const alpha_idx idx)
 {
-	if (!is_valid_alpha(idx)) {
-		DBG("get_alpha_val: invalid alpha_idx: " << DEC((int)idx, 2));
-		return 0;
-	}
-
-	auto it = _alphas.find(idx);
-	if (it != _alphas.end()) {
-		DBG("get_alpha_val: " << HEX((int)it->second, 2));
-		return it->second;
+	if (is_valid_alpha(idx)) {
+		auto it = _alphas.find(idx);
+		if (it != _alphas.end()) {
+			DBG("get_alpha_val: " << HEX((int)it->second, 2));
+			return it->second;
+		}
 	}
 
 	DBG("get_alpha_val: returning default");
 	return 0;
 }
 
-void graphics::set_alpha(ARGB& argb, const uint8_t alpha)
+void graphics::set_alpha(ARGB& color, const uint8_t alpha)
 {
-	argb.channel.a = alpha;
+	color.channel.a = alpha;
 }
 
 void graphics::init_graphics()
@@ -193,6 +190,7 @@ void graphics::init_graphics()
 	SDL_Window* win;
 	SDL_Renderer* ren;
 	SDL_Texture* tex;
+	color_t black_ {0};
 	int rc;
 
 	// clang-format off
@@ -257,15 +255,19 @@ void graphics::init_graphics()
 	// clang-format on
 
 	_colors.clear();
-	for (uint32_t i = __first_color__; i < __last_color__; i++) {
+	for (int i = __first_color__; i < __last_color__; i++) {
 		color_idx idx = static_cast<color_idx>(i);
 		const char* s = tmp_col[i];
-		ARGB argb;
-		argb.c = MAKE_COLOR(channels[idx][0], channels[idx][1], channels[idx][2], channels[idx][3]);
+		ARGB color;
+		color.c = MAKE_COLOR(channels[idx][0], channels[idx][1], channels[idx][2], channels[idx][3]);
+
+		if (idx == black) {
+			black_ = color.c;
+		}
 
 		color_data d;
-		d.name = string {s};
-		d.argb.c = argb.c;
+		d.name = std::string {s};
+		d.color.c = color.c;
 
 		std::pair p = {idx, d};
 		_colors.insert(p);
@@ -276,7 +278,7 @@ void graphics::init_graphics()
 	}
 
 	_alphas.clear();
-	for (uint32_t i = __first_alpha__; i < __last_alpha__; i++) {
+	for (int i = __first_alpha__; i < __last_alpha__; i++) {
 		alpha_idx idx = static_cast<alpha_idx>(i);
 		std::pair p = {idx, alpha_vals[idx]};
 		_alphas.insert(p);
@@ -291,14 +293,14 @@ void graphics::init_graphics()
 		sys_error("SDL_Init failed");
 	}
 
-	/* crisp integer scaling */
+	// crisp integer scaling
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
 	win = SDL_CreateWindow(_title.c_str(),
 	                       SDL_WINDOWPOS_CENTERED,
 	                       SDL_WINDOWPOS_CENTERED,
-	                       _w * _scale,
-	                       _h * _scale,
+	                       _scaled_w,
+	                       _scaled_h,
 	                       SDL_WINDOW_SHOWN);
 	if (!win) {
 		sys_error("SDL_CreateWindow failed");
@@ -323,15 +325,14 @@ void graphics::init_graphics()
 	_texture = tex;
 
 	// CPU buffers
-	_buf_a.resize(static_cast<size_t>(_w) * static_cast<size_t>(_h));
-	_buf_b.resize(static_cast<size_t>(_w) * static_cast<size_t>(_h));
+	_buf_a.resize(static_cast<size_t>(_win_size));
+	_buf_b.resize(static_cast<size_t>(_win_size));
+	// avoid uninitialized visuals
+	std::fill_n(_buf_a.begin(), _win_size, black_);
+	std::fill_n(_buf_b.begin(), _win_size, black_);
 
-	/* avoid uninitialized visuals */
-	color_t c = MAKE_COLOR(alpha_vals[A16], channels[black][1], channels[black][2], channels[black][3]);
-	std::fill(_buf_a.begin(), _buf_a.end(), c);
-	std::fill(_buf_b.begin(), _buf_b.end(), c);
-
-	_perf_freq = static_cast<uint64_t>(SDL_GetPerformanceFrequency());
+	// misc
+	_perf_freq = static_cast<std::uint64_t>(SDL_GetPerformanceFrequency());
 
 	DBG("graphics:" << ENDL << STR("  final values:", 1) << ENDL
 	                << STR("    buff size: ", 14) << DEC(_buf_a.size(), 4) << ENDL

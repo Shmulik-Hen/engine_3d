@@ -1,16 +1,18 @@
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#pragma once
 
+#include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
-#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <sstream>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
-#include <jsoncpp/json/json.h>
+// #include <jsoncpp/json/json.h>
 
 const std::string ERR_PFX = "Error: ";
 const std::string WARN_PFX = "Warning: ";
@@ -23,8 +25,8 @@ const std::string SEP = ", ";
 #define DEC(n, w) std::dec << std::setw((w)) << std::setfill(' ') << std::right << (n)
 #define DBL(n, p) std::setprecision(p) << std::fixed << (n)
 #define STR(s, w) std::setw((w)) << std::setfill(' ') << std::left << (s)
-#define ERR(s)    std::cerr << STR(ERR_PFX, 1) << s << FUNC << ENDL << std::flush
-#define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << FUNC << ENDL << std::flush
+#define ERR(s)    std::cerr << STR(ERR_PFX, 1) << s << ": " << FUNC << ENDL << std::flush
+#define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << ": " << FUNC << ENDL << std::flush
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << std::flush
 
 #ifdef DEBUG_PRINTS
@@ -34,16 +36,22 @@ const std::string DBG_PFX = "Debug: ";
 #define DBG(...)
 #endif // DEBUG_PRINTS
 
-#define MAX_NAME 10
-#define MAX_LINE 20
+constexpr int MAX_NAME = 10;
+constexpr int MAX_LINE = 20;
 
 // coordinates
-#define X_ 0
-#define Y_ 1
-#define Z_ 2
-#define O_ 3
+constexpr int X_ = 0;
+constexpr int Y_ = 1;
+constexpr int Z_ = 2;
+constexpr int O_ = 3;
 
 typedef char LINE[MAX_LINE + 1];
 typedef char NAME[MAX_NAME + 1];
 
-#endif //__COMMON_H__
+typedef float unit;
+constexpr unit UNIT(1.0f);
+constexpr unit ZERO(0.0f);
+constexpr unit EPSILON(1e-3f);
+constexpr unit ZLIMIT(400.0f);
+constexpr unit PI = 3.14159265358979323846f;
+constexpr unit DEG_TO_RAD = PI / 180.0f;

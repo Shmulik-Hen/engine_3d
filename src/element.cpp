@@ -6,10 +6,9 @@
 namespace element_ns
 {
 
-using std::cout;
-using std::endl;
-using std::ios;
-using vector_3_ns::vector_3;
+using namespace vector_3_ns;
+
+bool element_ns::element::_mats_prepared = false;
 
 element::element()
 {
@@ -25,32 +24,35 @@ element::~element()
 	if (_parrent_name) {
 		delete _parrent_name;
 	}
+
+	while (_polygons.size()) {
+		_polygons.pop_front();
+	}
 }
 
-bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
+bool element::read(const polygon::poly_list& list, element** root, std::ifstream& ifs)
 {
 	LINE line;
 	int finish = 0, len;
 
-	while (!f.eof() && !finish) {
+	while (!ifs.eof() && !finish) {
 		bool rc;
 
-		while ((!read_word(f, line)) && (!f.eof()));
+		while ((!read_word(ifs, line)) && (!ifs.eof()));
 
-		if (f.eof()) {
+		if (ifs.eof()) {
 			break;
 		}
 
 		switch (line[1]) {
 		case 'n':
 			// read element's name
-			len = read_word(f, line);
+			len = read_word(ifs, line);
 			if (!len) {
 				sys_error("element::read error _name");
 			}
 
-			_name = new string(line);
-			DBG("read: " << *_name);
+			_name = new std::string(line);
 			break;
 		case 't':
 			if (!root) {
@@ -63,12 +65,12 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 			}
 			else {
 				// all others must have a parrent
-				len = read_word(f, line);
+				len = read_word(ifs, line);
 				if (!len) {
 					sys_error("element::read read error -  _parrent_name");
 				}
 
-				_parrent_name = new string(line);
+				_parrent_name = new std::string(line);
 				element* parrent = find(*root, *_parrent_name);
 				if (!parrent) {
 					delete _parrent_name;
@@ -81,9 +83,9 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 			break;
 		case 'p':
 			// add a polygon to element
-			len = read_word(f, line);
+			len = read_word(ifs, line);
 			if (len) {
-				string* s = new string(line);
+				std::string* s = new std::string(line);
 				polygon* p = find(list, *s);
 				if (!p) {
 					delete s;
@@ -91,7 +93,6 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 				}
 
 				_polygons.push_back(p);
-				DBG("read: " << *p->get_name());
 			}
 			else {
 				sys_error("element::read error polygon");
@@ -99,7 +100,7 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 			break;
 		case 'f':
 			// force flag
-			len = read_word(f, line);
+			len = read_word(ifs, line);
 			if (!len) {
 				sys_error("element::read error flag");
 			}
@@ -108,14 +109,14 @@ bool element::read(const polygon::poly_list& list, element** root, ifstream& f)
 			break;
 		case 'a':
 			// element's attribute
-			rc = _att.read(f);
+			rc = _att.read(ifs);
 			if (!rc) {
 				sys_error("element::read error attrib");
 			}
 			break;
 		default:
 			finish = 1;
-			f.seekg(-4, ios::cur);
+			ifs.seekg(-4, std::ios::cur);
 			break;
 		}
 	}
@@ -165,7 +166,7 @@ void element::print_all()
 #endif // DEBUG_PRINTS
 }
 
-string cmp_str;
+std::string cmp_str;
 
 bool cmp(void* p)
 {
@@ -178,7 +179,7 @@ bool cmp(void* p)
 	return false;
 }
 
-element* element::find(element* root, string& s) const
+element* element::find(element* root, std::string& s) const
 {
 	cmp_str = s;
 	return root->search_tree(cmp);
@@ -192,9 +193,6 @@ void element::update(const attrib& att)
 
 void element::update(const matrix& p_gen, const matrix& p_rot)
 {
-	vector_3 dist, fill, normal;
-	unit view_angle, light_angle;
-
 	if (!_active) {
 		return;
 	}
@@ -215,9 +213,6 @@ void element::update(const matrix& p_gen, const matrix& p_rot)
 			for (auto poly : _polygons) {
 				poly->update(_gen_mat, _rot_mat);
 			}
-		}
-		else {
-			DBG("_polygons is empty");
 		}
 
 		_dirty = false;
@@ -253,9 +248,9 @@ void element::update_all()
 	this->update_tree(upd);
 }
 
-polygon* element::find(const polygon::poly_list& list, const string& s) const
+polygon* element::find(const polygon::poly_list& list, const std::string& s) const
 {
-	const string* st;
+	const std::string* st;
 
 	for (const auto poly : list) {
 		st = poly->get_name();

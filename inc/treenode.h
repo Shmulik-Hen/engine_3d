@@ -1,5 +1,4 @@
-#ifndef __TREENODE_H__
-#define __TREENODE_H__
+#pragma once
 
 // Template class that has to be completely
 // implemented in header
@@ -93,5 +92,3 @@ private:
 };
 
 } // namespace treenode_ns
-
-#endif //__TREENODE_H__

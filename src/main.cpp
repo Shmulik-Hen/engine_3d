@@ -16,16 +16,13 @@ using namespace element_ns;
 using namespace graphics_ns;
 using namespace matrix_ns;
 using namespace polygon_ns;
-
-using std::ios;
-using std::string;
 using input_state = graphics_ns::graphics::input_state;
 
 int main()
 {
 	try {
 		char filename[] = "box.dat";
-		ifstream f;
+		std::ifstream ifs;
 		LINE line;
 		element* elem {nullptr};
 		element* root {nullptr};
@@ -37,30 +34,30 @@ int main()
 
 		graphics gfx("Software 3D Engine", 320, 200, 2);
 
-		f.open(filename, ios::in);
-		if (!f) {
+		ifs.open(filename, std::ios::in);
+		if (!ifs) {
 			sys_error("file not found:", filename);
 		}
 
-		f.unsetf(ios::skipws);
+		ifs.unsetf(std::ios::skipws);
 
 		poly_lst.clear();
 
-		while (!f.eof()) {
+		while (!ifs.eof()) {
 			rc = true;
-			while ((!read_word(f, line)) && (!f.eof()));
+			while ((!read_word(ifs, line)) && (!ifs.eof()));
 
-			if (f.eof()) {
+			if (ifs.eof()) {
 				break;
 			}
 
 			switch (line[1]) {
 			// case '#':
-			// 	read_remark(f);
+			// 	read_remark(ifs);
 			case 'p':
 				// instantiate a new polygon
 				poly = new polygon(gfx);
-				rc = poly->read(f);
+				rc = poly->read(ifs);
 				if (!rc) {
 					delete poly;
 					sys_error("read polygon failed");
@@ -75,7 +72,7 @@ int main()
 			case 'e':
 				// instantiate a new element
 				elem = new element;
-				rc = elem->read(poly_lst, &root, f);
+				rc = elem->read(poly_lst, &root, ifs);
 				if (!rc) {
 					delete elem;
 					sys_error("read element failed");
@@ -84,7 +81,7 @@ int main()
 			}
 		}
 
-		f.close();
+		ifs.close();
 
 		if (!root) {
 			sys_error("root is null");
@@ -95,8 +92,8 @@ int main()
 		}
 
 		// find the relevant elements to work with
-		string* world_name = new string("world");
-		string* box_name = new string("box");
+		std::string* world_name = new std::string("world");
+		std::string* box_name = new std::string("box");
 
 		element* world = root->find(root, *world_name);
 		if (!world) {
@@ -119,15 +116,17 @@ int main()
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib initial_att(0, 0, 64, 0, 0, 0, 2048);
+		attrib initial_att(0, 0, 0, 0, 0, 0, 1);
+		attrib keep_moving(1, 2, 3, 0, 0, 0, 1);
+
 		box->update(initial_att);
 
-		attrib keep_moving(0, 1, 0, 0, 0, 0, 1024);
+		// int i = 3;
+		// while (!in.quit && i--) {
 		while (!in.quit) {
 			gfx.poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			box->update(keep_moving);
 			DBG("update tree");
 			root->update_all();
 #ifdef DEBUG_PRINTS
@@ -138,7 +137,8 @@ int main()
 			ctrl_poly->sort_polygons();
 			DBG("show");
 			ctrl_poly->show_polygons();
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+			std::this_thread::sleep_for(std::chrono::milliseconds(15));
+			box->update(keep_moving);
 		}
 
 		return 0;

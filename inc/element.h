@@ -1,5 +1,4 @@
-#ifndef __ELEMENT_H__
-#define __ELEMENT_H__
+#pragma once
 
 #include <list>
 
@@ -8,20 +7,15 @@
 #include "matrix.h"
 #include "polygon.h"
 #include "treenode.h"
-#include "unit.h"
 
 namespace element_ns
 {
 
-using attrib_ns::attrib;
-using matrix_ns::matrix;
-using polygon_ns::polygon;
-using std::ifstream;
-using std::list;
-using std::string;
-using unit_ns::unit;
+using namespace attrib_ns;
+using namespace matrix_ns;
+using namespace polygon_ns;
 using namespace treenode_ns;
-using treenode_ns::treenode;
+// using unit_ns::unit;
 
 class element : public treenode<element>
 {
@@ -30,34 +24,33 @@ public:
 	element();
 	~element();
 
-	bool read(const polygon::poly_list&, element**, ifstream&);
+	bool read(const polygon::poly_list&, element**, std::ifstream&);
 	void print() const;
 	void print_all();
 
-	element* find(element*, string&) const;
+	element* find(element*, std::string&) const;
 
 	void update(const attrib&);
 	void update(const matrix&, const matrix&);
 	void update();
 	void update_all();
 
-	const string* get_name() const { return _name; }
+	const std::string* get_name() const { return _name; }
 
 private:
 
 	polygon::poly_list _polygons;
-	string* _name {nullptr};
-	string* _parrent_name {nullptr};
+	std::string* _name {nullptr};
+	std::string* _parrent_name {nullptr};
 	element* _parrent {nullptr};
 	matrix _gen_mat;
 	matrix _rot_mat;
 	attrib _att;
 	bool _active {false};
 	bool _dirty {false};
-	bool _mats_prepared {false};
+	static bool _mats_prepared;
 
-	polygon* find(const polygon::poly_list&, const string&) const;
+	polygon* find(const polygon::poly_list&, const std::string&) const;
 };
 
 } // namespace element_ns
-#endif //__ELEMENT_H__

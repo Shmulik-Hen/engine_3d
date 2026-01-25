@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstdint>
 #include <map>
-#include <stdexcept>
 #include <vector>
 
 #include "common.h"
@@ -12,19 +10,19 @@ namespace graphics_ns
 
 #define MAKE_COLOR(a, r, g, b) (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
 
-using std::string;
-using std::vector;
+using val_t = std::int32_t;
+using uval_t = std::uint32_t;
+using coord_t = val_t;
+using color_t = uval_t;
 
-constexpr uint32_t MAX_X = 320;
-constexpr uint32_t MAX_Y = 200;
+constexpr val_t MIN_X = 0;
+constexpr val_t MIN_Y = 0;
+constexpr val_t MAX_X = 320;
+constexpr val_t MAX_Y = 200;
 
 class graphics
 {
 public:
-
-	using coord_t = uint32_t;
-	using color_t = uint32_t;
-	using val_t = uint32_t;
 
 	enum color_idx
 	{
@@ -33,16 +31,16 @@ public:
 		grey,
 		silver,
 		white,
-		red,
+		red, //-
 		maroon,
 		// orange,
-		yellow,
+		yellow, //-
 		olive,
-		lime,
+		lime, //-
 		green,
-		aqua,
+		aqua, //-
 		teal,
-		blue,
+		blue, //-
 		navy,
 		magenta,
 		purple,
@@ -87,8 +85,8 @@ public:
 
 	struct color_data
 	{
-		string name;
-		ARGB argb;
+		std::string name;
+		ARGB color;
 	};
 
 	struct frame_buffer
@@ -124,41 +122,45 @@ public:
 	graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
 
-	/* event + timing */
+	// event + timing
 	void poll_events(input_state&);
 	std::uint64_t now_ticks() const;
 	std::uint64_t tick_freq() const;
 
-	/* framebuffer flow (engine-driven) */
+	// framebuffer flow (engine-driven)
 	frame_buffer get_backbuffer();
 	void fill_buffer(frame_buffer&, const ARGB&);
 	frame_buffer get_clear_backbuffer(const ARGB&);
-	void present(); /* uploads backbuffer, presents, swaps buffers */
+	void present(); // uploads backbuffer, presents, swaps buffers
 
 	// color management
 	ARGB get_color_val(const color_idx) const;
-	string get_color_name(const color_idx) const;
+	std::string get_color_name(const color_idx) const;
 	uint8_t get_alpha_val(const alpha_idx);
 	void set_alpha(ARGB&, const uint8_t);
 	val_t get_num_colors() const { return __last_color__; }
 	val_t get_num_alphas() const { return __last_alpha__; }
 	point get_min_position() const { return point {0, 0}; }
 	point get_max_position() const { return point {_w, _h}; }
-	bool is_in_bounds(point p) const { return !(p.x >= _w || p.y >= _h); }
+	bool is_in_bounds(point p) const { return ((uval_t)p.x < (uval_t)_w && (uval_t)p.y < (uval_t)_h); }
 
 private:
 
-	string _title;
+	std::string _title;
 	val_t _w {0};
 	val_t _h {0};
 	val_t _scale {1};
+	val_t _scaled_w {0};
+	val_t _scaled_h {0};
+	val_t _win_size {0};
+	val_t _pitch {0};
 	input_state _last_input {};
 	color_map _colors;
 	alpha_map _alphas;
 
 	// CPU-side double buffers
-	vector<color_t> _buf_a;
-	vector<color_t> _buf_b;
+	std::vector<color_t> _buf_a;
+	std::vector<color_t> _buf_b;
 	bool _a_is_front {true};
 
 	// SDL objects (opaque pointers; stored as void* in header to avoid SDL includes here)

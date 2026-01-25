@@ -1,24 +1,21 @@
-#ifndef __MATRIX_H__
-#define __MATRIX_H__
+#pragma once
 
 #include "common.h"
 #include "attrib.h"
 #include "vector_3.h"
-#include "unit.h"
 
 namespace matrix_ns
 {
 
-using attrib_ns::attrib;
-using unit_ns::unit;
-using unit_ns::UNIT;
-using unit_ns::ZERO;
-using vector_3_ns::vector_3;
+using namespace attrib_ns;
+using namespace vector_3_ns;
+// using unit_ns::unit;
+// using unit_ns::UNIT;
+// using unit_ns::ZERO;
 
 const int dim = O_ + 1;
 
-class matrix : public attrib,
-	       public vector_3
+class matrix
 {
 	class vector_4
 	{
@@ -32,12 +29,12 @@ class matrix : public attrib,
 		vector_4(const unit, const unit, const unit, const unit);
 		~vector_4() {}
 
-		vector_4& operator=(const vector_4&);
 		vector_4 operator+(const vector_4&) const;
 		vector_4 operator-(const vector_4&) const;
+		vector_4& operator=(const vector_4&);
 		vector_4& operator+=(const vector_4&);
 		vector_4& operator-=(const vector_4&);
-		const unit operator*(const vector_4&) const;
+		unit operator*(const vector_4&) const;
 	};
 
 	unit _mat[dim][dim];
@@ -54,10 +51,12 @@ public:
 	matrix(unit[dim][dim]);
 	~matrix() {}
 
+	void print() const;
+
+	matrix operator*(const matrix&) const;
 	matrix& operator=(const matrix& m);
-	matrix operator*(const matrix&);
 	matrix& operator*=(const matrix&);
-	vector_3 operator*(const vector_3&);
+	vector_3 operator*(const vector_3&) const;
 
 	void prep_gen_mat(const attrib&);
 	void prep_rot_mat(const attrib&);
@@ -66,4 +65,3 @@ public:
 matrix get_unit_mat();
 
 } // namespace matrix_ns
-#endif //__MATRIX_H__
