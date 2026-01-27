@@ -5,7 +5,7 @@ namespace matrix_ns
 {
 
 // clang-format off
-unit unt[dim][dim] = {
+unit unit_mat[dim][dim] = {
 	{ UNIT, ZERO, ZERO, ZERO },
 	{ ZERO, UNIT, ZERO, ZERO },
 	{ ZERO, ZERO, UNIT, ZERO },
@@ -222,45 +222,45 @@ vector_3 matrix::operator*(const vector_3& v) const
 	                vector_3::dot(v, v3) + _mat[Z_][O_]);
 }
 
-void matrix::prep_gen_mat(const attrib& a)
+void matrix::prep_trans_mat(const attrib& a)
 {
-	unit dx = a.get_deg_x() * DEG_TO_RAD;
-	unit dy = a.get_deg_y() * DEG_TO_RAD;
-	unit dz = a.get_deg_z() * DEG_TO_RAD;
-	unit ox = a.get_off_x();
-	unit oy = a.get_off_y();
-	unit oz = a.get_off_z();
+	unit rx = a.get_rot_x() * DEG_TO_RAD;
+	unit ry = a.get_rot_y() * DEG_TO_RAD;
+	unit rz = a.get_rot_z() * DEG_TO_RAD;
+	unit tx = a.get_trans_x();
+	unit ty = a.get_trans_y();
+	unit tz = a.get_trans_z();
 	unit zm = a.get_zoom();
 
-	DBG("prep_gen_mat:");
-	DBG("      dx: " << dx << " dy: " << dy << " dz: " << dz);
-	DBG("      ox: " << ox << " oy: " << oy << " oz: " << oz);
-	DBG("    zoom: " << zm);
+	DBG("prep_trans_mat:");
+	DBG("      rx: " << FLT(rx, 6) << " ry: " << FLT(ry, 6) << " rz: " << FLT(rz, 6));
+	DBG("      tx: " << FLT(tx, 6) << " ty: " << FLT(ty, 6) << " tz: " << FLT(tz, 6));
+	DBG("    zoom: " << FLT(zm, 6));
 
-	unit sdx = std::sin(dx);
-	unit sdy = std::sin(dy);
-	unit sdz = std::sin(dz);
-	unit cdx = std::cos(dx);
-	unit cdy = std::cos(dy);
-	unit cdz = std::cos(dz);
+	unit srx = std::sin(rx);
+	unit sry = std::sin(ry);
+	unit srz = std::sin(rz);
+	unit crx = std::cos(rx);
+	unit cry = std::cos(ry);
+	unit crz = std::cos(rz);
 
-	DBG("     sdx: " << sdx << " sdy: " << sdy << " sdz: " << sdz);
-	DBG("     cdx: " << cdx << " cdy: " << cdy << " cdz: " << cdz << ENDL);
+	DBG("     srx: " << FLT(srx, 6) << " sry: " << FLT(sry, 6) << " srz: " << FLT(srz, 6));
+	DBG("     crx: " << FLT(crx, 6) << " cry: " << FLT(cry, 6) << " crz: " << FLT(crz, 6) << ENDL);
 
-	_mat[X_][X_] = (zm * cdy * cdz);
-	_mat[X_][Y_] = (zm * -cdy * sdz);
-	_mat[X_][Z_] = (zm * -sdy);
-	_mat[X_][O_] = ox;
+	_mat[X_][X_] = (zm * cry * crz);
+	_mat[X_][Y_] = (zm * -cry * srz);
+	_mat[X_][Z_] = (zm * -sry);
+	_mat[X_][O_] = tx;
 
-	_mat[Y_][X_] = (zm * (cdx * sdz - sdx * sdy * cdz));
-	_mat[Y_][Y_] = (zm * (cdx * cdz + sdx * sdy * sdz));
-	_mat[Y_][Z_] = (zm * -sdx * cdy);
-	_mat[Y_][O_] = oy;
+	_mat[Y_][X_] = (zm * (crx * srz - srx * sry * crz));
+	_mat[Y_][Y_] = (zm * (crx * crz + srx * sry * srz));
+	_mat[Y_][Z_] = (zm * -srx * cry);
+	_mat[Y_][O_] = ty;
 
-	_mat[Z_][X_] = (zm * (sdx * sdz + cdx * sdy * cdz));
-	_mat[Z_][Y_] = (zm * (sdx * cdz - cdx * sdy * sdz));
-	_mat[Z_][Z_] = (zm * cdx * cdy);
-	_mat[Z_][O_] = oz;
+	_mat[Z_][X_] = (zm * (srx * srz + crx * sry * crz));
+	_mat[Z_][Y_] = (zm * (srx * crz - crx * sry * srz));
+	_mat[Z_][Z_] = (zm * crx * cry);
+	_mat[Z_][O_] = tz;
 
 	_mat[O_][X_] = ZERO;
 	_mat[O_][Y_] = ZERO;
@@ -279,36 +279,36 @@ void matrix::prep_gen_mat(const attrib& a)
 
 void matrix::prep_rot_mat(const attrib& a)
 {
-	unit dx = a.get_deg_x() * DEG_TO_RAD;
-	unit dy = a.get_deg_y() * DEG_TO_RAD;
-	unit dz = a.get_deg_z() * DEG_TO_RAD;
+	unit rx = a.get_rot_x() * DEG_TO_RAD;
+	unit ry = a.get_rot_y() * DEG_TO_RAD;
+	unit rz = a.get_rot_z() * DEG_TO_RAD;
 
 	DBG("prep_rot_mat:");
-	DBG("      dx: " << dx << " dy: " << dy << " dz: " << dz);
+	DBG("      rx: " << FLT(rx, 6) << " ry: " << FLT(ry, 6) << " rz: " << FLT(rz, 6));
 
-	unit sdx = std::sin(dx);
-	unit sdy = std::sin(dy);
-	unit sdz = std::sin(dz);
-	unit cdx = std::cos(dx);
-	unit cdy = std::cos(dy);
-	unit cdz = std::cos(dz);
+	unit srx = std::sin(rx);
+	unit sry = std::sin(ry);
+	unit srz = std::sin(rz);
+	unit crx = std::cos(rx);
+	unit cry = std::cos(ry);
+	unit crz = std::cos(rz);
 
-	DBG("     sdx: " << sdx << " sdy: " << sdy << " sdz: " << sdz);
-	DBG("     cdx: " << cdx << " cdy: " << cdy << " cdz: " << cdz << ENDL);
+	DBG("     srx: " << FLT(srx, 6) << " sry: " << FLT(sry, 6) << " srz: " << FLT(srz, 6));
+	DBG("     crx: " << FLT(crx, 6) << " cry: " << FLT(cry, 6) << " crz: " << FLT(crz, 6) << ENDL);
 
-	_mat[X_][X_] = (cdy * cdz);
-	_mat[X_][Y_] = (-cdy * sdz);
-	_mat[X_][Z_] = (-sdy);
+	_mat[X_][X_] = (cry * crz);
+	_mat[X_][Y_] = (-cry * srz);
+	_mat[X_][Z_] = (-sry);
 	_mat[X_][O_] = ZERO;
 
-	_mat[Y_][X_] = (cdx * sdz - sdx * sdy * cdz);
-	_mat[Y_][Y_] = (cdx * cdz + sdx * sdy * sdz);
-	_mat[Y_][Z_] = (-sdx * cdy);
+	_mat[Y_][X_] = (crx * srz - srx * sry * crz);
+	_mat[Y_][Y_] = (crx * crz + srx * sry * srz);
+	_mat[Y_][Z_] = (-srx * cry);
 	_mat[Y_][O_] = ZERO;
 
-	_mat[Z_][X_] = (sdx * sdz + cdx * sdy * cdz);
-	_mat[Z_][Y_] = (sdx * cdz - cdx * sdy * sdz);
-	_mat[Z_][Z_] = (cdx * cdy);
+	_mat[Z_][X_] = (srx * srz + crx * sry * crz);
+	_mat[Z_][Y_] = (srx * crz - crx * sry * srz);
+	_mat[Z_][Z_] = (crx * cry);
 	_mat[Z_][O_] = ZERO;
 
 	_mat[O_][X_] = ZERO;
@@ -328,7 +328,7 @@ void matrix::prep_rot_mat(const attrib& a)
 
 matrix get_unit_mat()
 {
-	return unt;
+	return unit_mat;
 }
 
 } // namespace matrix_ns

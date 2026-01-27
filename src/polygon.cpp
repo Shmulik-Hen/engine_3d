@@ -1,7 +1,3 @@
-#include <chrono>
-#include <thread>
-#include <cmath>
-
 // #define DEBUG_PRINTS
 #include "polygon.h"
 #include "utils.h"
@@ -9,34 +5,44 @@
 namespace polygon_ns
 {
 
+using namespace graphics_ns;
+using namespace matrix_ns;
+using namespace vector_3_ns;
+using addr_t = graphics::addr_t;
+using ARGB = graphics::ARGB;
+using frame_buffer = graphics::frame_buffer;
+using color_idx = graphics::color_idx;
+using point = graphics::point;
+using color_t = graphics_ns::color_t;
+
 // given values
-vector_3_ns::vector_3 polygon_ns::polygon::_cam_position(0, 0, -ZLIMIT);
-vector_3_ns::vector_3 polygon_ns::polygon::_light_position(0, 0, -ZLIMIT);
-vector_3_ns::vector_3 polygon_ns::polygon::_cam_direction(ZERO, ZERO, ZERO);
-vector_3_ns::vector_3 polygon_ns::polygon::_light_direction(ZERO, ZERO, ZERO);
-polygon::poly_list polygon::_draw_list;
+vector_3 polygon::_cam_position(ZERO, ZERO, -ZLIMIT);
+vector_3 polygon::_light_position(ZERO, ZERO, -ZLIMIT);
+vector_3 polygon::_cam_direction(ZERO, ZERO, ZERO);
+vector_3 polygon::_light_direction(ZERO, ZERO, ZERO);
+polygon::polylist_t polygon::_draw_list;
 
 polygon::drawing::drawing(graphics& gfx) :
 	_gfx {&gfx}
 {
-	_clear_color = _gfx->get_color_val(graphics::color_idx::black);
+	_clear_color = _gfx->get_color_val(color_idx::black);
 	set_min_max();
 
 #ifdef DEBUG_POLYGON
-	_debug_color = _gfx->get_color_val(graphics::color_idx::white);
-	_bbox_color = _gfx->get_color_val(graphics::color_idx::green);
-	_normal_color = _gfx->get_color_val(graphics::color_idx::magenta);
-	_fill_color = _gfx->get_color_val(graphics::color_idx::purple);
+	_debug_color = _gfx->get_color_val(color_idx::white);
+	_bbox_color = _gfx->get_color_val(color_idx::green);
+	_normal_color = _gfx->get_color_val(color_idx::magenta);
+	_fill_color = _gfx->get_color_val(color_idx::purple);
 #endif
 }
 
-graphics::addr_t polygon::drawing::offset(const point& pos) const
+addr_t polygon::drawing::offset(const point& pos) const
 {
 	// clang-format off
-	return reinterpret_cast<graphics::addr_t>(_fb.pixels +
-						  _vp_min_pos.x + pos.x +
-						  (_vp_min_pos.y + pos.y) *
-						  (_fb.pitch_bytes / sizeof(color_t)));
+	return reinterpret_cast<addr_t>(_fb.pixels +
+					_vp_min_pos.x + pos.x +
+					(_vp_min_pos.y + pos.y) *
+					(_fb.pitch_bytes / sizeof(color_t)));
 	// clang-format on
 }
 
@@ -201,7 +207,7 @@ frame_buffer polygon::drawing::clear()
 
 void polygon::drawing::set_color(int idx)
 {
-	_base_color = _gfx->get_color_val(static_cast<graphics::color_idx>(idx));
+	_base_color = _gfx->get_color_val(static_cast<color_idx>(idx));
 }
 
 void polygon::drawing::make_color(unit u)
@@ -226,7 +232,7 @@ void polygon::drawing::clear_scratch_pad()
 
 void polygon::drawing::project(const vector_3& original)
 {
-	vector_3 transformed = _gen_mat * original;
+	vector_3 transformed = _trans_mat * original;
 
 	if (transformed.get(Z_) < _cam_position.get(Z_)) {
 		_invalid = true;
@@ -331,24 +337,27 @@ polygon::polygon(graphics& gfx)
 
 polygon::~polygon()
 {
-	if (_name) {
-		delete _name;
+	if (_gfx_ctx) {
+		delete _gfx_ctx;
+		_gfx_ctx = nullptr;
 	}
 
-	while (_points.size()) {
-		_points.pop_back();
+	for (auto* v : _points) {
+		delete v;
 	}
+
+	_points.clear();
 }
 
 bool polygon::read(std::ifstream& ifs)
 {
 	LINE line;
 	vector_3* v;
-	int finish = 0, len, rc;
+	int len;
+	bool rc, finish = false;
 
 	while (!ifs.eof() && !finish) {
 		while ((!read_word(ifs, line)) && (!ifs.eof()));
-
 		if (ifs.eof()) {
 			break;
 		}
@@ -360,7 +369,7 @@ bool polygon::read(std::ifstream& ifs)
 				sys_error("polygon::read error polygon");
 			}
 
-			_name = new std::string(line);
+			_name = line;
 			break;
 		case 'c':
 			len = read_word(ifs, line);
@@ -381,7 +390,7 @@ bool polygon::read(std::ifstream& ifs)
 				sys_error("polygon::read error polygon");
 			}
 			break;
-		case 'o':
+		case 'o': // TODO: FIX
 			_normal.read(ifs);
 			break;
 		case 'v':
@@ -394,7 +403,7 @@ bool polygon::read(std::ifstream& ifs)
 			_points.push_back(v);
 			break;
 		default:
-			finish = 1;
+			finish = true;
 			ifs.seekg(-4, std::ios::cur);
 			break;
 		}
@@ -406,7 +415,7 @@ bool polygon::read(std::ifstream& ifs)
 	}
 
 	_fill = find_fill();
-	// _normal = find_normal();
+	// _normal = find_normal(); // TODO: FIX
 
 	_cam_direction = vector_3::normalize(_cam_position);
 	_light_direction = vector_3::normalize(_light_position);
@@ -418,7 +427,7 @@ void polygon::print() const
 {
 #ifdef DEBUG_PRINTS
 	DBG("      polygon:");
-	DBG(STR("        name: ", 1) << *_name);
+	DBG(STR("        name: ", 1) << _name);
 	DBG(STR("        force: ", 1) << DEC(_force, 4));
 	DBG(STR("        fill:", 1));
 	_fill.print();
@@ -436,15 +445,15 @@ void polygon::print() const
 #endif // DEBUG_PRINTS
 }
 
-void polygon::update(matrix& m_gen, matrix& m_rot)
+void polygon::update(matrix& m_trans, matrix& m_rot)
 {
 	vector_3 dist, fill, normal;
 	unit view_angle, light_angle;
 
-	_gfx_ctx->_gen_mat = m_gen;
+	_gfx_ctx->_trans_mat = m_trans;
 	_gfx_ctx->_rot_mat = m_rot;
 
-	fill = m_gen * _fill;
+	fill = m_trans * _fill;
 	normal = m_rot * _normal;
 	dist = fill - _cam_position;
 	view_angle = vector_3::dot(normal, dist);
@@ -481,22 +490,25 @@ void polygon::sort()
 
 bool polygon::is_consec()
 {
+	// TODO: implement
 	return true;
 }
 
 bool polygon::is_degenerate()
 {
+	// TODO: implement
 	return false;
 }
 
 bool polygon::is_planar()
 {
+	// TODO: implement
 	return true;
 }
 
 bool polygon::verify()
 {
-	if (!_name) {
+	if (!_name.length()) {
 		ERR("polygon: no name");
 		return false;
 	}
@@ -541,7 +553,7 @@ void polygon::gfx_draw()
 		vector_3 transformed, projected;
 		val_t x, y;
 
-		transformed = _gfx_ctx->_gen_mat * _gfx_ctx->_debug_normal;
+		transformed = _gfx_ctx->_trans_mat * _gfx_ctx->_debug_normal;
 		projected = vector_3::project(transformed, _cam_position);
 		x = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.x + projected.get(X_));
 		y = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.y - projected.get(Y_));
@@ -594,6 +606,7 @@ vector_3 polygon::find_fill()
 	return v;
 }
 
+// TODO: wrong implementation - FIX
 vector_3 polygon::find_normal()
 {
 	vector_3 *v1, *v2, v;

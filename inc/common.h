@@ -18,15 +18,17 @@ const std::string ERR_PFX = "Error: ";
 const std::string WARN_PFX = "Warning: ";
 const std::string INFO_PFX = "Info: ";
 const std::string SEP = ", ";
+const std::string PFX = ": ";
+const std::string SFX = ";";
 
 #define ENDL      std::endl
-#define FUNC      STR(__PRETTY_FUNCTION__, 1) << ": "
+#define FUNC      STR(__PRETTY_FUNCTION__, 1) << PFX
 #define HEX(n, w) "0x" << std::hex << std::setw((w)) << std::setfill('0') << std::right << (n)
 #define DEC(n, w) std::dec << std::setw((w)) << std::setfill(' ') << std::right << (n)
-#define DBL(n, p) std::setprecision(p) << std::fixed << (n)
+#define FLT(n, p) std::setprecision((p)) << std::fixed << (n)
 #define STR(s, w) std::setw((w)) << std::setfill(' ') << std::left << (s)
-#define ERR(s)    std::cerr << STR(ERR_PFX, 1) << s << ": " << FUNC << ENDL << std::flush
-#define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << ": " << FUNC << ENDL << std::flush
+#define ERR(s)    std::cerr << STR(ERR_PFX, 1) << s << PFX << FUNC << ENDL << std::flush
+#define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << PFX << FUNC << ENDL << std::flush
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << std::flush
 
 #ifdef DEBUG_PRINTS

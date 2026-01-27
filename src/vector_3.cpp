@@ -38,7 +38,10 @@ bool vector_3::read(std::ifstream& ifs)
 	LINE line;
 
 	for (int i = X_; i <= Z_; i++) {
-		while (!read_word(ifs, line));
+		// clang-format off
+		while ((!read_word(ifs, line)) && (!ifs.eof()));
+		if (ifs.eof())  return false;
+		// clang-format on
 		_coords[i] = strtof(line, NULL);
 	}
 
@@ -50,7 +53,7 @@ void vector_3::print() const
 #ifdef DEBUG_PRINTS
 	DBG(STR("  vector:", 1));
 	for (int i = X_; i <= Z_; i++) {
-		DBG("    i: " << i << ": " << _coords[i]);
+		DBG("    i: " << i << PFX << FLT(_coords[i], 3));
 	}
 #endif // DEBUG_PRINTS
 }

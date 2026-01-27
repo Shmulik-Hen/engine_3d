@@ -50,7 +50,23 @@ graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 
 graphics::~graphics()
 {
-	close_graphics();
+	// Destroy in reverse creation order
+	if (_texture) {
+		SDL_DestroyTexture(reinterpret_cast<SDL_Texture*>(_texture));
+		_texture = nullptr;
+	}
+
+	if (_renderer) {
+		SDL_DestroyRenderer(reinterpret_cast<SDL_Renderer*>(_renderer));
+		_renderer = nullptr;
+	}
+
+	if (_window) {
+		SDL_DestroyWindow(reinterpret_cast<SDL_Window*>(_window));
+		_window = nullptr;
+	}
+
+	SDL_Quit();
 }
 
 void graphics::poll_events(input_state& io)
@@ -337,24 +353,6 @@ void graphics::init_graphics()
 	DBG("graphics:" << ENDL << STR("  final values:", 1) << ENDL
 	                << STR("    buff size: ", 14) << DEC(_buf_a.size(), 4) << ENDL
 	                << STR("    freq: ", 14) << DEC(_perf_freq, 8) << ENDL);
-}
-
-void graphics::close_graphics()
-{
-	// Destroy in reverse creation order
-	if (_texture) {
-		SDL_DestroyTexture(reinterpret_cast<SDL_Texture*>(_texture));
-	}
-
-	if (_renderer) {
-		SDL_DestroyRenderer(reinterpret_cast<SDL_Renderer*>(_renderer));
-	}
-
-	if (_window) {
-		SDL_DestroyWindow(reinterpret_cast<SDL_Window*>(_window));
-	}
-
-	SDL_Quit();
 }
 
 void graphics::swap_buffers()

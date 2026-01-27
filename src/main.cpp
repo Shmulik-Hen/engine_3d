@@ -3,20 +3,19 @@
 
 // #define DEBUG_PRINTS
 #include "common.h"
-#include "attrib.h"
-#include "element.h"
-#include "graphics.h"
-#include "matrix.h"
-#include "polygon.h"
-#include "treenode.h"
+#include "scene.h"
 #include "utils.h"
 
 using namespace attrib_ns;
 using namespace element_ns;
 using namespace graphics_ns;
-using namespace matrix_ns;
 using namespace polygon_ns;
+using namespace scene_ns;
+using attrib = attrib_ns::attrib;
+using element = element_ns::element;
+using graphics = graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
+using polygon = polygon_ns::polygon;
 
 int main()
 {
@@ -24,15 +23,13 @@ int main()
 		char filename[] = "box.dat";
 		std::ifstream ifs;
 		LINE line;
-		element* elem {nullptr};
-		element* root {nullptr};
-		polygon* poly {nullptr};
-		polygon* ctrl_poly {nullptr};
-		polygon::poly_list poly_lst;
-		input_state in {};
 		bool rc;
+		polygon* poly;
+		element* elem;
+		scene scn;
 
-		graphics gfx("Software 3D Engine", 320, 200, 2);
+		input_state in {};
+		graphics gfx("Software 3D Engine", 320, 200, 4);
 
 		ifs.open(filename, std::ios::in);
 		if (!ifs) {
@@ -41,12 +38,8 @@ int main()
 
 		ifs.unsetf(std::ios::skipws);
 
-		poly_lst.clear();
-
 		while (!ifs.eof()) {
-			rc = true;
 			while ((!read_word(ifs, line)) && (!ifs.eof()));
-
 			if (ifs.eof()) {
 				break;
 			}
@@ -55,26 +48,20 @@ int main()
 			// case '#':
 			// 	read_remark(ifs);
 			case 'p':
-				// instantiate a new polygon
-				poly = new polygon(gfx);
+				poly = scn.add_polygon(gfx);
 				rc = poly->read(ifs);
 				if (!rc) {
-					delete poly;
 					sys_error("read polygon failed");
 				}
-
-				poly_lst.push_back(poly);
-
-				if (!ctrl_poly) {
-					ctrl_poly = new polygon(gfx);
-				}
+				scn.ensure_ctrl_polygon(gfx); // keep behavior
 				break;
 			case 'e':
-				// instantiate a new element
-				elem = new element;
-				rc = elem->read(poly_lst, &root, ifs);
+				elem = scn.add_element();
+				if (!scn.root) {
+					scn.root = elem;
+				}
+				rc = elem->read(scn.poly_list, scn.root, ifs);
 				if (!rc) {
-					delete elem;
 					sys_error("read element failed");
 				}
 				break;
@@ -83,24 +70,25 @@ int main()
 
 		ifs.close();
 
-		if (!root) {
+		if (!scn.root) {
 			sys_error("root is null");
 		}
 
-		if (poly_lst.empty()) {
+		if (scn.poly_list.empty()) {
 			sys_error("no polygons");
 		}
 
 		// find the relevant elements to work with
-		std::string* world_name = new std::string("world");
-		std::string* box_name = new std::string("box");
+		// No heap strings
+		const std::string world_name = "world";
+		const std::string box_name = "box";
 
-		element* world = root->find(root, *world_name);
+		element* world = scn.root->find(scn.root, world_name);
 		if (!world) {
 			sys_error("find world failed");
 		}
 
-		element* box = root->find(root, *box_name);
+		element* box = scn.root->find(scn.root, box_name);
 		if (!box) {
 			sys_error("find box failed");
 		}
@@ -108,18 +96,18 @@ int main()
 #ifdef DEBUG_PRINTS
 		DBG("initial:");
 		DBG("print tree");
-		root->print_all();
+		scn.root->print_all();
 		DBG("walk list");
-		for (const auto poly : poly_lst) {
+		for (const auto poly : scn.poly_list) {
 			poly->print();
 		}
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib initial_att(0, 0, 0, 0, 0, 0, 1);
-		attrib keep_moving(1, 2, 3, 0, 0, 0, 1);
+		attrib initial_att(45, 0, 45, 0, 0, 0, 1);
+		attrib keep_moving(0, 1, 0, 0, 0, 0, 1);
 
-		box->update(initial_att);
+		world->update(initial_att);
 
 		// int i = 3;
 		// while (!in.quit && i--) {
@@ -128,23 +116,22 @@ int main()
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
 			DBG("update tree");
-			root->update_all();
+			scn.root->update_all();
 #ifdef DEBUG_PRINTS
 			DBG("print tree");
-			root->print_all();
+			scn.root->print_all();
 #endif
 			DBG("sort");
-			ctrl_poly->sort_polygons();
+			scn.ctrl_poly->sort_polygons();
 			DBG("show");
-			ctrl_poly->show_polygons();
-			std::this_thread::sleep_for(std::chrono::milliseconds(15));
+			scn.ctrl_poly->show_polygons();
+			std::this_thread::sleep_for(std::chrono::milliseconds(25));
 			box->update(keep_moving);
 		}
 
 		return 0;
 	}
 	catch (const std::exception& e) {
-		// In a commercial-style app, you’d log to stderr + maybe a file
 		std::fprintf(stderr, "Fatal: %s\n", e.what());
 		return 1;
 	}
