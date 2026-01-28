@@ -6,40 +6,23 @@
 namespace element_ns
 {
 
-using namespace vector_3_ns;
+using namespace matrix_ns;
+using namespace polygon_ns;
+using polylist_t = polygon_ns::polygon::polylist_t;
 
 bool element_ns::element::_mats_prepared = false;
 
-element::element()
-{
-	_polygons.clear();
-}
-
-element::~element()
-{
-	if (_name) {
-		delete _name;
-	}
-
-	if (_parrent_name) {
-		delete _parrent_name;
-	}
-
-	while (_polygons.size()) {
-		_polygons.pop_front();
-	}
-}
-
-bool element::read(const polygon::poly_list& list, element** root, std::ifstream& ifs)
+bool element::read(const polylist_t& poly_list, element* root, std::ifstream& ifs)
 {
 	LINE line;
-	int finish = 0, len;
+	int len;
+	element* parrent;
+	polygon* poly;
+	std::string s;
+	bool rc, finish = false;
 
 	while (!ifs.eof() && !finish) {
-		bool rc;
-
 		while ((!read_word(ifs, line)) && (!ifs.eof()));
-
 		if (ifs.eof()) {
 			break;
 		}
@@ -52,29 +35,16 @@ bool element::read(const polygon::poly_list& list, element** root, std::ifstream
 				sys_error("element::read error _name");
 			}
 
-			_name = new std::string(line);
+			_name = line;
 			break;
 		case 't':
-			if (!root) {
-				sys_error("element::read root is NULL");
-			}
-
-			if (!*root) {
-				// root has no parrent
-				*root = this;
-			}
-			else {
-				// all others must have a parrent
-				len = read_word(ifs, line);
-				if (!len) {
-					sys_error("element::read read error -  _parrent_name");
-				}
-
-				_parrent_name = new std::string(line);
-				element* parrent = find(*root, *_parrent_name);
+			// read element's parrent name
+			len = read_word(ifs, line);
+			if (len) {
+				_parrent_name = line;
+				parrent = find(root, _parrent_name);
 				if (!parrent) {
-					delete _parrent_name;
-					sys_error("element::read find error -  _parrent_name");
+					sys_error("element::read find error - _parrent_name");
 				}
 
 				add_node(parrent);
@@ -85,21 +55,19 @@ bool element::read(const polygon::poly_list& list, element** root, std::ifstream
 			// add a polygon to element
 			len = read_word(ifs, line);
 			if (len) {
-				std::string* s = new std::string(line);
-				polygon* p = find(list, *s);
-				if (!p) {
-					delete s;
+				s = line;
+				poly = find(poly_list, s);
+				if (!poly) {
 					sys_error("element::read find error -  polygon");
 				}
-
-				_polygons.push_back(p);
+				_polygons.push_back(poly);
 			}
 			else {
 				sys_error("element::read error polygon");
 			}
 			break;
 		case 'f':
-			// force flag
+			// element active flag
 			len = read_word(ifs, line);
 			if (!len) {
 				sys_error("element::read error flag");
@@ -115,7 +83,7 @@ bool element::read(const polygon::poly_list& list, element** root, std::ifstream
 			}
 			break;
 		default:
-			finish = 1;
+			finish = true;
 			ifs.seekg(-4, std::ios::cur);
 			break;
 		}
@@ -128,14 +96,8 @@ void element::print() const
 {
 #ifdef DEBUG_PRINTS
 	DBG(STR("  element:", 1));
-	if (_name) {
-		DBG(STR("    name: ", 1) << *_name);
-	}
-
-	if (_parrent_name) {
-		DBG(STR("    parrent_name: ", 1) << *_parrent_name);
-	}
-
+	DBG(STR("    name: ", 1) << _name);
+	DBG(STR("    parrent_name: ", 1) << _parrent_name);
 	DBG(STR("    active: ", 1) << _active);
 	DBG(STR("     dirty: ", 1) << _dirty);
 	_att.print();
@@ -152,8 +114,8 @@ void element::print() const
 void prn(void* p [[maybe_unused]])
 {
 #ifdef DEBUG_PRINTS
-	if (p) {
-		element* e = (element*)p;
+	element* e = (element*)p;
+	if (e) {
 		e->print();
 	}
 #endif // DEBUG_PRINTS
@@ -172,14 +134,14 @@ bool cmp(void* p)
 {
 	element* e = (element*)p;
 
-	if (e && e->get_name()) {
-		return (*e->get_name() == cmp_str);
+	if (e) {
+		return (e->get_name() == cmp_str);
 	}
 
 	return false;
 }
 
-element* element::find(element* root, std::string& s) const
+element* element::find(element* root, const std::string& s) const
 {
 	cmp_str = s;
 	return root->search_tree(cmp);
@@ -191,27 +153,34 @@ void element::update(const attrib& att)
 	_dirty = true;
 }
 
-void element::update(const matrix& p_gen, const matrix& p_rot)
+void element::update(const matrix& p_trans, const matrix& p_rot)
 {
 	if (!_active) {
 		return;
 	}
 
-	_gen_mat.prep_gen_mat(_att);
-	_rot_mat.prep_rot_mat(_att);
-
-	if (!_parrent && !_mats_prepared) {
+	if (!_parrent) {
 		// only once for root
-		_mats_prepared = true;
+		if (!_mats_prepared) {
+			_trans_mat.prep_trans_mat(_att);
+			_rot_mat.prep_rot_mat(_att);
+			_mats_prepared = true;
+		}
+	}
+	else {
+		_trans_mat.prep_trans_mat(_att);
+		_rot_mat.prep_rot_mat(_att);
 	}
 
 	if (_dirty) {
-		_gen_mat *= p_gen;
+		_trans_mat *= p_trans;
 		_rot_mat *= p_rot;
 
 		if (_polygons.size()) {
 			for (auto poly : _polygons) {
-				poly->update(_gen_mat, _rot_mat);
+				if (poly) {
+					poly->update(_trans_mat, _rot_mat);
+				}
 			}
 		}
 
@@ -221,24 +190,24 @@ void element::update(const matrix& p_gen, const matrix& p_rot)
 
 void element::update()
 {
-	matrix m_gen, m_rot;
+	matrix m_trans, m_rot;
 
 	if (_parrent) {
-		m_gen = _parrent->_gen_mat;
+		m_trans = _parrent->_trans_mat;
 		m_rot = _parrent->_rot_mat;
 	}
 	else {
-		m_gen = matrix_ns::get_unit_mat();
+		m_trans = matrix_ns::get_unit_mat();
 		m_rot = matrix_ns::get_unit_mat();
 	}
 
-	update(m_gen, m_rot);
+	update(m_trans, m_rot);
 }
 
 void upd(void* p)
 {
-	if (p) {
-		element* e = (element*)p;
+	element* e = (element*)p;
+	if (e) {
 		e->update();
 	}
 }
@@ -248,13 +217,10 @@ void element::update_all()
 	this->update_tree(upd);
 }
 
-polygon* element::find(const polygon::poly_list& list, const std::string& s) const
+polygon* element::find(const polylist_t& poly_list, const std::string& s) const
 {
-	const std::string* st;
-
-	for (const auto poly : list) {
-		st = poly->get_name();
-		if (st && *st == s) {
+	for (const auto poly : poly_list) {
+		if (poly && poly->get_name() == s) {
 			return poly;
 		}
 	}

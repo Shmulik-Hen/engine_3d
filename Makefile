@@ -34,7 +34,7 @@ CXXFLAGS += $(addprefix -D,DEBUG_PRINTS)
 endif
 
 ifeq ($(DBG_POLY), 1)
-CXXFLAGS += $(addprefix -D,POLYGON_DEBUG)
+CXXFLAGS += $(addprefix -D,DEBUG_POLYGON)
 endif
 
 .PHONY: all
@@ -43,7 +43,6 @@ all: build
 
 $(BLD_DIR):
 	mkdir -p $(BLD_DIR)
-	cp $(CFG_FILE) $(BLD_DIR)
 
 $(BLD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BLD_DIR)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -52,6 +51,7 @@ $(TARGET): $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 build: $(TARGET)
+	cp $(CFG_FILE) $(BLD_DIR)/
 
 rebuild: clean build
 
@@ -66,6 +66,6 @@ print:
 	@echo "OBJS='$(OBJS)'"
 	@echo "DEPS='$(DEPS)'"
 	@echo "CXX='$(CXX)'"
-	@echo "FLAGS='$(CPPFLAGS)' '$(CXXFLAGS)' '$(LDFLAGS)'"
+	@echo "FLAGS='$(CPPFLAGS)' '$(CXXFLAGS)' '$(LDFLAGS)' '$(LDLIBS)'"
 
 -include $(DEPS)

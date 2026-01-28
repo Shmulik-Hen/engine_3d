@@ -4,14 +4,16 @@
 #include "attrib.h"
 #include "vector_3.h"
 
+// clang-format off
+namespace attrib_ns { class attrib; }
+namespace vector_3_ns { class vector_3; }
+// clang-format on
+
 namespace matrix_ns
 {
 
-using namespace attrib_ns;
-using namespace vector_3_ns;
-// using unit_ns::unit;
-// using unit_ns::UNIT;
-// using unit_ns::ZERO;
+using attrib = attrib_ns::attrib;
+using vector_3 = vector_3_ns::vector_3;
 
 const int dim = O_ + 1;
 
@@ -58,7 +60,7 @@ public:
 	matrix& operator*=(const matrix&);
 	vector_3 operator*(const vector_3&) const;
 
-	void prep_gen_mat(const attrib&);
+	void prep_trans_mat(const attrib&);
 	void prep_rot_mat(const attrib&);
 };
 

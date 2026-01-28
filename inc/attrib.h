@@ -5,16 +5,14 @@
 namespace attrib_ns
 {
 
-// using unit_ns::unit;
-
 class attrib
 {
-	unit _deg_x {ZERO};
-	unit _deg_y {ZERO};
-	unit _deg_z {ZERO};
-	unit _off_x {ZERO};
-	unit _off_y {ZERO};
-	unit _off_z {ZERO};
+	unit _rot_x {ZERO};   // x-axis rotation
+	unit _rot_y {ZERO};   // y-axis rotation
+	unit _rot_z {ZERO};   // z-axis rotation
+	unit _trans_x {ZERO}; // x-axis translation
+	unit _trans_y {ZERO}; // y-axis translation
+	unit _trans_z {ZERO}; // z-axis translation
 	unit _zoom {UNIT};
 
 public:
@@ -26,12 +24,12 @@ public:
 	bool read(std::ifstream&);
 	void print() const;
 
-	unit get_deg_x() const { return _deg_x; };
-	unit get_deg_y() const { return _deg_y; };
-	unit get_deg_z() const { return _deg_z; };
-	unit get_off_x() const { return _off_x; };
-	unit get_off_y() const { return _off_y; };
-	unit get_off_z() const { return _off_z; };
+	unit get_rot_x() const { return _rot_x; };
+	unit get_rot_y() const { return _rot_y; };
+	unit get_rot_z() const { return _rot_z; };
+	unit get_trans_x() const { return _trans_x; };
+	unit get_trans_y() const { return _trans_y; };
+	unit get_trans_z() const { return _trans_z; };
 	unit get_zoom() const { return _zoom; };
 
 	attrib& operator+=(const attrib&);

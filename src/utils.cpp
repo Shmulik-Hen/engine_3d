@@ -5,7 +5,7 @@ system_error sys_error(const char* s1, const char* s2)
 {
 	std::string msg = std::string(s1);
 	if (s2) {
-		msg += ": ";
+		msg += PFX;
 		msg += s2;
 	}
 
@@ -14,7 +14,7 @@ system_error sys_error(const char* s1, const char* s2)
 
 int read_word(std::ifstream& ifs, char* word)
 {
-	int finish = 0;
+	bool finish = false;
 	int length = 0;
 	char c;
 
@@ -23,7 +23,7 @@ int read_word(std::ifstream& ifs, char* word)
 		ifs >> c;
 		// DBG(STR("read_word: ", 1) << c);
 		if ((c <= 32) || (c == ',') || (c == '(') || (c == ')') || (c == '{') || (c == '}')) {
-			finish = 1;
+			finish = true;
 		}
 		else {
 			word[length++] = c;

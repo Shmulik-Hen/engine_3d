@@ -5,10 +5,6 @@
 namespace vector_3_ns
 {
 
-// using unit_ns::unit;
-// using unit_ns::UNIT;
-// using unit_ns::ZERO;
-
 const int dim = Z_ + 1;
 
 class vector_3
@@ -24,7 +20,7 @@ public:
 	vector_3(const vector_3&);
 	vector_3(const unit[dim]);
 	vector_3(const unit, const unit, const unit);
-	~vector_3() {}
+	~vector_3() = default;
 
 	bool read(std::ifstream&);
 	void print() const;

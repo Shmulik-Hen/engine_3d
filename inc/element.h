@@ -8,49 +8,50 @@
 #include "polygon.h"
 #include "treenode.h"
 
+// clang-format off
+namespace attrib_ns { class attrib; }
+namespace graphics_ns { class graphics; }
+namespace matrix_ns { class matrix; }
+namespace vector_3_ns { class vector_3; }
+// clang-format on
+
 namespace element_ns
 {
 
-using namespace attrib_ns;
-using namespace matrix_ns;
-using namespace polygon_ns;
-using namespace treenode_ns;
-// using unit_ns::unit;
-
-class element : public treenode<element>
+class element : public treenode_ns::treenode<element>
 {
 public:
 
-	element();
-	~element();
+	element() = default;
+	~element() = default;
 
-	bool read(const polygon::poly_list&, element**, std::ifstream&);
+	bool read(const polygon_ns::polygon::polylist_t&, element*, std::ifstream&);
 	void print() const;
 	void print_all();
 
-	element* find(element*, std::string&) const;
+	element* find(element*, const std::string&) const;
 
-	void update(const attrib&);
-	void update(const matrix&, const matrix&);
+	void update(const attrib_ns::attrib&);
+	void update(const matrix_ns::matrix&, const matrix_ns::matrix&);
 	void update();
 	void update_all();
 
-	const std::string* get_name() const { return _name; }
+	const std::string get_name() const { return _name; }
 
 private:
 
-	polygon::poly_list _polygons;
-	std::string* _name {nullptr};
-	std::string* _parrent_name {nullptr};
-	element* _parrent {nullptr};
-	matrix _gen_mat;
-	matrix _rot_mat;
-	attrib _att;
+	polygon_ns::polygon::polylist_t _polygons;
+	std::string _name;
+	std::string _parrent_name;
+	element* _parrent {nullptr}; // raw pointer, non-owning
+	matrix_ns::matrix _trans_mat;
+	matrix_ns::matrix _rot_mat;
+	attrib_ns::attrib _att;
 	bool _active {false};
 	bool _dirty {false};
 	static bool _mats_prepared;
 
-	polygon* find(const polygon::poly_list&, const std::string&) const;
+	polygon_ns::polygon* find(const polygon_ns::polygon::polylist_t&, const std::string&) const;
 };
 
 } // namespace element_ns

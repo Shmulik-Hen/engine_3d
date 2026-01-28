@@ -172,12 +172,11 @@ private:
 	uint64_t _perf_freq {0};
 
 	void init_graphics();
-	void close_graphics();
 	void swap_buffers();
 
 	// clang-format off
-	bool is_valid_color(color_idx i) const { return (i >= __first_color__ && i < __last_color__); }
-	bool is_valid_alpha(alpha_idx a) const { return (a >= __first_alpha__ && a < __last_alpha__); }
+	bool is_valid_color(color_idx i) const { return ((int)i >= (int)__first_color__ && (int)i < (int)__last_color__); }
+	bool is_valid_alpha(alpha_idx a) const { return ((int)a >= (int)__first_alpha__ && (int)a < (int)__last_alpha__); }
 	// clang-format on
 };
 
