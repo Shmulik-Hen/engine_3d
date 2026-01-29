@@ -1,3 +1,5 @@
+#include <cmath>
+
 // #define DEBUG_PRINTS
 #include "polygon.h"
 #include "utils.h"

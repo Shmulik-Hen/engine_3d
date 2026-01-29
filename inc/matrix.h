@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "attrib.h"
+#include "unit.h"
 #include "vector_3.h"
 
 // clang-format off

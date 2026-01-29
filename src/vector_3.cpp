@@ -1,3 +1,5 @@
+#include <cmath>
+
 // #define DEBUG_PRINTS
 #include "vector_3.h"
 #include "utils.h"

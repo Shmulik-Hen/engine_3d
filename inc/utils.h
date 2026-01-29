@@ -1,6 +1,11 @@
 #pragma once
 
-#include "common.h"
+#include <fstream>
+
+constexpr int MAX_NAME = 10;
+constexpr int MAX_LINE = 20;
+typedef char LINE[MAX_LINE + 1];
+typedef char NAME[MAX_NAME + 1];
 
 struct system_error : std::runtime_error
 {

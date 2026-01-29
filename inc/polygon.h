@@ -7,6 +7,7 @@
 #include "common.h"
 #include "graphics.h"
 #include "matrix.h"
+#include "unit.h"
 #include "vector_3.h"
 
 // clang-format off
