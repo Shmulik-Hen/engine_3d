@@ -128,23 +128,15 @@ void element::print_all()
 #endif // DEBUG_PRINTS
 }
 
-std::string cmp_str;
-
-bool cmp(void* p)
+static bool cmp_name(element_ns::element* e, void* data)
 {
-	element* e = (element*)p;
-
-	if (e) {
-		return (e->get_name() == cmp_str);
-	}
-
-	return false;
+	auto* key = static_cast<const std::string*>(data);
+	return e && key && (e->get_name() == *key);
 }
 
 element* element::find(element* root, const std::string& s) const
 {
-	cmp_str = s;
-	return root->search_tree(cmp);
+	return root ? root->search_tree(cmp_name, (void*)&s) : nullptr;
 }
 
 void element::update(const attrib& att)
@@ -153,7 +145,7 @@ void element::update(const attrib& att)
 	_dirty = true;
 }
 
-void element::update(const matrix& p_trans, const matrix& p_rot)
+void element::update(const matrix& p_trans, const matrix& p_rot, drawvec_t& draw_vec)
 {
 	if (!_active) {
 		return;
@@ -179,7 +171,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot)
 		if (_polygons.size()) {
 			for (auto poly : _polygons) {
 				if (poly) {
-					poly->update(_trans_mat, _rot_mat);
+					poly->update(_trans_mat, _rot_mat, draw_vec);
 				}
 			}
 		}
@@ -188,7 +180,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot)
 	}
 }
 
-void element::update()
+void element::update(drawvec_t& draw_vec)
 {
 	matrix m_trans, m_rot;
 
@@ -201,20 +193,22 @@ void element::update()
 		m_rot = matrix_ns::get_unit_mat();
 	}
 
-	update(m_trans, m_rot);
+	update(m_trans, m_rot, draw_vec);
 }
 
-void upd(void* p)
+static void upd(element_ns::element* e, void* data)
 {
-	element* e = (element*)p;
-	if (e) {
-		e->update();
+	if (!e || !data) {
+		return;
 	}
+
+	auto* draw_vec = static_cast<std::vector<polygon_ns::polygon*>*>(data);
+	e->update(*draw_vec);
 }
 
-void element::update_all()
+void element::update_all(drawvec_t& draw_vec)
 {
-	this->update_tree(upd);
+	this->update_tree(upd, &draw_vec);
 }
 
 polygon* element::find(const polylist_t& poly_list, const std::string& s) const

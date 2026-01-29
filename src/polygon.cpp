@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 
 // #define DEBUG_PRINTS
@@ -22,7 +23,6 @@ vector_3 polygon::_cam_position(ZERO, ZERO, -ZLIMIT);
 vector_3 polygon::_light_position(ZERO, ZERO, -ZLIMIT);
 vector_3 polygon::_cam_direction(ZERO, ZERO, ZERO);
 vector_3 polygon::_light_direction(ZERO, ZERO, ZERO);
-polygon::polylist_t polygon::_draw_list;
 
 polygon::drawing::drawing(graphics& gfx) :
 	_gfx {&gfx}
@@ -447,7 +447,7 @@ void polygon::print() const
 #endif // DEBUG_PRINTS
 }
 
-void polygon::update(matrix& m_trans, matrix& m_rot)
+void polygon::update(matrix& m_trans, matrix& m_rot, drawvec_t& draw_vec)
 {
 	vector_3 dist, fill, normal;
 	unit view_angle, light_angle;
@@ -464,7 +464,7 @@ void polygon::update(matrix& m_trans, matrix& m_rot)
 		if ((light_angle > EPSILON) || _force) {
 			_depth = fill.get(Z_);
 			_gfx_ctx->make_color(std::abs(light_angle));
-			_draw_list.push_back(this);
+			draw_vec.push_back(this);
 		}
 	}
 
@@ -478,15 +478,15 @@ void polygon::update(matrix& m_trans, matrix& m_rot)
 #endif
 }
 
-static bool compare_depth(polygon* p1, polygon* p2)
+void polygon::sort(drawvec_t& draw_vec)
 {
-	return (p1->get_depth() < p2->get_depth());
-}
-
-void polygon::sort()
-{
-	if (_draw_list.size() > 1) {
-		_draw_list.sort(compare_depth);
+	if (draw_vec.size() > 1) {
+		// clang-format off
+		std::sort(draw_vec.begin(), draw_vec.end(),
+			  [](polygon* a, polygon* b) {
+				return a->get_depth() < b->get_depth();
+			  });
+		// clang-format on
 	}
 }
 
@@ -571,22 +571,24 @@ void polygon::gfx_draw()
 	_gfx_ctx->draw();
 }
 
-void polygon::show_all()
+void polygon::show_all(drawvec_t& draw_vec)
 {
-	if (_draw_list.empty()) {
+	if (draw_vec.empty()) {
 		DBG("show_all: empty");
 		return;
 	}
 
 	_gfx_ctx->_fb = _gfx_ctx->clear();
 
-	while (_draw_list.size()) {
-		polygon* poly = _draw_list.front();
-		_draw_list.pop_front();
+	for (polygon* poly : draw_vec) {
+		if (!poly) {
+			continue;
+		}
 		poly->_gfx_ctx->_fb = this->_gfx_ctx->_fb;
 		poly->gfx_draw();
 	}
 
+	draw_vec.clear(); // mirrors the old “drain the list” behavior
 	_gfx_ctx->present();
 }
 
@@ -627,14 +629,14 @@ vector_3 polygon::find_normal()
 	return v;
 }
 
-void polygon::sort_polygons()
+void polygon::sort_polygons(drawvec_t& draw_vec)
 {
-	this->sort();
+	sort(draw_vec);
 }
 
-void polygon::show_polygons()
+void polygon::show_polygons(drawvec_t& draw_vec)
 {
-	this->show_all();
+	show_all(draw_vec);
 }
 
 } // namespace polygon_ns

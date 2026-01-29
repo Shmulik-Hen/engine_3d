@@ -2,6 +2,7 @@
 
 #include <list>
 #include <utility>
+#include <vector>
 
 // #define DEBUG_POLYGON
 #include "common.h"
@@ -125,25 +126,22 @@ class polygon
 public:
 
 	typedef std::list<polygon*> polylist_t;
+	using drawvec_t = std::vector<polygon*>;
 
 	polygon(graphics_ns::graphics&);
 	~polygon();
 
 	bool read(std::ifstream&);
 	void print() const;
-	void update(matrix_ns::matrix&, matrix_ns::matrix&);
-	void sort();
-	void show_all();
+	void update(matrix_ns::matrix&, matrix_ns::matrix&, drawvec_t&);
+	void sort(drawvec_t&);
+	void show_all(drawvec_t&);
 
 	const std::string get_name() const { return _name; }
 	double get_depth() const { return _depth; }
 
-	void sort_polygons();
-	void show_polygons();
-
-private:
-
-	static polylist_t _draw_list;
+	void sort_polygons(drawvec_t&);
+	void show_polygons(drawvec_t&);
 };
 
 } // namespace polygon_ns
