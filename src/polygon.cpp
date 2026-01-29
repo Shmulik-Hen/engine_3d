@@ -18,12 +18,6 @@ using color_idx = graphics::color_idx;
 using point = graphics::point;
 using color_t = graphics_ns::color_t;
 
-// given values
-vector_3 polygon::_cam_position(ZERO, ZERO, -ZLIMIT);
-vector_3 polygon::_light_position(ZERO, ZERO, -ZLIMIT);
-vector_3 polygon::_cam_direction(ZERO, ZERO, ZERO);
-vector_3 polygon::_light_direction(ZERO, ZERO, ZERO);
-
 polygon::drawing::drawing(graphics& gfx) :
 	_gfx {&gfx}
 {
@@ -232,15 +226,15 @@ void polygon::drawing::clear_scratch_pad()
 	_scratch_pad.clear();
 }
 
-void polygon::drawing::project(const vector_3& original)
+void polygon::drawing::project(const vector_3& original, const vector_3& cam_position)
 {
 	vector_3 transformed = _trans_mat * original;
 
-	if (transformed.get(Z_) < _cam_position.get(Z_)) {
+	if (transformed.get(Z_) < cam_position.get(Z_)) {
 		_invalid = true;
 	}
 
-	vector_3 projected = vector_3::project(transformed, _cam_position);
+	vector_3 projected = vector_3::project(transformed, cam_position);
 	val_t x = std::lroundf((unit)_vp_mid_pos.x + projected.get(X_));
 	val_t y = std::lroundf((unit)_vp_mid_pos.y - projected.get(Y_));
 
@@ -419,9 +413,6 @@ bool polygon::read(std::ifstream& ifs)
 	_fill = find_fill();
 	// _normal = find_normal(); // TODO: FIX
 
-	_cam_direction = vector_3::normalize(_cam_position);
-	_light_direction = vector_3::normalize(_light_position);
-
 	return true;
 }
 
@@ -447,7 +438,7 @@ void polygon::print() const
 #endif // DEBUG_PRINTS
 }
 
-void polygon::update(matrix& m_trans, matrix& m_rot, drawvec_t& draw_vec)
+void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 {
 	vector_3 dist, fill, normal;
 	unit view_angle, light_angle;
@@ -457,14 +448,27 @@ void polygon::update(matrix& m_trans, matrix& m_rot, drawvec_t& draw_vec)
 
 	fill = m_trans * _fill;
 	normal = m_rot * _normal;
-	dist = fill - _cam_position;
-	view_angle = vector_3::dot(normal, dist);
+
+	vector_3 V = vector_3::normalize(fill - frame_ctx.camera_st.position);
+	view_angle = vector_3::dot(normal, V);
+
 	if ((view_angle < EPSILON) || _force) {
-		light_angle = vector_3::dot(normal, _light_direction);
+		vector_3 L;
+
+		if (frame_ctx.light_st.type == scene_ns::light_type::directional) {
+			// Convention: light.direction is surface->light
+			L = vector_3::normalize(frame_ctx.light_st.direction);
+		}
+		else {
+			// Point light: surface->light
+			L = vector_3::normalize(frame_ctx.light_st.position - fill);
+		}
+
+		light_angle = vector_3::dot(normal, L);
 		if ((light_angle > EPSILON) || _force) {
 			_depth = fill.get(Z_);
 			_gfx_ctx->make_color(std::abs(light_angle));
-			draw_vec.push_back(this);
+			frame_ctx.draw_vec.push_back(this);
 		}
 	}
 
@@ -478,11 +482,11 @@ void polygon::update(matrix& m_trans, matrix& m_rot, drawvec_t& draw_vec)
 #endif
 }
 
-void polygon::sort(drawvec_t& draw_vec)
+void polygon::sort(frame_context& frame_ctx)
 {
-	if (draw_vec.size() > 1) {
+	if (frame_ctx.draw_vec.size() > 1) {
 		// clang-format off
-		std::sort(draw_vec.begin(), draw_vec.end(),
+		std::sort(frame_ctx.draw_vec.begin(), frame_ctx.draw_vec.end(),
 			  [](polygon* a, polygon* b) {
 				return a->get_depth() < b->get_depth();
 			  });
@@ -540,12 +544,12 @@ bool polygon::verify()
 	return true;
 }
 
-void polygon::gfx_draw()
+void polygon::gfx_draw(vector_3_ns::vector_3& cam_position)
 {
 	_gfx_ctx->clear_scratch_pad();
 
 	for (const auto v : _points) {
-		_gfx_ctx->project(*v);
+		_gfx_ctx->project(*v, cam_position);
 	}
 
 #ifdef DEBUG_POLYGON
@@ -556,12 +560,12 @@ void polygon::gfx_draw()
 		val_t x, y;
 
 		transformed = _gfx_ctx->_trans_mat * _gfx_ctx->_debug_normal;
-		projected = vector_3::project(transformed, _cam_position);
+		projected = vector_3::project(transformed, cam_position);
 		x = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.x + projected.get(X_));
 		y = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.y - projected.get(Y_));
 		_gfx_ctx->_normal_point = {x, y};
 
-		projected = vector_3::project(_gfx_ctx->_debug_fill, _cam_position);
+		projected = vector_3::project(_gfx_ctx->_debug_fill, cam_position);
 		x = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.x + projected.get(X_));
 		y = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.y - projected.get(Y_));
 		_gfx_ctx->_fill_point = {x, y};
@@ -571,24 +575,24 @@ void polygon::gfx_draw()
 	_gfx_ctx->draw();
 }
 
-void polygon::show_all(drawvec_t& draw_vec)
+void polygon::show_all(frame_context& frame_ctx)
 {
-	if (draw_vec.empty()) {
+	if (frame_ctx.draw_vec.empty()) {
 		DBG("show_all: empty");
 		return;
 	}
 
 	_gfx_ctx->_fb = _gfx_ctx->clear();
 
-	for (polygon* poly : draw_vec) {
+	for (polygon* poly : frame_ctx.draw_vec) {
 		if (!poly) {
 			continue;
 		}
 		poly->_gfx_ctx->_fb = this->_gfx_ctx->_fb;
-		poly->gfx_draw();
+		poly->gfx_draw(frame_ctx.camera_st.position);
 	}
 
-	draw_vec.clear(); // mirrors the old “drain the list” behavior
+	frame_ctx.draw_vec.clear(); // mirrors the old “drain the list” behavior
 	_gfx_ctx->present();
 }
 
@@ -629,14 +633,14 @@ vector_3 polygon::find_normal()
 	return v;
 }
 
-void polygon::sort_polygons(drawvec_t& draw_vec)
+void polygon::sort_polygons(frame_context& frame_ctx)
 {
-	sort(draw_vec);
+	sort(frame_ctx);
 }
 
-void polygon::show_polygons(drawvec_t& draw_vec)
+void polygon::show_polygons(frame_context& frame_ctx)
 {
-	show_all(draw_vec);
+	show_all(frame_ctx);
 }
 
 } // namespace polygon_ns

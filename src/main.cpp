@@ -109,8 +109,8 @@ int main()
 
 		world->update(initial_att);
 
-		std::vector<polygon_ns::polygon*> draw_vec;
-		draw_vec.reserve(2048); // optional
+		// std::vector<polygon_ns::polygon*> draw_vec;
+		scn.frame_ctx.draw_vec.reserve(2048); // optional
 
 		// int i = 3;
 		// while (!in.quit && i--) {
@@ -119,15 +119,15 @@ int main()
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
 			DBG("update tree");
-			scn.root->update_all(draw_vec);
+			scn.root->update_all(scn.frame_ctx);
 #ifdef DEBUG_PRINTS
 			DBG("print tree");
 			scn.root->print_all();
 #endif
 			DBG("sort");
-			scn.ctrl_poly->sort_polygons(draw_vec);
+			scn.ctrl_poly->sort_polygons(scn.frame_ctx);
 			DBG("show");
-			scn.ctrl_poly->show_polygons(draw_vec);
+			scn.ctrl_poly->show_polygons(scn.frame_ctx);
 			std::this_thread::sleep_for(std::chrono::milliseconds(15));
 			box->update(keep_moving);
 		}

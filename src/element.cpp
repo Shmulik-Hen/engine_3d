@@ -8,6 +8,7 @@ namespace element_ns
 
 using namespace matrix_ns;
 using namespace polygon_ns;
+using polygon = polygon_ns::polygon;
 using polylist_t = polygon_ns::polygon::polylist_t;
 
 bool element_ns::element::_mats_prepared = false;
@@ -145,7 +146,7 @@ void element::update(const attrib& att)
 	_dirty = true;
 }
 
-void element::update(const matrix& p_trans, const matrix& p_rot, drawvec_t& draw_vec)
+void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& frame_ctx)
 {
 	if (!_active) {
 		return;
@@ -171,7 +172,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot, drawvec_t& draw
 		if (_polygons.size()) {
 			for (auto poly : _polygons) {
 				if (poly) {
-					poly->update(_trans_mat, _rot_mat, draw_vec);
+					poly->update(_trans_mat, _rot_mat, frame_ctx);
 				}
 			}
 		}
@@ -180,7 +181,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot, drawvec_t& draw
 	}
 }
 
-void element::update(drawvec_t& draw_vec)
+void element::update(frame_context& frame_ctx)
 {
 	matrix m_trans, m_rot;
 
@@ -193,7 +194,7 @@ void element::update(drawvec_t& draw_vec)
 		m_rot = matrix_ns::get_unit_mat();
 	}
 
-	update(m_trans, m_rot, draw_vec);
+	update(m_trans, m_rot, frame_ctx);
 }
 
 static void upd(element_ns::element* e, void* data)
@@ -202,13 +203,13 @@ static void upd(element_ns::element* e, void* data)
 		return;
 	}
 
-	auto* draw_vec = static_cast<std::vector<polygon_ns::polygon*>*>(data);
-	e->update(*draw_vec);
+	auto* frame_ctx = static_cast<scene_ns::frame_context*>(data);
+	e->update(*frame_ctx);
 }
 
-void element::update_all(drawvec_t& draw_vec)
+void element::update_all(frame_context& frame_ctx)
 {
-	this->update_tree(upd, &draw_vec);
+	this->update_tree(upd, &frame_ctx);
 }
 
 polygon* element::find(const polylist_t& poly_list, const std::string& s) const

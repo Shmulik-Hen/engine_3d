@@ -6,6 +6,7 @@
 #include "element.h"
 #include "graphics.h"
 #include "polygon.h"
+#include "scene_types.h"
 
 // clang-format off
 namespace element_ns { class element; }
@@ -32,6 +33,8 @@ public:
 
 	// "control polygon" (owned, but referenced as raw pointer)
 	polygon_ns::polygon* ctrl_poly {nullptr};
+
+	frame_context frame_ctx;
 
 	scene() = default;
 	scene(const scene&) = delete;

@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include "polygon.h"
 #include "treenode.h"
+#include "scene_types.h"
 
 // clang-format off
 namespace attrib_ns { class attrib; }
@@ -22,7 +23,7 @@ class element : public treenode_ns::treenode<element>
 {
 public:
 
-	using drawvec_t = polygon_ns::polygon::drawvec_t;
+	using frame_context = scene_ns::frame_context;
 
 	element() = default;
 	~element() = default;
@@ -34,9 +35,9 @@ public:
 	element* find(element*, const std::string&) const;
 
 	void update(const attrib_ns::attrib&);
-	void update(const matrix_ns::matrix&, const matrix_ns::matrix&, drawvec_t&);
-	void update(drawvec_t&);
-	void update_all(drawvec_t&);
+	void update(const matrix_ns::matrix&, const matrix_ns::matrix&, frame_context&);
+	void update(frame_context&);
+	void update_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
 

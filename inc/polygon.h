@@ -10,6 +10,7 @@
 #include "matrix.h"
 #include "unit.h"
 #include "vector_3.h"
+#include "scene_types.h"
 
 // clang-format off
 namespace graphics_ns { class graphics; }
@@ -94,7 +95,7 @@ class polygon
 		void clear_scratch_pad();
 		void plot();
 		void fill();
-		void project(const vector_3_ns::vector_3&);
+		void project(const vector_3_ns::vector_3&, const vector_3_ns::vector_3&);
 		void draw();
 		void present();
 	}; // class polygon::drawing
@@ -109,39 +110,34 @@ class polygon
 	drawing* _gfx_ctx {nullptr};   // raw pointer, non owning
 	int _force {0};                // display polygon regardless of direction
 
-	static vector_3_ns::vector_3 _cam_position;    // camera position
-	static vector_3_ns::vector_3 _cam_direction;   // camera direction (normalized)
-	static vector_3_ns::vector_3 _light_position;  // light source position
-	static vector_3_ns::vector_3 _light_direction; // light source direction (normalized)
-
 	bool is_consec();
 	bool is_degenerate();
 	bool is_planar();
 	bool verify();
 
-	void gfx_draw();
+	void gfx_draw(vector_3_ns::vector_3&);
 	vector_3_ns::vector_3 find_fill();
 	vector_3_ns::vector_3 find_normal();
 
 public:
 
 	typedef std::list<polygon*> polylist_t;
-	using drawvec_t = std::vector<polygon*>;
+	using frame_context = scene_ns::frame_context;
 
 	polygon(graphics_ns::graphics&);
 	~polygon();
 
 	bool read(std::ifstream&);
 	void print() const;
-	void update(matrix_ns::matrix&, matrix_ns::matrix&, drawvec_t&);
-	void sort(drawvec_t&);
-	void show_all(drawvec_t&);
+	void update(matrix_ns::matrix&, matrix_ns::matrix&, frame_context&);
+	void sort(frame_context&);
+	void show_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
 	double get_depth() const { return _depth; }
 
-	void sort_polygons(drawvec_t&);
-	void show_polygons(drawvec_t&);
+	void sort_polygons(frame_context&);
+	void show_polygons(frame_context&);
 };
 
 } // namespace polygon_ns
