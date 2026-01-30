@@ -43,9 +43,9 @@ public:
 	scene& operator=(scene&&) = delete;
 	~scene();
 
-	polygon_ns::polygon* add_polygon(graphics_ns::graphics& gfx);
+	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
-	polygon_ns::polygon* ensure_ctrl_polygon(graphics_ns::graphics& gfx);
+	polygon_ns::polygon* ensure_ctrl_polygon();
 
 	void clear(); // optional convenience
 };

@@ -14,6 +14,8 @@ using namespace scene_ns;
 using attrib = attrib_ns::attrib;
 using element = element_ns::element;
 using graphics = graphics_ns::graphics;
+using ARGB = graphics_ns::graphics::ARGB;
+using frame_buffer = graphics_ns::graphics::frame_buffer;
 using input_state = graphics_ns::graphics::input_state;
 using polygon = polygon_ns::polygon;
 
@@ -27,9 +29,12 @@ int main()
 		polygon* poly;
 		element* elem;
 		scene scn;
-
 		input_state in {};
-		graphics gfx("Software 3D Engine");
+
+		graphics* gfx = scn.frame_ctx.state->grfx.gfx;
+		frame_buffer* fb = &scn.frame_ctx.state->grfx.fb;
+		ARGB* clear_color = &scn.frame_ctx.state->grfx.clear_color;
+		drawvec_t* draw_vec = scn.frame_ctx.draw_vec;
 
 		ifs.open(filename, std::ios::in);
 		if (!ifs) {
@@ -48,12 +53,12 @@ int main()
 			// case '#':
 			// 	read_remark(ifs);
 			case 'p':
-				poly = scn.add_polygon(gfx);
-				rc = poly->read(ifs);
+				poly = scn.add_polygon();
+				rc = poly->read(gfx, ifs);
 				if (!rc) {
 					sys_error("read polygon failed");
 				}
-				scn.ensure_ctrl_polygon(gfx); // keep behavior
+				scn.ensure_ctrl_polygon();
 				break;
 			case 'e':
 				elem = scn.add_element();
@@ -112,20 +117,28 @@ int main()
 		// int i = 3;
 		// while (!in.quit && i--) {
 		while (!in.quit) {
-			gfx.poll_events(in);
+			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
-			scn.frame_ctx.draw_vec->clear();
+
+			draw_vec->clear();
 
 			DBG("update tree");
 			scn.root->update_all(scn.frame_ctx);
+
 #ifdef DEBUG_PRINTS
 			DBG("print tree");
 			scn.root->print_all();
 #endif
+
 			DBG("sort");
 			scn.ctrl_poly->sort_polygons(scn.frame_ctx);
+
 			DBG("show");
-			scn.ctrl_poly->show_polygons(scn.frame_ctx);
+			*fb = gfx->get_backbuffer();
+			gfx->fill_buffer(*fb, *clear_color);
+			scn.ctrl_poly->draw_polygons(scn.frame_ctx);
+			gfx->present();
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(15));
 			box->update(keep_moving);
 		}

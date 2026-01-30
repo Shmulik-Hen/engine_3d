@@ -131,13 +131,6 @@ void graphics::fill_buffer(frame_buffer& fb, const ARGB& color)
 	std::fill_n(fb.pixels, _win_size, color.c);
 }
 
-graphics::frame_buffer graphics::get_clear_backbuffer(const ARGB& color)
-{
-	frame_buffer fb = get_backbuffer();
-	fill_buffer(fb, color);
-	return fb;
-}
-
 void graphics::present()
 {
 	frame_buffer fb = get_backbuffer();

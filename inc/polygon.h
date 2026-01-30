@@ -54,10 +54,7 @@ class polygon
 		graphics_ns::graphics::point _bbox_br;
 		graphics_ns::graphics::ARGB _base_color {};
 		graphics_ns::graphics::ARGB _draw_color {};
-		graphics_ns::graphics::ARGB _clear_color {};
 
-		graphics_ns::graphics* _gfx {nullptr};
-		graphics_ns::graphics::frame_buffer _fb;
 		matrix_ns::matrix _trans_mat;
 		matrix_ns::matrix _rot_mat;
 #ifdef DEBUG_POLYGON
@@ -71,33 +68,32 @@ class polygon
 		graphics_ns::graphics::point _fill_point;
 #endif
 
-		drawing(graphics_ns::graphics&);
+		drawing(const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
 		~drawing() {}
 
-		graphics_ns::graphics::addr_t offset(const graphics_ns::graphics::point&) const;
+		graphics_ns::graphics::addr_t offset(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&) const;
 		graphics_ns::color_t get_color() const { return _base_color.c; }
 		graphics_ns::graphics::ARGB getdirect() const { return *_xy_addr; }
-		graphics_ns::graphics::ARGB getpixel(const graphics_ns::graphics::point&);
+		graphics_ns::graphics::ARGB getpixel(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&);
 		graphics_ns::graphics::frame_buffer clear();
-		void set_min_max();
+		void set_min_max(const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
 		void adjust_min(graphics_ns::graphics::point&);
 		void adjust_max(graphics_ns::graphics::point&);
 		void create_bbox();
 		void putdirect(const graphics_ns::graphics::ARGB& a) { *_xy_addr = a; }
-		void putpixel(const graphics_ns::graphics::point&, graphics_ns::graphics::ARGB&);
-		void moveto(const graphics_ns::graphics::point&);
+		void putpixel(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&, graphics_ns::graphics::ARGB&);
+		void moveto(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&);
 		void lineto(const graphics_ns::graphics::point&);
 		void bar(graphics_ns::val_t, graphics_ns::val_t);
-		void line(const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
-		void rect(const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
-		void set_color(int);
+		void line(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
+		void rect(graphics_ns::graphics::frame_buffer&, const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
+		void set_color(const graphics_ns::graphics*, int);
 		void make_color(unit);
 		void clear_scratch_pad();
-		void plot();
-		void fill();
+		void plot(graphics_ns::graphics::frame_buffer&);
+		void fill(graphics_ns::graphics::frame_buffer&);
 		void project(const vector_3_ns::vector_3&, const vector_3_ns::vector_3&);
-		void draw();
-		void present();
+		void draw(graphics_ns::graphics::frame_buffer&);
 	}; // class polygon::drawing
 
 	typedef std::vector<vector_3_ns::vector_3*> vector_t;
@@ -107,7 +103,7 @@ class polygon
 	vector_3_ns::vector_3 _normal; // polygon's direction
 	vector_t _points;              // owning
 	double _depth {ZERO};          // objects location on the z axis
-	drawing* _gfx_ctx {nullptr};   // raw pointer, non owning
+	drawing* _draw_ctx {nullptr};  // raw pointer, non owning
 	int _force {0};                // display polygon regardless of direction
 
 	bool is_consec();
@@ -115,7 +111,7 @@ class polygon
 	bool is_planar();
 	bool verify();
 
-	void gfx_draw(const vector_3_ns::vector_3&);
+	void draw(scene_ns::frame_context&);
 	vector_3_ns::vector_3 find_fill();
 	vector_3_ns::vector_3 find_normal();
 
@@ -124,20 +120,20 @@ public:
 	typedef std::list<polygon*> polylist_t;
 	using frame_context = scene_ns::frame_context;
 
-	polygon(graphics_ns::graphics&);
+	polygon(const graphics_ns::graphics::point&, const graphics_ns::graphics::point&);
 	~polygon();
 
-	bool read(std::ifstream&);
+	bool read(const graphics_ns::graphics*, std::ifstream&);
 	void print() const;
-	void update(matrix_ns::matrix&, matrix_ns::matrix&, frame_context&);
-	void sort(frame_context&);
-	void show_all(frame_context&);
+	void update(matrix_ns::matrix&, matrix_ns::matrix&, scene_ns::frame_context&);
+	void sort(scene_ns::frame_context&);
+	void draw_all(scene_ns::frame_context&);
 
 	const std::string get_name() const { return _name; }
 	double get_depth() const { return _depth; }
 
-	void sort_polygons(frame_context&);
-	void show_polygons(frame_context&);
+	void sort_polygons(scene_ns::frame_context&);
+	void draw_polygons(scene_ns::frame_context&);
 };
 
 } // namespace polygon_ns

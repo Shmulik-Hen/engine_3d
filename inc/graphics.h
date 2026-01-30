@@ -132,7 +132,6 @@ public:
 	// framebuffer flow (engine-driven)
 	frame_buffer get_backbuffer();
 	void fill_buffer(frame_buffer&, const ARGB&);
-	frame_buffer get_clear_backbuffer(const ARGB&);
 	void present(); // uploads backbuffer, presents, swaps buffers
 
 	// color management
