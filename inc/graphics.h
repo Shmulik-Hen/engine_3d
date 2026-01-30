@@ -18,8 +18,8 @@ using color_t = uval_t;
 
 constexpr val_t MIN_X = 0;
 constexpr val_t MIN_Y = 0;
-constexpr val_t MAX_X = 320;
-constexpr val_t MAX_Y = 200;
+constexpr val_t MAX_X = 1280; // 16:10
+constexpr val_t MAX_Y = 800;
 
 class graphics
 {
@@ -116,6 +116,7 @@ public:
 	typedef std::map<alpha_idx, uint8_t> alpha_map;
 
 	graphics();
+	graphics(const char*);
 	graphics(const char*, val_t, val_t, val_t);
 	~graphics();
 

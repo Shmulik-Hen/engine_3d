@@ -31,6 +31,19 @@ graphics::graphics() :
 	init_graphics();
 }
 
+graphics::graphics(const char* title) :
+	_title {title},
+	_w {DEFAULT_WIDTH},
+	_h {DEFAULT_HEIGHT},
+	_scale {DEFAULT_SCALE},
+	_scaled_w {_w * _scale},
+	_scaled_h {_h * _scale},
+	_win_size {_w * _h},
+	_pitch {_w * (val_t)sizeof(color_t)}
+{
+	init_graphics();
+}
+
 graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_title {title},
 	_w {std::min(width, MAX_X)},

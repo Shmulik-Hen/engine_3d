@@ -29,7 +29,7 @@ int main()
 		scene scn;
 
 		input_state in {};
-		graphics gfx("Software 3D Engine", 320, 200, 2);
+		graphics gfx("Software 3D Engine");
 
 		ifs.open(filename, std::ios::in);
 		if (!ifs) {
