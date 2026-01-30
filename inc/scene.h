@@ -36,11 +36,12 @@ public:
 
 	frame_context frame_ctx;
 
-	scene() = default;
+	scene();
 	scene(const scene&) = delete;
 	scene& operator=(const scene&) = delete;
 	scene(scene&&) = delete;
 	scene& operator=(scene&&) = delete;
+	~scene();
 
 	polygon_ns::polygon* add_polygon(graphics_ns::graphics& gfx);
 	element_ns::element* add_element();

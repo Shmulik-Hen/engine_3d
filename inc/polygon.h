@@ -115,7 +115,7 @@ class polygon
 	bool is_planar();
 	bool verify();
 
-	void gfx_draw(vector_3_ns::vector_3&);
+	void gfx_draw(const vector_3_ns::vector_3&);
 	vector_3_ns::vector_3 find_fill();
 	vector_3_ns::vector_3 find_normal();
 

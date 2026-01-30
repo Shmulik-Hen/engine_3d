@@ -10,6 +10,23 @@ using element = element_ns::element;
 using graphics = graphics_ns::graphics;
 using polygon = polygon_ns::polygon;
 
+scene::scene()
+{
+	frame_ctx.draw_vec = new drawvec_t;
+	frame_ctx.draw_vec->reserve(256);
+
+	frame_ctx.state = new scene_state;
+}
+
+scene::~scene()
+{
+	delete frame_ctx.state;
+	frame_ctx.state = nullptr;
+	frame_ctx.draw_vec->clear();
+	delete frame_ctx.draw_vec;
+	frame_ctx.draw_vec = nullptr;
+}
+
 polygon* scene::add_polygon(graphics& gfx)
 {
 	polygons_owned.push_back(std::make_unique<polygon>(gfx));

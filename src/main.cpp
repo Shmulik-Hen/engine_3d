@@ -109,14 +109,12 @@ int main()
 
 		world->update(initial_att);
 
-		// std::vector<polygon_ns::polygon*> draw_vec;
-		scn.frame_ctx.draw_vec.reserve(2048); // optional
-
 		// int i = 3;
 		// while (!in.quit && i--) {
 		while (!in.quit) {
 			gfx.poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
+			scn.frame_ctx.draw_vec->clear();
 
 			DBG("update tree");
 			scn.root->update_all(scn.frame_ctx);

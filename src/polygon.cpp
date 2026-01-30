@@ -449,26 +449,29 @@ void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 	fill = m_trans * _fill;
 	normal = m_rot * _normal;
 
-	vector_3 V = vector_3::normalize(fill - frame_ctx.camera_st.position);
+	// V is camera -> surface vector
+	// normals point toward camera (negative Z),
+	// so front-face test uses dot(N, V) < 0
+	vector_3 V = vector_3::normalize(fill - frame_ctx.state->camera.position);
 	view_angle = vector_3::dot(normal, V);
 
 	if ((view_angle < EPSILON) || _force) {
 		vector_3 L;
 
-		if (frame_ctx.light_st.type == scene_ns::light_type::directional) {
+		if (frame_ctx.state->light.type == scene_ns::light_type::directional) {
 			// Convention: light.direction is surface->light
-			L = vector_3::normalize(frame_ctx.light_st.direction);
+			L = vector_3::normalize(frame_ctx.state->light.direction);
 		}
 		else {
 			// Point light: surface->light
-			L = vector_3::normalize(frame_ctx.light_st.position - fill);
+			L = vector_3::normalize(frame_ctx.state->light.position - fill);
 		}
 
 		light_angle = vector_3::dot(normal, L);
 		if ((light_angle > EPSILON) || _force) {
 			_depth = fill.get(Z_);
 			_gfx_ctx->make_color(std::abs(light_angle));
-			frame_ctx.draw_vec.push_back(this);
+			frame_ctx.draw_vec->push_back(this);
 		}
 	}
 
@@ -484,9 +487,9 @@ void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 
 void polygon::sort(frame_context& frame_ctx)
 {
-	if (frame_ctx.draw_vec.size() > 1) {
+	if (frame_ctx.draw_vec->size() > 1) {
 		// clang-format off
-		std::sort(frame_ctx.draw_vec.begin(), frame_ctx.draw_vec.end(),
+		std::sort(frame_ctx.draw_vec->begin(), frame_ctx.draw_vec->end(),
 			  [](polygon* a, polygon* b) {
 				return a->get_depth() < b->get_depth();
 			  });
@@ -544,7 +547,7 @@ bool polygon::verify()
 	return true;
 }
 
-void polygon::gfx_draw(vector_3_ns::vector_3& cam_position)
+void polygon::gfx_draw(const vector_3_ns::vector_3& cam_position)
 {
 	_gfx_ctx->clear_scratch_pad();
 
@@ -577,22 +580,21 @@ void polygon::gfx_draw(vector_3_ns::vector_3& cam_position)
 
 void polygon::show_all(frame_context& frame_ctx)
 {
-	if (frame_ctx.draw_vec.empty()) {
+	if (frame_ctx.draw_vec->empty()) {
 		DBG("show_all: empty");
 		return;
 	}
 
 	_gfx_ctx->_fb = _gfx_ctx->clear();
 
-	for (polygon* poly : frame_ctx.draw_vec) {
+	for (polygon* poly : *frame_ctx.draw_vec) {
 		if (!poly) {
 			continue;
 		}
 		poly->_gfx_ctx->_fb = this->_gfx_ctx->_fb;
-		poly->gfx_draw(frame_ctx.camera_st.position);
+		poly->gfx_draw(frame_ctx.state->camera.position);
 	}
 
-	frame_ctx.draw_vec.clear(); // mirrors the old “drain the list” behavior
 	_gfx_ctx->present();
 }
 
