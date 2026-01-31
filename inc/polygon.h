@@ -88,32 +88,34 @@ class polygon
 		void draw(scene_ns::frame_context&);
 	}; // class polygon::drawing
 
-	typedef std::vector<vector_3_ns::vector_3*> vector_t;
-
 	std::string _name;
-	vector_3_ns::vector_3 _fill;   // polygon middle point - average of all vectors
-	vector_3_ns::vector_3 _normal; // polygon's direction
-	vector_t _points;              // owning
-	double _depth {ZERO};          // objects location on the z axis
-	drawing* _draw_ctx {nullptr};  // raw pointer, non owning
-	int _force {0};                // display polygon regardless of direction
+	vector_3_ns::vector_3 _fill;          // polygon middle point - average of all vectors
+	vector_3_ns::vector_3 _config_normal; // polygon's direction - from config
+	vector_3_ns::vector_3 _normal;        // polygon's direction - calculated
+	double _depth {ZERO};                 // objects location on the z axis
+	drawing* _draw_ctx {nullptr};         // raw pointer, non owning
+	int _force {0};                       // display polygon regardless of direction
 
 	bool is_consec();
 	bool is_degenerate();
 	bool is_planar();
 	bool verify();
-
-	void draw(scene_ns::frame_context&);
 	vector_3_ns::vector_3 find_fill();
 	vector_3_ns::vector_3 find_normal();
 
+	void draw(scene_ns::frame_context&);
+
 public:
 
+	typedef std::vector<vector_3_ns::vector_3*> vector_t;
 	typedef std::list<polygon*> polylist_t;
 	using frame_context = scene_ns::frame_context;
 
 	polygon();
 	~polygon();
+
+	const std::string get_name() const { return _name; }
+	double get_depth() const { return _depth; }
 
 	bool read(const graphics_ns::graphics*, std::ifstream&);
 	void print() const;
@@ -121,11 +123,12 @@ public:
 	void sort(scene_ns::frame_context&);
 	void draw_all(scene_ns::frame_context&);
 
-	const std::string get_name() const { return _name; }
-	double get_depth() const { return _depth; }
-
 	void sort_polygons(scene_ns::frame_context&);
 	void draw_polygons(scene_ns::frame_context&);
+
+private:
+
+	vector_t _points; // owning
 };
 
 } // namespace polygon_ns

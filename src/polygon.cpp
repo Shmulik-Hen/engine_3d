@@ -21,6 +21,7 @@ using color_t = graphics_ns::color_t;
 using frame_context = scene_ns::frame_context;
 using render_ns::front_facing;
 using render_ns::lambert;
+using vector_t = polygon_ns::polygon::vector_t;
 
 addr_t polygon::drawing::offset(frame_context& frame_ctx, const point& pos) const
 {
@@ -358,6 +359,212 @@ polygon::~polygon()
 	_points.clear();
 }
 
+static unit len2(const vector_3& v)
+{
+	const unit x = v.get(X_);
+	const unit y = v.get(Y_);
+	const unit z = v.get(Z_);
+	return x * x + y * y + z * z;
+}
+
+static unit dist2(const vector_3& a, const vector_3& b)
+{
+	const unit dx = a.get(X_) - b.get(X_);
+	const unit dy = a.get(Y_) - b.get(Y_);
+	const unit dz = a.get(Z_) - b.get(Z_);
+	return dx * dx + dy * dy + dz * dz;
+}
+
+static unit max_radius_from(const vector_t& pts, const vector_3& p0)
+{
+	unit max_d2 = ZERO;
+
+	for (auto* p : pts) {
+		const vector_3 d = (*p) - p0;
+		max_d2 = std::max(max_d2, len2(d));
+	}
+
+	return std::sqrt(max_d2);
+}
+
+bool polygon::is_consec()
+{
+	const std::size_t n = _points.size();
+
+	// Choose a tolerance. Using EPSILON in world units can be too small or too big,
+	// but this is a safe start.
+	const unit eps2 = (EPSILON * 10) * (EPSILON * 10);
+
+	// 1) No consecutive duplicates (including wraparound)
+	for (std::size_t i = 0; i < n; ++i) {
+		const vector_3& a = *_points[i];
+		const vector_3& b = *_points[(i + 1) % n];
+		if (dist2(a, b) <= eps2) {
+			return false;
+		}
+	}
+
+	// 2) No duplicates anywhere (recommended)
+	for (std::size_t i = 0; i < n; ++i) {
+		for (std::size_t j = i + 1; j < n; ++j) {
+			if (dist2(*_points[i], *_points[j]) <= eps2) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool polygon::is_degenerate()
+{
+	vector_3 n = find_normal(); // already handles n==3 vs Newell
+	return (len2(n) <= EPSILON * EPSILON);
+}
+
+bool polygon::is_planar()
+{
+	const vector_3 p0 = *_points[0];
+	const vector_3 N = find_normal();
+
+	// Scale tolerance to polygon size to avoid false negatives on large coordinates.
+	// radius ~ "size" of polygon in world units.
+	const unit radius = max_radius_from(_points, p0);
+	const unit tol = std::max(EPSILON * 10, EPSILON * radius);
+
+	for (auto* p : _points) {
+		const vector_3 d = (*p) - p0;
+		const unit dist = vector_3::dot(N, d); // signed distance scaled by |N| (|N| == 1)
+		if (std::abs(dist) > tol) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool polygon::verify()
+{
+	if (!_name.length()) {
+		ERR("polygon: no name");
+		return false;
+	}
+
+	if (_points.size() < 3) {
+		ERR("polygon: need at least 3 vectors " << DEC(_points.size(), 4));
+		return false;
+	}
+
+	if (!is_consec()) {
+		ERR("polygon: non-consecutive");
+		return false;
+	}
+
+	if (is_degenerate()) {
+		ERR("polygon: degenrated");
+		return false;
+	}
+
+	if (_points.size() > 3 && !is_planar()) {
+		ERR("polygon: not planar");
+		return false;
+	}
+
+	return true;
+}
+
+vector_3 polygon::find_fill()
+{
+	vector_3 v;
+	unit n = static_cast<unit>(_points.size());
+
+	if (n) {
+		for (const auto vec : _points) {
+			v += *vec;
+		}
+
+		v.set(X_, v.get(X_) / n);
+		v.set(Y_, v.get(Y_) / n);
+		v.set(Z_, v.get(Z_) / n);
+	}
+
+	return v;
+}
+
+vector_3 polygon::find_normal()
+{
+	const std::size_t n = _points.size();
+
+	if (n == 3) {
+		// --- Fast/accurate path for triangles ---
+		const vector_3& p0 = *_points[0];
+		const vector_3& p1 = *_points[1];
+		const vector_3& p2 = *_points[2];
+
+		const vector_3 e1 = p1 - p0;
+		const vector_3 e2 = p2 - p0;
+
+		vector_3 cr = vector_3::cross(e1, e2);
+
+		return vector_3::normalize(cr);
+	}
+	else {
+		// --- Robust path for 4+ vertices: Newell's method ---
+		vector_3 nn(ZERO, ZERO, ZERO);
+
+		for (std::size_t i = 0; i < n; ++i) {
+			const vector_3& cur = *_points[i];
+			const vector_3& nxt = *_points[(i + 1) % n];
+
+			const unit cx = cur.get(X_);
+			const unit cy = cur.get(Y_);
+			const unit cz = cur.get(Z_);
+
+			const unit nx = nxt.get(X_);
+			const unit ny = nxt.get(Y_);
+			const unit nz = nxt.get(Z_);
+
+			nn.set(X_, nn.get(X_) + (cy - ny) * (cz + nz));
+			nn.set(Y_, nn.get(Y_) + (cz - nz) * (cx + nx));
+			nn.set(Z_, nn.get(Z_) + (cx - nx) * (cy + ny));
+		}
+
+		return vector_3::normalize(nn);
+	}
+}
+
+void polygon::draw(frame_context& frame_ctx)
+{
+	_draw_ctx->clear_scratch_pad();
+
+	for (const auto v : _points) {
+		_draw_ctx->project(*v, frame_ctx);
+	}
+
+#ifdef DEBUG_POLYGON
+	vector_3 projected;
+	val_t x, y;
+
+	projected = vector_3::project(_draw_ctx->_debug_normal,
+	                              frame_ctx.state->camera.position,
+	                              frame_ctx.state->proj.focal_len,
+	                              frame_ctx.state->proj.near_eps);
+	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
+	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
+	_draw_ctx->_normal_point = {x, y};
+
+	projected = vector_3::project(_draw_ctx->_debug_fill,
+	                              frame_ctx.state->camera.position,
+	                              frame_ctx.state->proj.focal_len,
+	                              frame_ctx.state->proj.near_eps);
+	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
+	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
+	_draw_ctx->_fill_point = {x, y};
+#endif
+
+	_draw_ctx->draw(frame_ctx);
+}
+
 bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 {
 	LINE line;
@@ -400,7 +607,7 @@ bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 			}
 			break;
 		case 'o': // TODO: FIX
-			_normal.read(ifs);
+			_config_normal.read(ifs);
 			break;
 		case 'v':
 			v = new vector_3;
@@ -424,7 +631,16 @@ bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 	}
 
 	_fill = find_fill();
-	// _normal = find_normal(); // TODO: FIX
+	_normal = find_normal();
+
+	unit d = vector_3::dot(_normal, _config_normal);
+	if (d < ZERO) {
+		WARN("polygon::read: winding mismatch vs config normal" << _name);
+		DBG("polygon::read: config normal:");
+		_config_normal.print();
+		DBG("polygon::read: calculated normal:");
+		_normal.print();
+	}
 
 	return true;
 }
@@ -508,88 +724,6 @@ void polygon::sort(frame_context& frame_ctx)
 	}
 }
 
-bool polygon::is_consec()
-{
-	// TODO: implement
-	return true;
-}
-
-bool polygon::is_degenerate()
-{
-	// TODO: implement
-	return false;
-}
-
-bool polygon::is_planar()
-{
-	// TODO: implement
-	return true;
-}
-
-bool polygon::verify()
-{
-	if (!_name.length()) {
-		ERR("polygon: no name");
-		return false;
-	}
-
-	if (_points.size() < 3) {
-		ERR("polygon: need at least 3 vectors " << DEC(_points.size(), 4));
-		return false;
-	}
-
-	if (!is_consec()) {
-		ERR("polygon: non-consecutive");
-		return false;
-	}
-
-	if (_points.size() > 3) {
-		if (is_degenerate()) {
-			ERR("polygon: degenrated");
-			return false;
-		}
-
-		if (!is_planar()) {
-			ERR("polygon: not planar");
-			return false;
-		}
-	}
-
-	return true;
-}
-
-void polygon::draw(frame_context& frame_ctx)
-{
-	_draw_ctx->clear_scratch_pad();
-
-	for (const auto v : _points) {
-		_draw_ctx->project(*v, frame_ctx);
-	}
-
-#ifdef DEBUG_POLYGON
-	vector_3 projected;
-	val_t x, y;
-
-	projected = vector_3::project(_draw_ctx->_debug_normal,
-	                              frame_ctx.state->camera.position,
-	                              frame_ctx.state->proj.focal_len,
-	                              frame_ctx.state->proj.near_eps);
-	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
-	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
-	_draw_ctx->_normal_point = {x, y};
-
-	projected = vector_3::project(_draw_ctx->_debug_fill,
-	                              frame_ctx.state->camera.position,
-	                              frame_ctx.state->proj.focal_len,
-	                              frame_ctx.state->proj.near_eps);
-	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
-	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
-	_draw_ctx->_fill_point = {x, y};
-#endif
-
-	_draw_ctx->draw(frame_ctx);
-}
-
 void polygon::draw_all(frame_context& frame_ctx)
 {
 	if (frame_ctx.draw_vec->empty()) {
@@ -603,43 +737,6 @@ void polygon::draw_all(frame_context& frame_ctx)
 		}
 		poly->draw(frame_ctx);
 	}
-}
-
-vector_3 polygon::find_fill()
-{
-	vector_3 v;
-	unit n = static_cast<unit>(_points.size());
-
-	if (n) {
-		for (const auto vec : _points) {
-			v += *vec;
-		}
-
-		v.set(X_, v.get(X_) / n);
-		v.set(Y_, v.get(Y_) / n);
-		v.set(Z_, v.get(Z_) / n);
-	}
-
-	return v;
-}
-
-// TODO: wrong implementation - FIX
-vector_3 polygon::find_normal()
-{
-	vector_3 *v1, *v2, v;
-
-	if (_points.size() > 2) {
-		v1 = _points[0];
-		v2 = _points[1];
-
-		v.set(X_, (v1->get(Y_) * v2->get(Z_) - v1->get(Z_) * v2->get(Y_)));
-		v.set(Y_, (v1->get(Z_) * v2->get(X_) - v1->get(X_) * v2->get(Z_)));
-		v.set(Z_, (v1->get(X_) * v2->get(Y_) - v1->get(Y_) * v2->get(X_)));
-
-		v = vector_3::normalize(v);
-	}
-
-	return v;
 }
 
 void polygon::sort_polygons(frame_context& frame_ctx)
