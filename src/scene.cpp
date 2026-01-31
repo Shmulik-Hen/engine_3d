@@ -1,3 +1,5 @@
+// #define DEBUG_PRINTS
+#include "common.h"
 #include "scene.h"
 
 namespace scene_ns
@@ -13,23 +15,60 @@ using polygon = polygon_ns::polygon;
 scene::scene()
 {
 	frame_ctx.draw_vec = new drawvec_t;
+	frame_ctx.state = new scene_state;
+	frame_ctx.state->grfx.gfx = new graphics("Software 3D Engine");
+
+	/* All static for NOW - later read from config or dynamic */
+
+	// drawing vector
 	frame_ctx.draw_vec->reserve(256);
 
-	frame_ctx.state = new scene_state;
+	// graphics
+	frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(graphics_ns::graphics::color_idx::black);
+	DBG("clear color: " << HEX(frame_ctx.state->grfx.clear_color.c, 8));
+
+	// light
 	frame_ctx.state->light.type = light_type::directional;
 	frame_ctx.state->light.direction = {ZERO, ZERO, -UNIT};
-	frame_ctx.state->light.position = {ZERO, ZERO, -ZLIMIT};
-	frame_ctx.state->camera.position = {ZERO, ZERO, -ZLIMIT};
+	frame_ctx.state->light.position = {320.0f, 320.0f, -500.0f};
+	DBG("light type: " << (int)frame_ctx.state->light.type);
+	DBG("light direction:");
+	frame_ctx.state->light.direction.print();
+	DBG("light position:");
+	frame_ctx.state->light.position.print();
 
-	frame_ctx.state->grfx.gfx = new graphics("Software 3D Engine");
-	frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(graphics_ns::graphics::color_idx::black);
-	frame_ctx.state->grfx.min_p = frame_ctx.state->grfx.gfx->get_min_position();
-	frame_ctx.state->grfx.max_p = frame_ctx.state->grfx.gfx->get_max_position();
+	// camera
+	frame_ctx.state->camera.position = {ZERO, ZERO, -ZLIMIT};
+	DBG("camera position:");
+	frame_ctx.state->camera.position.print();
+
+	// projection
+	frame_ctx.state->proj.focal_len = ZLIMIT * 1.5f;
+	frame_ctx.state->proj.near_eps = UNIT;
+	DBG("projection: focal len: " << FLT(frame_ctx.state->proj.focal_len, 3) << ", near_eps: " << FLT(frame_ctx.state->proj.near_eps, 3));
+
+	// viewport
+	frame_ctx.state->vp.min_pos = frame_ctx.state->grfx.gfx->get_min_position();
+	frame_ctx.state->vp.max_pos = frame_ctx.state->grfx.gfx->get_max_position();
+	frame_ctx.state->vp.vp_min_pos = frame_ctx.state->vp.min_pos;
+	frame_ctx.state->vp.vp_max_pos = frame_ctx.state->vp.max_pos;
+	frame_ctx.state->vp.vp_mid_pos.x = frame_ctx.state->vp.vp_min_pos.x + (frame_ctx.state->vp.vp_max_pos.x - frame_ctx.state->vp.vp_min_pos.x) / 2;
+	frame_ctx.state->vp.vp_mid_pos.y = frame_ctx.state->vp.vp_min_pos.y + (frame_ctx.state->vp.vp_max_pos.y - frame_ctx.state->vp.vp_min_pos.y) / 2;
+
+	DBG("min_pos: {" << DEC(frame_ctx.state->vp.min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.min_pos.y, 4) << "}");
+	DBG("max_pos: {" << DEC(frame_ctx.state->vp.max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.max_pos.y, 4) << "}");
+	DBG("vp_min_pos: {" << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_min_pos.y, 4) << "}");
+	DBG("vp_mid_pos: {" << DEC(frame_ctx.state->vp.vp_mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_mid_pos.y, 4) << "}");
+	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
 }
 
 scene::~scene()
 {
-	clear();
+	ctrl_poly = nullptr;
+	root = nullptr;
+	poly_list.clear();
+	polygons_owned.clear();
+	elements_owned.clear();
 
 	delete frame_ctx.state->grfx.gfx;
 	frame_ctx.state->grfx.gfx = nullptr;
@@ -44,7 +83,7 @@ scene::~scene()
 
 polygon* scene::add_polygon()
 {
-	polygons_owned.push_back(std::make_unique<polygon>(frame_ctx.state->grfx.min_p, frame_ctx.state->grfx.max_p));
+	polygons_owned.push_back(std::make_unique<polygon>());
 	polygon* p = polygons_owned.back().get();
 	poly_list.push_back(p);
 	return p;
@@ -59,20 +98,11 @@ element* scene::add_element()
 polygon* scene::ensure_ctrl_polygon()
 {
 	if (!ctrl_poly) {
-		polygons_owned.push_back(std::make_unique<polygon>(frame_ctx.state->grfx.min_p, frame_ctx.state->grfx.max_p));
+		polygons_owned.push_back(std::make_unique<polygon>());
 		ctrl_poly = polygons_owned.back().get();
 	}
 
 	return ctrl_poly;
-}
-
-void scene::clear()
-{
-	ctrl_poly = nullptr;
-	root = nullptr;
-	poly_list.clear();
-	polygons_owned.clear();
-	elements_owned.clear();
 }
 
 } // namespace scene_ns

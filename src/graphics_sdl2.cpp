@@ -223,7 +223,6 @@ void graphics::init_graphics()
 		"white",	// 3
 		"red",		// 4
 		"maroon",	// 5
-		// orange,
 		"yellow",	// 6
 		"olive",	// 7
 		"lime",		// 8
@@ -243,7 +242,6 @@ void graphics::init_graphics()
 		{ 255, 255, 255, 255 }, // 3  white
 		{ 255, 255,   0,   0 }, // 4  red
 		{ 255, 128,   0,   0 }, // 5  maroon
-		// {255,   0,   0,   0}, // ?  orange
 		{ 255, 255, 255,   0 }, // 6  yellow
 		{ 255, 128, 128,   0 }, // 7  olive
 		{ 255,   0, 255,   0 }, // 8  lime

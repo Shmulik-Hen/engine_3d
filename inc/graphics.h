@@ -27,25 +27,24 @@ public:
 
 	enum color_idx
 	{
-		__first_color__ = 0, // Dummy, not an actual color
-		black = __first_color__,
-		grey,
-		silver,
-		white,
-		red, //-
-		maroon,
-		// orange,
-		yellow, //-
-		olive,
-		lime, //-
-		green,
-		aqua, //-
-		teal,
-		blue, //-
-		navy,
-		magenta,
-		purple,
-		__last_color__ // Dummy, not an actual color
+		__first_color__ = 0,     // Dummy, not an actual color
+		black = __first_color__, // 0
+		grey,                    // 1
+		silver,                  // 2
+		white,                   // 3
+		red,                     // 4
+		maroon,                  // 5
+		yellow,                  // 6
+		olive,                   // 7
+		lime,                    // 8
+		green,                   // 9
+		aqua,                    // 10
+		teal,                    // 11
+		blue,                    // 12
+		navy,                    // 13
+		magenta,                 // 14
+		purple,                  // 15
+		__last_color__           // Dummy, not an actual color
 	};
 
 	enum alpha_idx
@@ -142,7 +141,7 @@ public:
 	val_t get_num_colors() const { return __last_color__; }
 	val_t get_num_alphas() const { return __last_alpha__; }
 	point get_min_position() const { return point {0, 0}; }
-	point get_max_position() const { return point {_w, _h}; }
+	point get_max_position() const { return point {_w - 1, _h - 1}; }
 	bool is_in_bounds(point p) const { return ((uval_t)p.x < (uval_t)_w && (uval_t)p.y < (uval_t)_h); }
 
 private:

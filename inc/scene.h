@@ -46,8 +46,6 @@ public:
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
 	polygon_ns::polygon* ensure_ctrl_polygon();
-
-	void clear(); // optional convenience
 };
 
 } // namespace scene_ns

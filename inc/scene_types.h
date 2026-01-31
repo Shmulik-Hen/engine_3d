@@ -14,9 +14,16 @@ namespace graphics_ns { class graphics; }
 namespace scene_ns
 {
 
+struct graphics_state
+{
+	graphics_ns::graphics* gfx {nullptr};
+	graphics_ns::graphics::frame_buffer fb;
+	graphics_ns::graphics::ARGB clear_color {};
+};
+
 enum class light_type
 {
-	directional,
+	directional = 0,
 	point
 };
 
@@ -36,28 +43,41 @@ struct camera_state
 	vector_3_ns::vector_3 position;
 };
 
-struct graphics_state
+struct projection_state
 {
-	graphics_ns::graphics* gfx {nullptr};
-	graphics_ns::graphics::frame_buffer fb;
-	graphics_ns::graphics::ARGB clear_color {};
-	graphics_ns::graphics::point min_p;
-	graphics_ns::graphics::point max_p;
+	// distance from camera to projection plane (in world units)
+	unit focal_len; // default preserves old look
+
+	// optional safety clamps (can be ignored initially)
+	unit near_eps; // avoid divide by ~0
+};
+
+struct viewport_state
+{
+	// screen min/max points
+	graphics_ns::graphics::point min_pos;
+	graphics_ns::graphics::point max_pos;
+	// view port min/mid/max points - can be screen size or less
+	graphics_ns::graphics::point vp_min_pos;
+	graphics_ns::graphics::point vp_mid_pos;
+	graphics_ns::graphics::point vp_max_pos;
 };
 
 struct scene_state
 {
+	graphics_state grfx;
 	light_state light;
 	camera_state camera;
-	graphics_state grfx;
+	projection_state proj;
+	viewport_state vp;
 };
 
 using drawvec_t = std::vector<polygon_ns::polygon*>;
 
 struct frame_context
 {
-	scene_state* state {nullptr};
 	drawvec_t* draw_vec {nullptr};
+	scene_state* state {nullptr};
 };
 
 } // namespace scene_ns
