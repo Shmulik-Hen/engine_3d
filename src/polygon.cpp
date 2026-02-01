@@ -643,6 +643,7 @@ void polygon::print() const
 void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 {
 	vector_3 dist, fill, normal, L;
+	unit atten = UNIT;
 
 	_draw_ctx->_trans_mat = m_trans;
 	_draw_ctx->_rot_mat = m_rot;
@@ -663,13 +664,22 @@ void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 	}
 	else {
 		// Point light: surface->light
-		L = vector_3::normalize(frame_ctx.state->light.position - fill);
+		vector_3 to_light = frame_ctx.state->light.position - fill; // surface -> light
+
+		// Distance attenuation
+		const unit r2 = vector_3::dot(to_light, to_light);
+		// Tune k to your world scale; start here and adjust
+		const unit k = DIST_ATTEN;
+		atten = UNIT / (UNIT + k * r2);
+
+		L = vector_3::normalize(to_light);
 	}
 
 	unit light_angle = lambert(normal, L);
-	if ((light_angle > EPSILON) || _force) {
+	unit intensity = std::abs(light_angle) * atten;
+	if ((intensity > EPSILON) || _force) {
 		_depth = fill.get(Z_);
-		_draw_ctx->make_color(std::abs(light_angle));
+		_draw_ctx->make_color(std::abs(intensity));
 		frame_ctx.draw_vec->push_back(this);
 	}
 

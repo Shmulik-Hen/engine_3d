@@ -24,8 +24,8 @@ struct graphics_state
 
 enum class light_type
 {
-	directional = 0,
-	point
+	directional = 0, // sun-like
+	point            // light-bulb
 };
 
 struct light_state

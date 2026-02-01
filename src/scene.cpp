@@ -30,9 +30,9 @@ scene::scene()
 	DBG("clear color: " << HEX(frame_ctx.state->grfx.clear_color.c, 8));
 
 	// light
-	frame_ctx.state->light.type = light_type::directional;
+	frame_ctx.state->light.type = light_type::point;
 	frame_ctx.state->light.direction = {ZERO, ZERO, -UNIT};
-	frame_ctx.state->light.position = {320.0f, 320.0f, -500.0f};
+	frame_ctx.state->light.position = {ZERO, LIGHT_ELEV, LIGHT_DIST};
 	DBG("light type: " << (int)frame_ctx.state->light.type);
 	DBG("light direction:");
 	frame_ctx.state->light.direction.print();
