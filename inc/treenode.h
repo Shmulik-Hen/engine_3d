@@ -43,9 +43,6 @@ public:
 			return self;
 		}
 
-		if (!self && _child) { /* unreachable, keep structure */
-		}
-
 		if (_child) {
 			if (Node* n = _child->search_tree(cmp, data)) {
 				return n;

@@ -26,7 +26,8 @@ graphics::graphics() :
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
-	_pitch {_w * (val_t)sizeof(color_t)}
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
 {
 	init_graphics();
 }
@@ -39,7 +40,8 @@ graphics::graphics(const char* title) :
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
-	_pitch {_w * (val_t)sizeof(color_t)}
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
 {
 	init_graphics();
 }
@@ -52,7 +54,8 @@ graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
-	_pitch {_w * (val_t)sizeof(color_t)}
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
 {
 	if (!_w || !_h || !_scale || _title.empty()) {
 		sys_error("Invalid width/height/scale/title");
@@ -121,7 +124,7 @@ std::uint64_t graphics::tick_freq() const
 graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb {back.data(), _w, _h, _pitch};
+	frame_buffer fb {back.data(), _w, _h, _pitch_bytes, _pitch_pixels};
 
 	return fb;
 }

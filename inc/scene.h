@@ -31,9 +31,6 @@ public:
 	// Root of element tree (non-owning)
 	element_ns::element* root {nullptr};
 
-	// "control polygon" (owned, but referenced as raw pointer)
-	polygon_ns::polygon* ctrl_poly {nullptr};
-
 	frame_context frame_ctx;
 
 	scene();
@@ -45,7 +42,13 @@ public:
 
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
-	polygon_ns::polygon* ensure_ctrl_polygon();
+	void update();
+	void render();
+
+private:
+
+	void sort();
+	void draw();
 };
 
 } // namespace scene_ns

@@ -129,7 +129,7 @@ void element::print_all()
 #endif // DEBUG_PRINTS
 }
 
-static bool cmp_name(element_ns::element* e, void* data)
+static bool match_element_name(element_ns::element* e, void* data)
 {
 	auto* key = static_cast<const std::string*>(data);
 	return e && key && (e->get_name() == *key);
@@ -137,7 +137,7 @@ static bool cmp_name(element_ns::element* e, void* data)
 
 element* element::find(element* root, const std::string& s) const
 {
-	return root ? root->search_tree(cmp_name, (void*)&s) : nullptr;
+	return root ? root->search_tree(match_element_name, (void*)&s) : nullptr;
 }
 
 void element::update(const attrib& att)

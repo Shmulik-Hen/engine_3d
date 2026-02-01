@@ -124,6 +124,9 @@ vector_3 vector_3::project(const vector_3& world_point, const vector_3& cam_pos,
 	// We assume camera looks toward +Z in world space.
 	// Projection plane is at camera space z = focal_len.
 	// Screen x = dx * focal_len / dz, y = dy * focal_len / dz
+	if (near_eps == ZERO) {
+		near_eps = UNIT;
+	}
 
 	if (std::abs(dz) < near_eps) {
 		dz = (dz >= 0) ? near_eps : -near_eps;

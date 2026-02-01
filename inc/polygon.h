@@ -36,16 +36,20 @@ class polygon
 		typedef std::vector<graphics_ns::graphics::point> scratchpad_t;
 		typedef std::vector<span> spans_t;
 
+		// drawing/filling data
 		scratchpad_t _scratch_pad;
 		spans_t _spans;
 		bool _invalid {false};
 		// current point
 		graphics_ns::graphics::addr_t _xy_addr {nullptr};
 		graphics_ns::graphics::point _xy_pos;
+		// bounding box
 		graphics_ns::graphics::point _bbox_tl;
 		graphics_ns::graphics::point _bbox_br;
+		// color
 		graphics_ns::graphics::ARGB _base_color {};
 		graphics_ns::graphics::ARGB _draw_color {};
+		// transform/rotate matrix
 		matrix_ns::matrix _trans_mat;
 		matrix_ns::matrix _rot_mat;
 
@@ -84,17 +88,18 @@ class polygon
 		void clear_scratch_pad();
 		void plot(scene_ns::frame_context&);
 		void fill(scene_ns::frame_context&);
-		void project(const vector_3_ns::vector_3&, scene_ns::frame_context&);
+		void project(const vector_3_ns::vector_3&, scene_ns::frame_context&, bool force = false);
 		void draw(scene_ns::frame_context&);
 	}; // class polygon::drawing
+
+	drawing* _draw_ctx {nullptr}; // raw pointer, non owning
 
 	std::string _name;
 	vector_3_ns::vector_3 _fill;          // polygon middle point - average of all vectors
 	vector_3_ns::vector_3 _config_normal; // polygon's direction - from config
 	vector_3_ns::vector_3 _normal;        // polygon's direction - calculated
 	double _depth {ZERO};                 // objects location on the z axis
-	drawing* _draw_ctx {nullptr};         // raw pointer, non owning
-	int _force {0};                       // display polygon regardless of direction
+	bool _force {false};                  // display polygon regardless of direction
 
 	bool is_consec();
 	bool is_degenerate();
@@ -102,8 +107,6 @@ class polygon
 	bool verify();
 	vector_3_ns::vector_3 find_fill();
 	vector_3_ns::vector_3 find_normal();
-
-	void draw(scene_ns::frame_context&);
 
 public:
 
@@ -120,11 +123,7 @@ public:
 	bool read(const graphics_ns::graphics*, std::ifstream&);
 	void print() const;
 	void update(matrix_ns::matrix&, matrix_ns::matrix&, scene_ns::frame_context&);
-	void sort(scene_ns::frame_context&);
-	void draw_all(scene_ns::frame_context&);
-
-	void sort_polygons(scene_ns::frame_context&);
-	void draw_polygons(scene_ns::frame_context&);
+	void draw(scene_ns::frame_context&);
 
 private:
 

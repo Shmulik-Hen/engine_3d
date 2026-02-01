@@ -95,6 +95,7 @@ public:
 		val_t width {0};
 		val_t height {0};
 		val_t pitch_bytes {0}; // bytes per row (typically width * 4)
+		val_t pitch_pixels {0};
 	};
 
 	struct input_state
@@ -153,7 +154,8 @@ private:
 	val_t _scaled_w {0};
 	val_t _scaled_h {0};
 	val_t _win_size {0};
-	val_t _pitch {0};
+	val_t _pitch_bytes {0};
+	val_t _pitch_pixels {0};
 	input_state _last_input {};
 	color_map _colors;
 	alpha_map _alphas;

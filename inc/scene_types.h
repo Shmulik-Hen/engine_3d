@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "graphics.h"
 #include "unit.h"
@@ -16,7 +17,7 @@ namespace scene_ns
 
 struct graphics_state
 {
-	graphics_ns::graphics* gfx {nullptr};
+	std::unique_ptr<graphics_ns::graphics> gfx {nullptr};
 	graphics_ns::graphics::frame_buffer fb;
 	graphics_ns::graphics::ARGB clear_color {};
 };
@@ -76,8 +77,8 @@ using drawvec_t = std::vector<polygon_ns::polygon*>;
 
 struct frame_context
 {
-	drawvec_t* draw_vec {nullptr};
-	scene_state* state {nullptr};
+	std::unique_ptr<drawvec_t> draw_vec {nullptr};
+	std::unique_ptr<scene_state> state {nullptr};
 };
 
 } // namespace scene_ns

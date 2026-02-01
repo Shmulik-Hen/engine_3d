@@ -1,3 +1,5 @@
+#include <algorithm>
+
 // #define DEBUG_PRINTS
 #include "common.h"
 #include "scene.h"
@@ -14,9 +16,9 @@ using polygon = polygon_ns::polygon;
 
 scene::scene()
 {
-	frame_ctx.draw_vec = new drawvec_t;
-	frame_ctx.state = new scene_state;
-	frame_ctx.state->grfx.gfx = new graphics("Software 3D Engine");
+	frame_ctx.draw_vec = std::make_unique<drawvec_t>();
+	frame_ctx.state = std::make_unique<scene_state>();
+	frame_ctx.state->grfx.gfx = std::make_unique<graphics>("Software 3D Engine");
 
 	/* All static for NOW - later read from config or dynamic */
 
@@ -64,21 +66,11 @@ scene::scene()
 
 scene::~scene()
 {
-	ctrl_poly = nullptr;
 	root = nullptr;
 	poly_list.clear();
 	polygons_owned.clear();
 	elements_owned.clear();
-
-	delete frame_ctx.state->grfx.gfx;
-	frame_ctx.state->grfx.gfx = nullptr;
-
-	delete frame_ctx.state;
-	frame_ctx.state = nullptr;
-
 	frame_ctx.draw_vec->clear();
-	delete frame_ctx.draw_vec;
-	frame_ctx.draw_vec = nullptr;
 }
 
 polygon* scene::add_polygon()
@@ -95,14 +87,71 @@ element* scene::add_element()
 	return elements_owned.back().get();
 }
 
-polygon* scene::ensure_ctrl_polygon()
+void scene::update()
 {
-	if (!ctrl_poly) {
-		polygons_owned.push_back(std::make_unique<polygon>());
-		ctrl_poly = polygons_owned.back().get();
+	if (!root || !frame_ctx.draw_vec) {
+		return;
 	}
 
-	return ctrl_poly;
+	// draw list is per-frame (non-owning)
+	frame_ctx.draw_vec->clear();
+
+	// update tree + polygons; element/polygon code appends to draw_vec
+	root->update_all(frame_ctx);
+
+#ifdef DEBUG_PRINTS
+	DBG("print tree");
+	root->print_all();
+#endif
+}
+
+void scene::render()
+{
+	if (!frame_ctx.state ||
+	    !frame_ctx.state->grfx.gfx ||
+	    !frame_ctx.draw_vec ||
+	    frame_ctx.draw_vec->empty()) {
+		return;
+	}
+
+	graphics* gfx = frame_ctx.state->grfx.gfx.get();
+
+	// Acquire backbuffer for this frame and clear it
+	frame_ctx.state->grfx.fb = gfx->get_backbuffer();
+	gfx->fill_buffer(frame_ctx.state->grfx.fb, frame_ctx.state->grfx.clear_color);
+
+	DBG("sort");
+	sort();
+	DBG("draw");
+	draw();
+	DBG("show");
+	gfx->present();
+}
+
+void scene::sort()
+{
+	if (frame_ctx.draw_vec->size() > 1) {
+		// clang-format off
+		std::sort(frame_ctx.draw_vec->begin(), frame_ctx.draw_vec->end(),
+			  [](polygon* a, polygon* b) {
+				return a->get_depth() < b->get_depth();
+			  });
+		// clang-format on
+	}
+}
+
+void scene::draw()
+{
+	if (frame_ctx.draw_vec->empty()) {
+		DBG("draw: empty");
+		return;
+	}
+
+	for (polygon* poly : *frame_ctx.draw_vec) {
+		if (poly) {
+			poly->draw(frame_ctx);
+		}
+	}
 }
 
 } // namespace scene_ns
