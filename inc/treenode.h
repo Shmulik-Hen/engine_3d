@@ -28,60 +28,65 @@ public:
 		}
 	}
 
-	Node* search_tree(bool (*cmp)(void*))
+	using cmp_fn = bool (*)(Node* node, void* data);
+	using visit_fn = void (*)(Node* node, void* data);
+
+	Node* search_tree(cmp_fn cmp, void* data = nullptr)
 	{
-		Node* n {nullptr};
-
 		if (!cmp) {
-			return n;
+			return nullptr;
 		}
 
-		if (cmp(this)) {
-			n = static_cast<Node*>(this);
+		Node* self = static_cast<Node*>(this);
+
+		if (cmp(self, data)) {
+			return self;
 		}
 
-		if (!n && _child) {
-			n = _child->search_tree(cmp);
+		if (_child) {
+			if (Node* n = _child->search_tree(cmp, data)) {
+				return n;
+			}
 		}
 
-		if (!n && _sibling) {
-			n = _sibling->search_tree(cmp);
+		if (_sibling) {
+			if (Node* n = _sibling->search_tree(cmp, data)) {
+				return n;
+			}
 		}
 
-		return n;
+		return nullptr;
 	}
 
-	void print_tree(void (*prn)(void*))
+	void print_tree(visit_fn prn, void* data = nullptr)
 	{
 		if (!prn) {
 			return;
 		}
 
-		prn(this);
+		prn(static_cast<Node*>(this), data);
 
 		if (_child) {
-			_child->print_tree(prn);
+			_child->print_tree(prn, data);
 		}
-
 		if (_sibling) {
-			_sibling->print_tree(prn);
+			_sibling->print_tree(prn, data);
 		}
 	}
 
-	void update_tree(void (*upd)(void*))
+	void update_tree(visit_fn upd, void* data = nullptr)
 	{
 		if (!upd) {
 			return;
 		}
 
-		upd(this);
+		upd(static_cast<Node*>(this), data);
 
 		if (_child) {
-			_child->update_tree(upd);
+			_child->update_tree(upd, data);
 		}
-
 		if (_sibling) {
-			_sibling->update_tree(upd);
+			_sibling->update_tree(upd, data);
 		}
 	}
 
@@ -89,6 +94,8 @@ private:
 
 	Node* _sibling {nullptr};
 	Node* _child {nullptr};
+
+	friend Node;
 };
 
 } // namespace treenode_ns

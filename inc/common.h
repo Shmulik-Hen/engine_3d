@@ -1,17 +1,7 @@
 #pragma once
 
-#include <cmath>
-#include <cstdint>
-#include <fstream>
 #include <iomanip>
-#include <ios>
 #include <iostream>
-#include <stdexcept>
-#include <string>
-#include <sstream>
-#include <string.h>
-#include <stdint.h>
-#include <stdlib.h>
 // #include <jsoncpp/json/json.h>
 
 const std::string ERR_PFX = "Error: ";
@@ -38,22 +28,8 @@ const std::string DBG_PFX = "Debug: ";
 #define DBG(...)
 #endif // DEBUG_PRINTS
 
-constexpr int MAX_NAME = 10;
-constexpr int MAX_LINE = 20;
-
 // coordinates
 constexpr int X_ = 0;
 constexpr int Y_ = 1;
 constexpr int Z_ = 2;
 constexpr int O_ = 3;
-
-typedef char LINE[MAX_LINE + 1];
-typedef char NAME[MAX_NAME + 1];
-
-typedef float unit;
-constexpr unit UNIT(1.0f);
-constexpr unit ZERO(0.0f);
-constexpr unit EPSILON(1e-3f);
-constexpr unit ZLIMIT(400.0f);
-constexpr unit PI = 3.14159265358979323846f;
-constexpr unit DEG_TO_RAD = PI / 180.0f;

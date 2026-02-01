@@ -1,5 +1,8 @@
+#include <cmath>
+
 // #define DEBUG_PRINTS
 #include "polygon.h"
+#include "render_conventions.h"
 #include "utils.h"
 
 namespace polygon_ns
@@ -14,69 +17,40 @@ using frame_buffer = graphics::frame_buffer;
 using color_idx = graphics::color_idx;
 using point = graphics::point;
 using color_t = graphics_ns::color_t;
+using frame_context = scene_ns::frame_context;
+using render_ns::front_facing;
+using render_ns::lambert;
+using vector_t = polygon_ns::polygon::vector_t;
 
-// given values
-vector_3 polygon::_cam_position(ZERO, ZERO, -ZLIMIT);
-vector_3 polygon::_light_position(ZERO, ZERO, -ZLIMIT);
-vector_3 polygon::_cam_direction(ZERO, ZERO, ZERO);
-vector_3 polygon::_light_direction(ZERO, ZERO, ZERO);
-polygon::polylist_t polygon::_draw_list;
-
-polygon::drawing::drawing(graphics& gfx) :
-	_gfx {&gfx}
-{
-	_clear_color = _gfx->get_color_val(color_idx::black);
-	set_min_max();
-
-#ifdef DEBUG_POLYGON
-	_debug_color = _gfx->get_color_val(color_idx::white);
-	_bbox_color = _gfx->get_color_val(color_idx::green);
-	_normal_color = _gfx->get_color_val(color_idx::magenta);
-	_fill_color = _gfx->get_color_val(color_idx::purple);
-#endif
-}
-
-addr_t polygon::drawing::offset(const point& pos) const
+addr_t polygon::drawing::offset(frame_context& frame_ctx, const point& pos) const
 {
 	// clang-format off
-	return reinterpret_cast<addr_t>(_fb.pixels +
-					_vp_min_pos.x + pos.x +
-					(_vp_min_pos.y + pos.y) *
-					(_fb.pitch_bytes / sizeof(color_t)));
+	return reinterpret_cast<addr_t>(frame_ctx.state->grfx.fb.pixels +
+					frame_ctx.state->vp.min_pos.x + pos.x +
+					(frame_ctx.state->vp.min_pos.y + pos.y) *
+					(frame_ctx.state->grfx.fb.pitch_pixels));
 	// clang-format on
 }
 
-void polygon::drawing::moveto(const point& pos)
+void polygon::drawing::moveto(frame_context& frame_ctx, const point& pos)
 {
 	_xy_pos = pos;
-	_xy_addr = offset(pos);
+	_xy_addr = offset(frame_ctx, pos);
 }
 
-void polygon::drawing::set_min_max()
+void polygon::drawing::adjust_min(frame_context& frame_ctx, point& pos)
 {
-	_min_pos = _gfx->get_min_position();
-	_max_pos = _gfx->get_max_position();
-
-	_vp_min_pos = _min_pos;
-	_vp_max_pos = _max_pos;
-
-	_vp_mid_pos.x = (_vp_max_pos.x - _vp_min_pos.x) / 2;
-	_vp_mid_pos.y = (_vp_max_pos.y - _vp_min_pos.y) / 2;
+	_bbox_tl.x = std::max(pos.x, frame_ctx.state->vp.min_pos.x);
+	_bbox_tl.y = std::max(pos.y, frame_ctx.state->vp.min_pos.y);
 }
 
-void polygon::drawing::adjust_min(point& pos)
+void polygon::drawing::adjust_max(frame_context& frame_ctx, point& pos)
 {
-	_bbox_tl.x = std::max(pos.x, _vp_min_pos.x);
-	_bbox_tl.y = std::max(pos.y, _vp_min_pos.y);
+	_bbox_br.x = std::min(pos.x, frame_ctx.state->vp.max_pos.x);
+	_bbox_br.y = std::min(pos.y, frame_ctx.state->vp.max_pos.y);
 }
 
-void polygon::drawing::adjust_max(point& pos)
-{
-	_bbox_br.x = std::min(pos.x, _vp_max_pos.x);
-	_bbox_br.y = std::min(pos.y, _vp_max_pos.y);
-}
-
-void polygon::drawing::create_bbox()
+void polygon::drawing::create_bbox(frame_context& frame_ctx)
 {
 	point prev_pos, curr_pos, min_pos, max_pos;
 
@@ -92,11 +66,11 @@ void polygon::drawing::create_bbox()
 		prev_pos = curr_pos;
 	}
 
-	adjust_min(min_pos);
-	adjust_max(max_pos);
+	adjust_min(frame_ctx, min_pos);
+	adjust_max(frame_ctx, max_pos);
 }
 
-void polygon::drawing::lineto(const point& pos)
+void polygon::drawing::lineto(frame_context& frame_ctx, const point& pos)
 {
 	int dx, loopx, tempx, signx;
 	int dy, loopy, tempy, signy, incy;
@@ -118,11 +92,11 @@ void polygon::drawing::lineto(const point& pos)
 
 	if (dy > 0) {
 		signy = 1;
-		incy = _max_pos.x;
+		incy = frame_ctx.state->grfx.fb.pitch_pixels;
 	}
 	else if (dy < 0) {
 		signy = -1;
-		incy = -_max_pos.x;
+		incy = -frame_ctx.state->grfx.fb.pitch_pixels;
 	}
 	else {
 		signy = 0;
@@ -166,6 +140,42 @@ void polygon::drawing::lineto(const point& pos)
 	}
 }
 
+void polygon::drawing::stroke_to(frame_context& frame_ctx, const point& pos)
+{
+	int dx = pos.x - _xy_pos.x;
+	int dy = pos.y - _xy_pos.y;
+
+	int signx = (dx > 0) - (dx < 0);
+	int signy = (dy > 0) - (dy < 0);
+
+	int ax = std::abs(dx);
+	int ay = std::abs(dy);
+
+	int incy = signy * frame_ctx.state->grfx.fb.pitch_pixels;
+
+	int err = ax - ay;
+
+	while (true) {
+		putdirect(_draw_color);
+
+		if (_xy_pos.x == pos.x && _xy_pos.y == pos.y) {
+			break;
+		}
+
+		int e2 = 2 * err;
+		if (e2 > -ay) {
+			err -= ay;
+			_xy_pos.x += signx;
+			_xy_addr += signx;
+		}
+		if (e2 < ax) {
+			err += ax;
+			_xy_pos.y += signy;
+			_xy_addr += incy;
+		}
+	}
+}
+
 void polygon::drawing::bar(val_t left, val_t right)
 {
 	for (val_t i = left; i <= right; i++) {
@@ -175,49 +185,42 @@ void polygon::drawing::bar(val_t left, val_t right)
 	}
 }
 
-void polygon::drawing::line(const point& start, const point& end)
+void polygon::drawing::line(frame_context& frame_ctx, const point& start, const point& end)
 {
-	moveto(start);
-	lineto(end);
+	moveto(frame_ctx, start);
+	stroke_to(frame_ctx, end);
 }
 
-void polygon::drawing::rect(const point& tl, const point& br)
+void polygon::drawing::rect(frame_context& frame_ctx, const point& tl, const point& br)
 {
 	for (int y = tl.y; y <= br.y; y++) {
-		line({tl.x, y}, {br.x, y});
+		moveto(frame_ctx, {tl.x, y});
+		bar(tl.x, br.x);
 	}
 }
 
-ARGB polygon::drawing::getpixel(const point& pos)
+ARGB polygon::drawing::getpixel(frame_context& frame_ctx, const point& pos)
 {
-	moveto(pos);
-	return *(offset(pos));
+	moveto(frame_ctx, pos);
+	return *(offset(frame_ctx, pos));
 }
 
-void polygon::drawing::putpixel(const point& pos, ARGB& color)
+void polygon::drawing::putpixel(frame_context& frame_ctx, const point& pos, ARGB& color)
 {
-	moveto(pos);
-	*(offset(pos)) = color;
+	moveto(frame_ctx, pos);
+	*(offset(frame_ctx, pos)) = color;
 }
 
-frame_buffer polygon::drawing::clear()
+void polygon::drawing::set_color(const graphics_ns::graphics* gfx, int idx)
 {
-	return _gfx->get_clear_backbuffer(_clear_color);
-}
-
-void polygon::drawing::set_color(int idx)
-{
-	_base_color = _gfx->get_color_val(static_cast<color_idx>(idx));
+	_base_color = gfx->get_color_val(static_cast<color_idx>(idx));
 }
 
 void polygon::drawing::make_color(unit u)
 {
-#ifdef DEBUG_POLYGON
-	unit factor = UNIT;
-#else
 	u = std::min(u, UNIT);
 	unit factor = u / UNIT;
-#endif
+
 	_draw_color.c = _base_color.c;
 
 	_draw_color.channel.r = (uint8_t)std::lroundf((unit)_base_color.channel.r * factor);
@@ -230,29 +233,32 @@ void polygon::drawing::clear_scratch_pad()
 	_scratch_pad.clear();
 }
 
-void polygon::drawing::project(const vector_3& original)
+void polygon::drawing::project(const vector_3& original, frame_context& frame_ctx, bool force)
 {
 	vector_3 transformed = _trans_mat * original;
 
-	if (transformed.get(Z_) < _cam_position.get(Z_)) {
+	if (!force && (transformed.get(Z_) < frame_ctx.state->camera.position.get(Z_))) {
 		_invalid = true;
 	}
 
-	vector_3 projected = vector_3::project(transformed, _cam_position);
-	val_t x = std::lroundf((unit)_vp_mid_pos.x + projected.get(X_));
-	val_t y = std::lroundf((unit)_vp_mid_pos.y - projected.get(Y_));
+	vector_3 projected = vector_3::project(transformed,
+	                                       frame_ctx.state->camera.position,
+	                                       frame_ctx.state->proj.focal_len,
+	                                       frame_ctx.state->proj.near_eps);
+	val_t x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
+	val_t y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
 
 	_scratch_pad.push_back({x, y});
 }
 
-void polygon::drawing::plot()
+void polygon::drawing::plot(frame_context& frame_ctx)
 {
 	point prev_pos, curr_pos, orig_pos;
 
 	size_t size = _bbox_br.y - _bbox_tl.y + 1;
 	_spans.resize(size);
 
-	span s {_max_pos.x - 1, _min_pos.x + 1};
+	span s {frame_ctx.state->vp.max_pos.x - 1, frame_ctx.state->vp.min_pos.x + 1};
 	for (int i = 0; i < (int)size; i++) {
 		_spans[i] = s;
 	}
@@ -260,86 +266,90 @@ void polygon::drawing::plot()
 	prev_pos = orig_pos = _scratch_pad[0];
 	for (int i = 1; i < (int)_scratch_pad.size(); i++) {
 		curr_pos = _scratch_pad[i];
-		line(prev_pos, curr_pos);
+		moveto(frame_ctx, prev_pos);
+		lineto(frame_ctx, curr_pos);
 		prev_pos = curr_pos;
 	}
 
 	// close the shape
-	lineto(orig_pos);
+	lineto(frame_ctx, orig_pos);
 }
 
-void polygon::drawing::fill()
+void polygon::drawing::fill(frame_context& frame_ctx)
 {
 	int y = _bbox_tl.y;
+#ifdef DEBUG_POLYGON
+	ARGB c = frame_ctx.state->grfx.gfx->get_color_val(_debug_color);
+#endif
+
 	for (int i = 0; i < (int)_spans.size(); i++) {
 #ifdef DEBUG_POLYGON
-		putpixel({_spans[i].x_left, y}, _debug_color);
-		putpixel({_spans[i].x_right, y}, _debug_color);
+		putpixel(frame_ctx, {_spans[i].x_left, y}, c);
+		putpixel(frame_ctx, {_spans[i].x_right, y}, c);
 #else
-		moveto({_spans[i].x_left, y});
+		moveto(frame_ctx, {_spans[i].x_left, y});
 		bar(_spans[i].x_left, _spans[i].x_right);
 #endif
 		y++;
 	}
 }
 
-void polygon::drawing::draw()
+void polygon::drawing::draw(frame_context& frame_ctx)
 {
-#ifndef DEBUG_POLYGON
-	if (_invalid || _scratch_pad.size() < 3) {
+	if (_scratch_pad.size() < 3) {
+		_scratch_pad.clear();
+		return;
+	}
+
+	// always false in DEBUG_POLYGON mode
+	if (_invalid) {
 		_invalid = false;
 		_scratch_pad.clear();
 		return;
 	}
-#endif
 
-	create_bbox();
-	plot();
-	fill();
+	create_bbox(frame_ctx);
+	plot(frame_ctx);
+	fill(frame_ctx);
 
 #ifdef DEBUG_POLYGON
 	val_t fx = _fill_point.x;
 	val_t fy = _fill_point.y;
 	val_t nx = _normal_point.x;
 	val_t ny = _normal_point.y;
-	// draw the bbox
-	_draw_color = _bbox_color;
-	moveto(_bbox_tl);
-	lineto({_bbox_br.x, _bbox_tl.y});
-	lineto({_bbox_br.x, _bbox_br.y});
-	lineto({_bbox_tl.x, _bbox_br.y});
-	lineto({_bbox_tl.x, _bbox_tl.y});
 	// draw the filling point
-	putpixel({fx - 1, fy}, _fill_color);
-	putpixel({fx, fy}, _fill_color);
-	putpixel({fx + 1, fy}, _fill_color);
-	putpixel({fx, fy - 1}, _fill_color);
-	putpixel({fx, fy}, _fill_color);
-	putpixel({fx, fy + 1}, _fill_color);
+	ARGB c = frame_ctx.state->grfx.gfx->get_color_val(_fill_color);
+	putpixel(frame_ctx, {fx - 1, fy}, c);
+	putpixel(frame_ctx, {fx, fy}, c);
+	putpixel(frame_ctx, {fx + 1, fy}, c);
+	putpixel(frame_ctx, {fx, fy - 1}, c);
+	putpixel(frame_ctx, {fx, fy}, c);
+	putpixel(frame_ctx, {fx, fy + 1}, c);
+	// draw the bbox
+	_draw_color = frame_ctx.state->grfx.gfx->get_color_val(_bbox_color);
+	line(frame_ctx, _bbox_tl, {_bbox_br.x, _bbox_tl.y});
+	line(frame_ctx, {_bbox_br.x, _bbox_tl.y}, _bbox_br);
+	line(frame_ctx, _bbox_br, {_bbox_tl.x, _bbox_br.y});
+	line(frame_ctx, {_bbox_tl.x, _bbox_br.y}, _bbox_tl);
 	// draw the normal
-	_draw_color = _normal_color;
-	line({fx, fy}, {nx, ny});
-	putdirect(_fill_color);
+	_draw_color = frame_ctx.state->grfx.gfx->get_color_val(_normal_color);
+	line(frame_ctx, {fx, fy}, {nx, ny});
+	putpixel(frame_ctx, {nx, ny}, c);
 #endif
-}
-
-void polygon::drawing::present()
-{
-	_gfx->present();
 }
 
 // ---------------------- end of class polygon::drawing -------------------------
 
-polygon::polygon(graphics& gfx)
+polygon::polygon()
 {
-	_gfx_ctx = new drawing(gfx);
+	_draw_ctx = new drawing();
 }
 
 polygon::~polygon()
 {
-	if (_gfx_ctx) {
-		delete _gfx_ctx;
-		_gfx_ctx = nullptr;
+	if (_draw_ctx) {
+		delete _draw_ctx;
+		_draw_ctx = nullptr;
 	}
 
 	for (auto* v : _points) {
@@ -349,7 +359,181 @@ polygon::~polygon()
 	_points.clear();
 }
 
-bool polygon::read(std::ifstream& ifs)
+static unit len2(const vector_3& v)
+{
+	const unit x = v.get(X_);
+	const unit y = v.get(Y_);
+	const unit z = v.get(Z_);
+	return x * x + y * y + z * z;
+}
+
+static unit dist2(const vector_3& a, const vector_3& b)
+{
+	const unit dx = a.get(X_) - b.get(X_);
+	const unit dy = a.get(Y_) - b.get(Y_);
+	const unit dz = a.get(Z_) - b.get(Z_);
+	return dx * dx + dy * dy + dz * dz;
+}
+
+static unit max_radius_from(const vector_t& pts, const vector_3& p0)
+{
+	unit max_d2 = ZERO;
+
+	for (auto* p : pts) {
+		const vector_3 d = (*p) - p0;
+		max_d2 = std::max(max_d2, len2(d));
+	}
+
+	return std::sqrt(max_d2);
+}
+
+bool polygon::is_consec()
+{
+	const std::size_t n = _points.size();
+
+	// Choose a tolerance. Using EPSILON in world units can be too small or too big,
+	// but this is a safe start.
+	const unit eps2 = (EPSILON * CONSEC_TOLERANCE_SCALE) * (EPSILON * CONSEC_TOLERANCE_SCALE);
+
+	// 1) No consecutive duplicates (including wraparound)
+	for (std::size_t i = 0; i < n; ++i) {
+		const vector_3& a = *_points[i];
+		const vector_3& b = *_points[(i + 1) % n];
+		if (dist2(a, b) <= eps2) {
+			return false;
+		}
+	}
+
+	// 2) No duplicates anywhere (recommended)
+	for (std::size_t i = 0; i < n; ++i) {
+		for (std::size_t j = i + 1; j < n; ++j) {
+			if (dist2(*_points[i], *_points[j]) <= eps2) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool polygon::is_degenerate()
+{
+	vector_3 n = find_normal(); // already handles n==3 vs Newell
+	return (len2(n) <= EPSILON * EPSILON);
+}
+
+bool polygon::is_planar()
+{
+	const vector_3 p0 = *_points[0];
+	const vector_3 N = find_normal();
+
+	// Scale tolerance to polygon size to avoid false negatives on large coordinates.
+	// radius ~ "size" of polygon in world units.
+	const unit radius = max_radius_from(_points, p0);
+	const unit tol = std::max(EPSILON * 10, EPSILON * radius);
+
+	for (auto* p : _points) {
+		const vector_3 d = (*p) - p0;
+		const unit dist = vector_3::dot(N, d); // signed distance scaled by |N| (|N| == 1)
+		if (std::abs(dist) > tol) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool polygon::verify()
+{
+	if (!_name.length()) {
+		ERR("polygon: no name");
+		return false;
+	}
+
+	if (_points.size() < 3) {
+		ERR("polygon: need at least 3 vectors " << DEC(_points.size(), 4));
+		return false;
+	}
+
+	if (!is_consec()) {
+		ERR("polygon: non-consecutive");
+		return false;
+	}
+
+	if (is_degenerate()) {
+		ERR("polygon: degenerate");
+		return false;
+	}
+
+	if (_points.size() > 3 && !is_planar()) {
+		ERR("polygon: not planar");
+		return false;
+	}
+
+	return true;
+}
+
+vector_3 polygon::find_fill()
+{
+	vector_3 v;
+	unit n = static_cast<unit>(_points.size());
+
+	if (n) {
+		for (const auto vec : _points) {
+			v += *vec;
+		}
+
+		v.set(X_, v.get(X_) / n);
+		v.set(Y_, v.get(Y_) / n);
+		v.set(Z_, v.get(Z_) / n);
+	}
+
+	return v;
+}
+
+vector_3 polygon::find_normal()
+{
+	const std::size_t n = _points.size();
+
+	if (n == 3) {
+		// --- Fast/accurate path for triangles ---
+		const vector_3& p0 = *_points[0];
+		const vector_3& p1 = *_points[1];
+		const vector_3& p2 = *_points[2];
+
+		const vector_3 e1 = p1 - p0;
+		const vector_3 e2 = p2 - p0;
+
+		vector_3 cr = vector_3::cross(e1, e2);
+
+		return vector_3::normalize(cr);
+	}
+	else {
+		// --- Robust path for 4+ vertices: Newell's method ---
+		vector_3 nn(ZERO, ZERO, ZERO);
+
+		for (std::size_t i = 0; i < n; ++i) {
+			const vector_3& cur = *_points[i];
+			const vector_3& nxt = *_points[(i + 1) % n];
+
+			const unit cx = cur.get(X_);
+			const unit cy = cur.get(Y_);
+			const unit cz = cur.get(Z_);
+
+			const unit nx = nxt.get(X_);
+			const unit ny = nxt.get(Y_);
+			const unit nz = nxt.get(Z_);
+
+			nn.set(X_, nn.get(X_) + (cy - ny) * (cz + nz));
+			nn.set(Y_, nn.get(Y_) + (cz - nz) * (cx + nx));
+			nn.set(Z_, nn.get(Z_) + (cx - nx) * (cy + ny));
+		}
+
+		return vector_3::normalize(nn);
+	}
+}
+
+bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 {
 	LINE line;
 	vector_3* v;
@@ -375,7 +559,7 @@ bool polygon::read(std::ifstream& ifs)
 			len = read_word(ifs, line);
 			if (len) {
 				int color = atoi(line);
-				_gfx_ctx->set_color(color);
+				_draw_ctx->set_color(gfx, color);
 			}
 			else {
 				sys_error("polygon::read error polygon");
@@ -384,14 +568,19 @@ bool polygon::read(std::ifstream& ifs)
 		case 'f':
 			len = read_word(ifs, line);
 			if (len) {
-				_force = atoi(line);
+#ifdef DEBUG_POLYGON
+				_force = true;
+#else
+				int f = atoi(line);
+				_force = (f ? true : false);
+#endif
 			}
 			else {
 				sys_error("polygon::read error polygon");
 			}
 			break;
 		case 'o': // TODO: FIX
-			_normal.read(ifs);
+			_config_normal.read(ifs);
 			break;
 		case 'v':
 			v = new vector_3;
@@ -415,10 +604,16 @@ bool polygon::read(std::ifstream& ifs)
 	}
 
 	_fill = find_fill();
-	// _normal = find_normal(); // TODO: FIX
+	_normal = find_normal();
 
-	_cam_direction = vector_3::normalize(_cam_position);
-	_light_direction = vector_3::normalize(_light_position);
+	unit d = vector_3::dot(_normal, _config_normal);
+	if (d < ZERO) {
+		WARN("polygon::read: winding mismatch vs config normal" << _name);
+		DBG("polygon::read: config normal:");
+		_config_normal.print();
+		DBG("polygon::read: calculated normal:");
+		_normal.print();
+	}
 
 	return true;
 }
@@ -433,7 +628,7 @@ void polygon::print() const
 	_fill.print();
 	DBG(STR("        normal:", 1));
 	_normal.print();
-	DBG(STR("        draw color: ", 1) << HEX(_gfx_ctx->get_color(), 8));
+	DBG(STR("        draw color: ", 1) << HEX(_draw_ctx->get_color(), 8));
 	DBG(STR("        depth: ", 1) << _depth);
 	if (!_points.empty()) {
 		DBG("        points:");
@@ -445,194 +640,75 @@ void polygon::print() const
 #endif // DEBUG_PRINTS
 }
 
-void polygon::update(matrix& m_trans, matrix& m_rot)
+void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 {
-	vector_3 dist, fill, normal;
-	unit view_angle, light_angle;
+	vector_3 dist, fill, normal, L;
 
-	_gfx_ctx->_trans_mat = m_trans;
-	_gfx_ctx->_rot_mat = m_rot;
+	_draw_ctx->_trans_mat = m_trans;
+	_draw_ctx->_rot_mat = m_rot;
 
 	fill = m_trans * _fill;
 	normal = m_rot * _normal;
-	dist = fill - _cam_position;
-	view_angle = vector_3::dot(normal, dist);
-	if ((view_angle < EPSILON) || _force) {
-		light_angle = vector_3::dot(normal, _light_direction);
-		if ((light_angle > EPSILON) || _force) {
-			_depth = fill.get(Z_);
-			_gfx_ctx->make_color(std::abs(light_angle));
-			_draw_list.push_back(this);
-		}
-	}
 
-#ifdef DEBUG_POLYGON
-	static bool once = true;
-	if (once) {
-		once = false;
-		_gfx_ctx->_debug_normal = normal * 50.0f;
-		_gfx_ctx->_debug_fill = fill;
-	}
-#endif
-}
-
-static bool compare_depth(polygon* p1, polygon* p2)
-{
-	return (p1->get_depth() < p2->get_depth());
-}
-
-void polygon::sort()
-{
-	if (_draw_list.size() > 1) {
-		_draw_list.sort(compare_depth);
-	}
-}
-
-bool polygon::is_consec()
-{
-	// TODO: implement
-	return true;
-}
-
-bool polygon::is_degenerate()
-{
-	// TODO: implement
-	return false;
-}
-
-bool polygon::is_planar()
-{
-	// TODO: implement
-	return true;
-}
-
-bool polygon::verify()
-{
-	if (!_name.length()) {
-		ERR("polygon: no name");
-		return false;
-	}
-
-	if (_points.size() < 3) {
-		ERR("polygon: need at least 3 vectors " << DEC(_points.size(), 4));
-		return false;
-	}
-
-	if (!is_consec()) {
-		ERR("polygon: non-consecutive");
-		return false;
-	}
-
-	if (_points.size() > 3) {
-		if (is_degenerate()) {
-			ERR("polygon: degenrated");
-			return false;
-		}
-
-		if (!is_planar()) {
-			ERR("polygon: not planar");
-			return false;
-		}
-	}
-
-	return true;
-}
-
-void polygon::gfx_draw()
-{
-	_gfx_ctx->clear_scratch_pad();
-
-	for (const auto v : _points) {
-		_gfx_ctx->project(*v);
-	}
-
-#ifdef DEBUG_POLYGON
-	static bool once = true;
-	if (once) {
-		once = false;
-		vector_3 transformed, projected;
-		val_t x, y;
-
-		transformed = _gfx_ctx->_trans_mat * _gfx_ctx->_debug_normal;
-		projected = vector_3::project(transformed, _cam_position);
-		x = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.x + projected.get(X_));
-		y = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.y - projected.get(Y_));
-		_gfx_ctx->_normal_point = {x, y};
-
-		projected = vector_3::project(_gfx_ctx->_debug_fill, _cam_position);
-		x = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.x + projected.get(X_));
-		y = std::lroundf((unit)_gfx_ctx->_vp_mid_pos.y - projected.get(Y_));
-		_gfx_ctx->_fill_point = {x, y};
-	}
-#endif
-
-	_gfx_ctx->draw();
-}
-
-void polygon::show_all()
-{
-	if (_draw_list.empty()) {
-		DBG("show_all: empty");
+	// Convention: V is camera → surface
+	// normals face camera when dot(N,V) < 0
+	vector_3 V = vector_3::normalize(fill - frame_ctx.state->camera.position);
+	if (!front_facing(normal, V, _force)) {
 		return;
 	}
 
-	_gfx_ctx->_fb = _gfx_ctx->clear();
-
-	while (_draw_list.size()) {
-		polygon* poly = _draw_list.front();
-		_draw_list.pop_front();
-		poly->_gfx_ctx->_fb = this->_gfx_ctx->_fb;
-		poly->gfx_draw();
+	if (frame_ctx.state->light.type == scene_ns::light_type::directional) {
+		// Convention: light.direction is surface->light
+		L = vector_3::normalize(frame_ctx.state->light.direction);
+	}
+	else {
+		// Point light: surface->light
+		L = vector_3::normalize(frame_ctx.state->light.position - fill);
 	}
 
-	_gfx_ctx->present();
-}
-
-vector_3 polygon::find_fill()
-{
-	vector_3 v;
-	unit n = static_cast<unit>(_points.size());
-
-	if (n) {
-		for (const auto vec : _points) {
-			v += *vec;
-		}
-
-		v.set(X_, v.get(X_) / n);
-		v.set(Y_, v.get(Y_) / n);
-		v.set(Z_, v.get(Z_) / n);
+	unit light_angle = lambert(normal, L);
+	if ((light_angle > EPSILON) || _force) {
+		_depth = fill.get(Z_);
+		_draw_ctx->make_color(std::abs(light_angle));
+		frame_ctx.draw_vec->push_back(this);
 	}
 
-	return v;
+#ifdef DEBUG_POLYGON
+	_draw_ctx->_debug_fill = fill;
+	_draw_ctx->_debug_normal = fill + normal * 50.0f;
+#endif
 }
 
-// TODO: wrong implementation - FIX
-vector_3 polygon::find_normal()
+void polygon::draw(frame_context& frame_ctx)
 {
-	vector_3 *v1, *v2, v;
+	_draw_ctx->clear_scratch_pad();
 
-	if (_points.size() > 2) {
-		v1 = _points[0];
-		v2 = _points[1];
-
-		v.set(X_, (v1->get(Y_) * v2->get(Z_) - v1->get(Z_) * v2->get(Y_)));
-		v.set(Y_, (v1->get(Z_) * v2->get(X_) - v1->get(X_) * v2->get(Z_)));
-		v.set(Z_, (v1->get(X_) * v2->get(Y_) - v1->get(Y_) * v2->get(X_)));
-
-		v = vector_3::normalize(v);
+	for (const auto v : _points) {
+		_draw_ctx->project(*v, frame_ctx, _force);
 	}
 
-	return v;
-}
+#ifdef DEBUG_POLYGON
+	vector_3 projected;
+	val_t x, y;
 
-void polygon::sort_polygons()
-{
-	this->sort();
-}
+	projected = vector_3::project(_draw_ctx->_debug_normal,
+	                              frame_ctx.state->camera.position,
+	                              frame_ctx.state->proj.focal_len,
+	                              frame_ctx.state->proj.near_eps);
+	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
+	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
+	_draw_ctx->_normal_point = {x, y};
 
-void polygon::show_polygons()
-{
-	this->show_all();
+	projected = vector_3::project(_draw_ctx->_debug_fill,
+	                              frame_ctx.state->camera.position,
+	                              frame_ctx.state->proj.focal_len,
+	                              frame_ctx.state->proj.near_eps);
+	x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
+	y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
+	_draw_ctx->_fill_point = {x, y};
+#endif
+
+	_draw_ctx->draw(frame_ctx);
 }
 
 } // namespace polygon_ns

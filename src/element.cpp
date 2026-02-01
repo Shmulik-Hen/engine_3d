@@ -8,6 +8,7 @@ namespace element_ns
 
 using namespace matrix_ns;
 using namespace polygon_ns;
+using polygon = polygon_ns::polygon;
 using polylist_t = polygon_ns::polygon::polylist_t;
 
 bool element_ns::element::_mats_prepared = false;
@@ -128,23 +129,15 @@ void element::print_all()
 #endif // DEBUG_PRINTS
 }
 
-std::string cmp_str;
-
-bool cmp(void* p)
+static bool match_element_name(element_ns::element* e, void* data)
 {
-	element* e = (element*)p;
-
-	if (e) {
-		return (e->get_name() == cmp_str);
-	}
-
-	return false;
+	auto* key = static_cast<const std::string*>(data);
+	return e && key && (e->get_name() == *key);
 }
 
 element* element::find(element* root, const std::string& s) const
 {
-	cmp_str = s;
-	return root->search_tree(cmp);
+	return root ? root->search_tree(match_element_name, (void*)&s) : nullptr;
 }
 
 void element::update(const attrib& att)
@@ -153,7 +146,7 @@ void element::update(const attrib& att)
 	_dirty = true;
 }
 
-void element::update(const matrix& p_trans, const matrix& p_rot)
+void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& frame_ctx)
 {
 	if (!_active) {
 		return;
@@ -179,7 +172,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot)
 		if (_polygons.size()) {
 			for (auto poly : _polygons) {
 				if (poly) {
-					poly->update(_trans_mat, _rot_mat);
+					poly->update(_trans_mat, _rot_mat, frame_ctx);
 				}
 			}
 		}
@@ -188,7 +181,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot)
 	}
 }
 
-void element::update()
+void element::update(frame_context& frame_ctx)
 {
 	matrix m_trans, m_rot;
 
@@ -201,20 +194,22 @@ void element::update()
 		m_rot = matrix_ns::get_unit_mat();
 	}
 
-	update(m_trans, m_rot);
+	update(m_trans, m_rot, frame_ctx);
 }
 
-void upd(void* p)
+static void upd(element_ns::element* e, void* data)
 {
-	element* e = (element*)p;
-	if (e) {
-		e->update();
+	if (!e || !data) {
+		return;
 	}
+
+	auto* frame_ctx = static_cast<scene_ns::frame_context*>(data);
+	e->update(*frame_ctx);
 }
 
-void element::update_all()
+void element::update_all(frame_context& frame_ctx)
 {
-	this->update_tree(upd);
+	this->update_tree(upd, &frame_ctx);
 }
 
 polygon* element::find(const polylist_t& poly_list, const std::string& s) const

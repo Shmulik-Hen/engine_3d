@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <vector>
 
@@ -17,8 +18,8 @@ using color_t = uval_t;
 
 constexpr val_t MIN_X = 0;
 constexpr val_t MIN_Y = 0;
-constexpr val_t MAX_X = 320;
-constexpr val_t MAX_Y = 200;
+constexpr val_t MAX_X = 1280; // 16:10
+constexpr val_t MAX_Y = 800;
 
 class graphics
 {
@@ -26,25 +27,24 @@ public:
 
 	enum color_idx
 	{
-		__first_color__ = 0, // Dummy, not an actual color
-		black = __first_color__,
-		grey,
-		silver,
-		white,
-		red, //-
-		maroon,
-		// orange,
-		yellow, //-
-		olive,
-		lime, //-
-		green,
-		aqua, //-
-		teal,
-		blue, //-
-		navy,
-		magenta,
-		purple,
-		__last_color__ // Dummy, not an actual color
+		__first_color__ = 0,     // Dummy, not an actual color
+		black = __first_color__, // 0
+		grey,                    // 1
+		silver,                  // 2
+		white,                   // 3
+		red,                     // 4
+		maroon,                  // 5
+		yellow,                  // 6
+		olive,                   // 7
+		lime,                    // 8
+		green,                   // 9
+		aqua,                    // 10
+		teal,                    // 11
+		blue,                    // 12
+		navy,                    // 13
+		magenta,                 // 14
+		purple,                  // 15
+		__last_color__           // Dummy, not an actual color
 	};
 
 	enum alpha_idx
@@ -95,6 +95,7 @@ public:
 		val_t width {0};
 		val_t height {0};
 		val_t pitch_bytes {0}; // bytes per row (typically width * 4)
+		val_t pitch_pixels {0};
 	};
 
 	struct input_state
@@ -115,6 +116,7 @@ public:
 	typedef std::map<alpha_idx, uint8_t> alpha_map;
 
 	graphics();
+	graphics(const char*);
 	graphics(const char*, val_t, val_t, val_t);
 	~graphics();
 
@@ -130,7 +132,6 @@ public:
 	// framebuffer flow (engine-driven)
 	frame_buffer get_backbuffer();
 	void fill_buffer(frame_buffer&, const ARGB&);
-	frame_buffer get_clear_backbuffer(const ARGB&);
 	void present(); // uploads backbuffer, presents, swaps buffers
 
 	// color management
@@ -141,7 +142,7 @@ public:
 	val_t get_num_colors() const { return __last_color__; }
 	val_t get_num_alphas() const { return __last_alpha__; }
 	point get_min_position() const { return point {0, 0}; }
-	point get_max_position() const { return point {_w, _h}; }
+	point get_max_position() const { return point {_w - 1, _h - 1}; }
 	bool is_in_bounds(point p) const { return ((uval_t)p.x < (uval_t)_w && (uval_t)p.y < (uval_t)_h); }
 
 private:
@@ -153,7 +154,8 @@ private:
 	val_t _scaled_w {0};
 	val_t _scaled_h {0};
 	val_t _win_size {0};
-	val_t _pitch {0};
+	val_t _pitch_bytes {0};
+	val_t _pitch_pixels {0};
 	input_state _last_input {};
 	color_map _colors;
 	alpha_map _alphas;

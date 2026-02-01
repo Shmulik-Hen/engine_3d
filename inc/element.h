@@ -1,12 +1,13 @@
 #pragma once
 
-#include <list>
+#include <vector>
 
 #include "common.h"
 #include "attrib.h"
 #include "matrix.h"
 #include "polygon.h"
 #include "treenode.h"
+#include "scene_types.h"
 
 // clang-format off
 namespace attrib_ns { class attrib; }
@@ -22,6 +23,8 @@ class element : public treenode_ns::treenode<element>
 {
 public:
 
+	using frame_context = scene_ns::frame_context;
+
 	element() = default;
 	~element() = default;
 
@@ -32,9 +35,9 @@ public:
 	element* find(element*, const std::string&) const;
 
 	void update(const attrib_ns::attrib&);
-	void update(const matrix_ns::matrix&, const matrix_ns::matrix&);
-	void update();
-	void update_all();
+	void update(const matrix_ns::matrix&, const matrix_ns::matrix&, frame_context&);
+	void update(frame_context&);
+	void update_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
 

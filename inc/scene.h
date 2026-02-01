@@ -6,6 +6,7 @@
 #include "element.h"
 #include "graphics.h"
 #include "polygon.h"
+#include "scene_types.h"
 
 // clang-format off
 namespace element_ns { class element; }
@@ -30,20 +31,24 @@ public:
 	// Root of element tree (non-owning)
 	element_ns::element* root {nullptr};
 
-	// "control polygon" (owned, but referenced as raw pointer)
-	polygon_ns::polygon* ctrl_poly {nullptr};
+	frame_context frame_ctx;
 
-	scene() = default;
+	scene();
 	scene(const scene&) = delete;
 	scene& operator=(const scene&) = delete;
 	scene(scene&&) = delete;
 	scene& operator=(scene&&) = delete;
+	~scene();
 
-	polygon_ns::polygon* add_polygon(graphics_ns::graphics& gfx);
+	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
-	polygon_ns::polygon* ensure_ctrl_polygon(graphics_ns::graphics& gfx);
+	void update();
+	void render();
 
-	void clear(); // optional convenience
+private:
+
+	void sort();
+	void draw();
 };
 
 } // namespace scene_ns

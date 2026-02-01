@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "unit.h"
 
 namespace attrib_ns
 {

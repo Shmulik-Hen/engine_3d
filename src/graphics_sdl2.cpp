@@ -26,7 +26,22 @@ graphics::graphics() :
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
-	_pitch {_w * (val_t)sizeof(color_t)}
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
+{
+	init_graphics();
+}
+
+graphics::graphics(const char* title) :
+	_title {title},
+	_w {DEFAULT_WIDTH},
+	_h {DEFAULT_HEIGHT},
+	_scale {DEFAULT_SCALE},
+	_scaled_w {_w * _scale},
+	_scaled_h {_h * _scale},
+	_win_size {_w * _h},
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
 {
 	init_graphics();
 }
@@ -39,7 +54,8 @@ graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
-	_pitch {_w * (val_t)sizeof(color_t)}
+	_pitch_bytes {_w * (val_t)sizeof(color_t)},
+	_pitch_pixels {_w}
 {
 	if (!_w || !_h || !_scale || _title.empty()) {
 		sys_error("Invalid width/height/scale/title");
@@ -108,7 +124,7 @@ std::uint64_t graphics::tick_freq() const
 graphics::frame_buffer graphics::get_backbuffer()
 {
 	auto& back = _a_is_front ? _buf_b : _buf_a;
-	frame_buffer fb {back.data(), _w, _h, _pitch};
+	frame_buffer fb {back.data(), _w, _h, _pitch_bytes, _pitch_pixels};
 
 	return fb;
 }
@@ -116,13 +132,6 @@ graphics::frame_buffer graphics::get_backbuffer()
 void graphics::fill_buffer(frame_buffer& fb, const ARGB& color)
 {
 	std::fill_n(fb.pixels, _win_size, color.c);
-}
-
-graphics::frame_buffer graphics::get_clear_backbuffer(const ARGB& color)
-{
-	frame_buffer fb = get_backbuffer();
-	fill_buffer(fb, color);
-	return fb;
 }
 
 void graphics::present()
@@ -217,7 +226,6 @@ void graphics::init_graphics()
 		"white",	// 3
 		"red",		// 4
 		"maroon",	// 5
-		// orange,
 		"yellow",	// 6
 		"olive",	// 7
 		"lime",		// 8
@@ -237,7 +245,6 @@ void graphics::init_graphics()
 		{ 255, 255, 255, 255 }, // 3  white
 		{ 255, 255,   0,   0 }, // 4  red
 		{ 255, 128,   0,   0 }, // 5  maroon
-		// {255,   0,   0,   0}, // ?  orange
 		{ 255, 255, 255,   0 }, // 6  yellow
 		{ 255, 128, 128,   0 }, // 7  olive
 		{ 255,   0, 255,   0 }, // 8  lime

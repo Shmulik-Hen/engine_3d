@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "common.h"
 #include "utils.h"
 

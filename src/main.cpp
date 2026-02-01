@@ -14,8 +14,8 @@ using namespace scene_ns;
 using attrib = attrib_ns::attrib;
 using element = element_ns::element;
 using graphics = graphics_ns::graphics;
-using input_state = graphics_ns::graphics::input_state;
 using polygon = polygon_ns::polygon;
+using input_state = graphics_ns::graphics::input_state;
 
 int main()
 {
@@ -27,9 +27,8 @@ int main()
 		polygon* poly;
 		element* elem;
 		scene scn;
-
 		input_state in {};
-		graphics gfx("Software 3D Engine", 320, 200, 4);
+		graphics* gfx = scn.frame_ctx.state->grfx.gfx.get();
 
 		ifs.open(filename, std::ios::in);
 		if (!ifs) {
@@ -48,12 +47,11 @@ int main()
 			// case '#':
 			// 	read_remark(ifs);
 			case 'p':
-				poly = scn.add_polygon(gfx);
-				rc = poly->read(ifs);
+				poly = scn.add_polygon();
+				rc = poly->read(gfx, ifs);
 				if (!rc) {
 					sys_error("read polygon failed");
 				}
-				scn.ensure_ctrl_polygon(gfx); // keep behavior
 				break;
 			case 'e':
 				elem = scn.add_element();
@@ -79,7 +77,6 @@ int main()
 		}
 
 		// find the relevant elements to work with
-		// No heap strings
 		const std::string world_name = "world";
 		const std::string box_name = "box";
 
@@ -112,20 +109,13 @@ int main()
 		// int i = 3;
 		// while (!in.quit && i--) {
 		while (!in.quit) {
-			gfx.poll_events(in);
+			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			DBG("update tree");
-			scn.root->update_all();
-#ifdef DEBUG_PRINTS
-			DBG("print tree");
-			scn.root->print_all();
-#endif
-			DBG("sort");
-			scn.ctrl_poly->sort_polygons();
-			DBG("show");
-			scn.ctrl_poly->show_polygons();
-			std::this_thread::sleep_for(std::chrono::milliseconds(25));
+			scn.update();
+			scn.render();
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 			box->update(keep_moving);
 		}
 
