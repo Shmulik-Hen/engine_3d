@@ -8,6 +8,7 @@
 #include "polygon.h"
 #include "treenode.h"
 #include "scene_types.h"
+#include "config_document.h"
 
 // clang-format off
 namespace attrib_ns { class attrib; }
@@ -28,6 +29,7 @@ public:
 	element() = default;
 	~element() = default;
 
+	void init_from_def(const polygon_ns::polygon::polylist_t&, element*, const config_ns::element_def&);
 	bool read(const polygon_ns::polygon::polylist_t&, element*, std::ifstream&);
 	void print() const;
 	void print_all();

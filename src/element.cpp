@@ -13,6 +13,32 @@ using polylist_t = polygon_ns::polygon::polylist_t;
 
 bool element_ns::element::_mats_prepared = false;
 
+void element::init_from_def(const polylist_t& poly_list, element* root, const config_ns::element_def& def)
+{
+	_name = def.name;
+	_active = def.active;
+	_att = def.att;
+
+	if (def.parent.length()) {
+		element* parrent = find(root, def.parent);
+		if (!parrent) {
+			sys_error("element::read find error - _parrent_name");
+		}
+		_parrent = parrent;
+		_parrent_name = def.parent;
+		add_node(parrent);
+	}
+
+	_polygons.clear();
+	for (const auto& name : def.polygons) {
+		polygon* poly = find(poly_list, name);
+		if (!poly) {
+			sys_error("element::read find error -  polygon");
+		}
+		_polygons.push_back(poly);
+	}
+}
+
 bool element::read(const polylist_t& poly_list, element* root, std::ifstream& ifs)
 {
 	LINE line;
@@ -96,36 +122,36 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 void element::print() const
 {
 #ifdef DEBUG_PRINTS
-	DBG(STR("  element:", 1));
-	DBG(STR("    name: ", 1) << _name);
-	DBG(STR("    parrent_name: ", 1) << _parrent_name);
-	DBG(STR("    active: ", 1) << _active);
-	DBG(STR("     dirty: ", 1) << _dirty);
+	DBG(STR("element:", 1));
+	DBG(STR("  name: ", 1) << _name);
+	DBG(STR("  parrent_name: ", 1) << _parrent_name);
+	DBG(STR("  active: ", 1) << _active);
+	DBG(STR("   dirty: ", 1) << _dirty);
 	_att.print();
 
 	if (!_polygons.empty()) {
-		DBG(STR("    polygons:", 1));
-		for (const auto poly : _polygons) {
+		DBG("num polygons: " << (int)_polygons.size());
+		DBG(STR("  polygons:", 1));
+		for (const auto& poly : _polygons) {
 			poly->print();
 		}
 	}
 #endif // DEBUG_PRINTS
 }
 
-void prn(void* p [[maybe_unused]])
-{
 #ifdef DEBUG_PRINTS
-	element* e = (element*)p;
+static void prn(element_ns::element* e, void* data [[maybe_unused]])
+{
 	if (e) {
 		e->print();
 	}
-#endif // DEBUG_PRINTS
 }
+#endif // DEBUG_PRINTS
 
 void element::print_all()
 {
 #ifdef DEBUG_PRINTS
-	this->print_tree(prn);
+	this->print_tree(prn, NULL);
 #endif // DEBUG_PRINTS
 }
 

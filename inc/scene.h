@@ -7,6 +7,8 @@
 #include "graphics.h"
 #include "polygon.h"
 #include "scene_types.h"
+#include "config_document.h"
+#include "config_legacy.h"
 
 // clang-format off
 namespace element_ns { class element; }
@@ -33,6 +35,8 @@ public:
 
 	frame_context frame_ctx;
 
+	config_ns::document doc;
+
 	scene();
 	scene(const scene&) = delete;
 	scene& operator=(const scene&) = delete;
@@ -42,6 +46,8 @@ public:
 
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
+	void parse();
+	void build();
 	void update();
 	void render();
 

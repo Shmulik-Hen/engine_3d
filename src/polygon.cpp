@@ -352,10 +352,6 @@ polygon::~polygon()
 		_draw_ctx = nullptr;
 	}
 
-	for (auto* v : _points) {
-		delete v;
-	}
-
 	_points.clear();
 }
 
@@ -375,12 +371,12 @@ static unit dist2(const vector_3& a, const vector_3& b)
 	return dx * dx + dy * dy + dz * dz;
 }
 
-static unit max_radius_from(const vector_t& pts, const vector_3& p0)
+static unit max_radius_from(const vector_t& points, const vector_3& p0)
 {
 	unit max_d2 = ZERO;
 
-	for (auto* p : pts) {
-		const vector_3 d = (*p) - p0;
+	for (const auto& p : points) {
+		const vector_3 d = p - p0;
 		max_d2 = std::max(max_d2, len2(d));
 	}
 
@@ -397,8 +393,8 @@ bool polygon::is_consec()
 
 	// 1) No consecutive duplicates (including wraparound)
 	for (std::size_t i = 0; i < n; ++i) {
-		const vector_3& a = *_points[i];
-		const vector_3& b = *_points[(i + 1) % n];
+		const vector_3& a = _points[i];
+		const vector_3& b = _points[(i + 1) % n];
 		if (dist2(a, b) <= eps2) {
 			return false;
 		}
@@ -407,7 +403,7 @@ bool polygon::is_consec()
 	// 2) No duplicates anywhere (recommended)
 	for (std::size_t i = 0; i < n; ++i) {
 		for (std::size_t j = i + 1; j < n; ++j) {
-			if (dist2(*_points[i], *_points[j]) <= eps2) {
+			if (dist2(_points[i], _points[j]) <= eps2) {
 				return false;
 			}
 		}
@@ -424,7 +420,7 @@ bool polygon::is_degenerate()
 
 bool polygon::is_planar()
 {
-	const vector_3 p0 = *_points[0];
+	const vector_3 p0 = _points[0];
 	const vector_3 N = find_normal();
 
 	// Scale tolerance to polygon size to avoid false negatives on large coordinates.
@@ -432,8 +428,8 @@ bool polygon::is_planar()
 	const unit radius = max_radius_from(_points, p0);
 	const unit tol = std::max(EPSILON * 10, EPSILON * radius);
 
-	for (auto* p : _points) {
-		const vector_3 d = (*p) - p0;
+	for (const auto& p : _points) {
+		const vector_3 d = p - p0;
 		const unit dist = vector_3::dot(N, d); // signed distance scaled by |N| (|N| == 1)
 		if (std::abs(dist) > tol) {
 			return false;
@@ -479,8 +475,8 @@ vector_3 polygon::find_fill()
 	unit n = static_cast<unit>(_points.size());
 
 	if (n) {
-		for (const auto vec : _points) {
-			v += *vec;
+		for (const auto& vec : _points) {
+			v += vec;
 		}
 
 		v.set(X_, v.get(X_) / n);
@@ -497,9 +493,9 @@ vector_3 polygon::find_normal()
 
 	if (n == 3) {
 		// --- Fast/accurate path for triangles ---
-		const vector_3& p0 = *_points[0];
-		const vector_3& p1 = *_points[1];
-		const vector_3& p2 = *_points[2];
+		const vector_3& p0 = _points[0];
+		const vector_3& p1 = _points[1];
+		const vector_3& p2 = _points[2];
 
 		const vector_3 e1 = p1 - p0;
 		const vector_3 e2 = p2 - p0;
@@ -513,8 +509,8 @@ vector_3 polygon::find_normal()
 		vector_3 nn(ZERO, ZERO, ZERO);
 
 		for (std::size_t i = 0; i < n; ++i) {
-			const vector_3& cur = *_points[i];
-			const vector_3& nxt = *_points[(i + 1) % n];
+			const vector_3& cur = _points[i];
+			const vector_3& nxt = _points[(i + 1) % n];
 
 			const unit cx = cur.get(X_);
 			const unit cy = cur.get(Y_);
@@ -530,6 +526,36 @@ vector_3 polygon::find_normal()
 		}
 
 		return vector_3::normalize(nn);
+	}
+}
+
+void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& def)
+{
+	_name = def.name;
+	_force = def.force;
+	_draw_ctx->set_color(ctx.state->grfx.gfx.get(), def.color_index);
+
+	_points.clear();
+	for (const auto& v : def.points) {
+		_points.push_back(v);
+	}
+
+	if (!verify()) {
+		sys_error("polygon::init_from_def: verify failed: ", _name.c_str());
+	}
+
+	// compute fill + normal from geometry
+	_fill = find_fill();
+	_normal = find_normal();
+
+	// optional: if cfg normal exists, assert winding matches during transition
+	if (def.normal_cfg.has_value()) {
+		vector_3 cfg = vector_3::normalize(def.normal_cfg.value());
+		if (vector_3::dot(_normal, cfg) < ZERO) {
+			// either flip or warn; I recommend warn+flip until old configs cleaned
+			WARN("computed normal != configuration normal. flipping");
+			_normal = _normal * -UNIT;
+		}
 	}
 }
 
@@ -589,7 +615,7 @@ bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 				delete v;
 				sys_error("polygon::read error polygon");
 			}
-			_points.push_back(v);
+			_points.push_back(*v);
 			break;
 		default:
 			finish = true;
@@ -621,20 +647,20 @@ bool polygon::read(const graphics_ns::graphics* gfx, std::ifstream& ifs)
 void polygon::print() const
 {
 #ifdef DEBUG_PRINTS
-	DBG("      polygon:");
-	DBG(STR("        name: ", 1) << _name);
-	DBG(STR("        force: ", 1) << DEC(_force, 4));
-	DBG(STR("        fill:", 1));
+	DBG("polygon:");
+	DBG(STR("  name: ", 1) << _name);
+	DBG(STR("  force: ", 1) << DEC(_force, 4));
+	DBG(STR("  fill:", 1));
 	_fill.print();
-	DBG(STR("        normal:", 1));
+	DBG(STR("  normal:", 1));
 	_normal.print();
-	DBG(STR("        draw color: ", 1) << HEX(_draw_ctx->get_color(), 8));
-	DBG(STR("        depth: ", 1) << _depth);
+	DBG(STR("  draw color: ", 1) << HEX(_draw_ctx->get_color(), 8));
+	DBG(STR("  depth: ", 1) << _depth);
 	if (!_points.empty()) {
-		DBG("        points:");
-		for (const auto vec : _points) {
-			DBG(STR("        point:", 1));
-			vec->print();
+		DBG("  points:");
+		for (const auto& vec : _points) {
+			DBG(STR("  point:", 1));
+			vec.print();
 		}
 	}
 #endif // DEBUG_PRINTS
@@ -693,8 +719,8 @@ void polygon::draw(frame_context& frame_ctx)
 {
 	_draw_ctx->clear_scratch_pad();
 
-	for (const auto v : _points) {
-		_draw_ctx->project(*v, frame_ctx, _force);
+	for (const auto& v : _points) {
+		_draw_ctx->project(v, frame_ctx, _force);
 	}
 
 #ifdef DEBUG_POLYGON

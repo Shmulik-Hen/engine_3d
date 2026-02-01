@@ -11,6 +11,7 @@
 #include "unit.h"
 #include "vector_3.h"
 #include "scene_types.h"
+#include "config_document.h"
 
 // clang-format off
 namespace graphics_ns { class graphics; }
@@ -49,7 +50,7 @@ class polygon
 		// color
 		graphics_ns::graphics::ARGB _base_color {};
 		graphics_ns::graphics::ARGB _draw_color {};
-		// transform/rotate matrix
+		// translate/rotate matrix
 		matrix_ns::matrix _trans_mat;
 		matrix_ns::matrix _rot_mat;
 
@@ -110,7 +111,7 @@ class polygon
 
 public:
 
-	typedef std::vector<vector_3_ns::vector_3*> vector_t;
+	typedef std::vector<vector_3_ns::vector_3> vector_t;
 	typedef std::list<polygon*> polylist_t;
 	using frame_context = scene_ns::frame_context;
 
@@ -120,6 +121,7 @@ public:
 	const std::string get_name() const { return _name; }
 	double get_depth() const { return _depth; }
 
+	void init_from_def(frame_context&, const config_ns::polygon_def&);
 	bool read(const graphics_ns::graphics*, std::ifstream&);
 	void print() const;
 	void update(matrix_ns::matrix&, matrix_ns::matrix&, scene_ns::frame_context&);

@@ -16,6 +16,8 @@ using polygon = polygon_ns::polygon;
 
 scene::scene()
 {
+	parse();
+
 	frame_ctx.draw_vec = std::make_unique<drawvec_t>();
 	frame_ctx.state = std::make_unique<scene_state>();
 	frame_ctx.state->grfx.gfx = std::make_unique<graphics>("Software 3D Engine");
@@ -62,6 +64,8 @@ scene::scene()
 	DBG("vp_min_pos: {" << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_min_pos.y, 4) << "}");
 	DBG("vp_mid_pos: {" << DEC(frame_ctx.state->vp.vp_mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_mid_pos.y, 4) << "}");
 	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
+
+	build();
 }
 
 scene::~scene()
@@ -85,6 +89,54 @@ element* scene::add_element()
 {
 	elements_owned.push_back(std::make_unique<element>());
 	return elements_owned.back().get();
+}
+
+void scene::parse()
+{
+	doc = config_ns::parse_legacy();
+
+#ifdef DEBUG_PRINTS
+	DBG("parse: number of polygons: " << (int)doc.polygons.size());
+	for (const auto& poly : doc.polygons) {
+		DBG("parse: polygon: name: " << poly.name);
+		DBG("parse: polygon: color idx: " << poly.color_index);
+		DBG("parse: poltgon: force: " << poly.force);
+		for (const auto& vec : poly.points) {
+			DBG("parse: polygon: vector:");
+			vec.print();
+		}
+	}
+
+	DBG("parse: number of elements: " << (int)doc.elements.size());
+	for (const auto& elem : doc.elements) {
+		DBG("parse: element: name: " << elem.name);
+		DBG("parse: element: parrent: " << elem.parent);
+		DBG("parse: element: active: " << elem.active);
+		DBG("parse: element: att");
+		elem.att.print();
+		for (const auto& poly : elem.polygons) {
+			DBG("parse: element: polygon: " << poly);
+		}
+	}
+#endif
+}
+
+void scene::build()
+{
+	DBG("build: num polygon defs: " << (int)doc.polygons.size());
+	for (const auto& def : doc.polygons) {
+		polygon* poly = add_polygon();
+		poly->init_from_def(frame_ctx, def);
+	}
+
+	DBG("build: num element defs: " << (int)doc.elements.size());
+	for (const auto& def : doc.elements) {
+		element* elem = add_element();
+		if (!root) {
+			root = elem;
+		}
+		elem->init_from_def(poly_list, root, def);
+	}
 }
 
 void scene::update()

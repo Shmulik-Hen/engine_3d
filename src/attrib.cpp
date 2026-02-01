@@ -56,14 +56,14 @@ bool attrib::read(std::ifstream& ifs)
 void attrib::print() const
 {
 #ifdef DEBUG_PRINTS
-	DBG("    attrib:"
-	    << ENDL << "rotate x: " << FLT(_rot_x, 6) << ENDL
-	    << "rotate y: " << FLT(_rot_y, 6) << ENDL
-	    << "rotate z: " << FLT(_rot_z, 6) << ENDL
-	    << "translate x: " << FLT(_trans_x, 6) << ENDL
-	    << "translate y: " << FLT(_trans_y, 6) << ENDL
-	    << "translate z: " << FLT(_trans_z, 6) << ENDL
-	    << "zoom: " << FLT(_zoom, 6) << ENDL);
+	DBG("  attrib:"
+	    << ENDL << "            rotate x:    " << FLT(_rot_x, 6) << ENDL
+	    << "            rotate y:    " << FLT(_rot_y, 6) << ENDL
+	    << "            rotate z:    " << FLT(_rot_z, 6) << ENDL
+	    << "            translate x: " << FLT(_trans_x, 6) << ENDL
+	    << "            translate y: " << FLT(_trans_y, 6) << ENDL
+	    << "            translate z: " << FLT(_trans_z, 6) << ENDL
+	    << "            zoom:        " << FLT(_zoom, 6) << ENDL);
 #endif // DEBUG_PRINTS
 }
 

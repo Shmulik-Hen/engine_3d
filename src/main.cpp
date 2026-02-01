@@ -9,64 +9,19 @@
 using namespace attrib_ns;
 using namespace element_ns;
 using namespace graphics_ns;
-using namespace polygon_ns;
 using namespace scene_ns;
+using namespace config_ns;
 using attrib = attrib_ns::attrib;
 using element = element_ns::element;
 using graphics = graphics_ns::graphics;
-using polygon = polygon_ns::polygon;
 using input_state = graphics_ns::graphics::input_state;
 
 int main()
 {
 	try {
-		char filename[] = "box.dat";
-		std::ifstream ifs;
-		LINE line;
-		bool rc;
-		polygon* poly;
-		element* elem;
-		scene scn;
+		scene scn; // executes parse() + build() - must be first
 		input_state in {};
 		graphics* gfx = scn.frame_ctx.state->grfx.gfx.get();
-
-		ifs.open(filename, std::ios::in);
-		if (!ifs) {
-			sys_error("file not found:", filename);
-		}
-
-		ifs.unsetf(std::ios::skipws);
-
-		while (!ifs.eof()) {
-			while ((!read_word(ifs, line)) && (!ifs.eof()));
-			if (ifs.eof()) {
-				break;
-			}
-
-			switch (line[1]) {
-			// case '#':
-			// 	read_remark(ifs);
-			case 'p':
-				poly = scn.add_polygon();
-				rc = poly->read(gfx, ifs);
-				if (!rc) {
-					sys_error("read polygon failed");
-				}
-				break;
-			case 'e':
-				elem = scn.add_element();
-				if (!scn.root) {
-					scn.root = elem;
-				}
-				rc = elem->read(scn.poly_list, scn.root, ifs);
-				if (!rc) {
-					sys_error("read element failed");
-				}
-				break;
-			}
-		}
-
-		ifs.close();
 
 		if (!scn.root) {
 			sys_error("root is null");
@@ -106,8 +61,6 @@ int main()
 
 		world->update(initial_att);
 
-		// int i = 3;
-		// while (!in.quit && i--) {
 		while (!in.quit) {
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
