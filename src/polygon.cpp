@@ -550,8 +550,8 @@ void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& de
 
 	// optional: if cfg normal exists, assert winding matches during transition
 	if (def.normal_cfg.has_value()) {
-		vector_3 cfg = vector_3::normalize(def.normal_cfg.value());
-		if (vector_3::dot(_normal, cfg) < ZERO) {
+		_config_normal = vector_3::normalize(def.normal_cfg.value());
+		if (vector_3::dot(_normal, _config_normal) < ZERO) {
 			// either flip or warn; I recommend warn+flip until old configs cleaned
 			WARN("computed normal != configuration normal. flipping");
 			_normal = _normal * -UNIT;
@@ -654,6 +654,8 @@ void polygon::print() const
 	_fill.print();
 	DBG(STR("  normal:", 1));
 	_normal.print();
+	DBG(STR("  config normal:", 1));
+	_config_normal.print();
 	DBG(STR("  draw color: ", 1) << HEX(_draw_ctx->get_color(), 8));
 	DBG(STR("  depth: ", 1) << _depth);
 	if (!_points.empty()) {

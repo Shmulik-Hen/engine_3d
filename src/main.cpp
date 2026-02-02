@@ -16,18 +16,43 @@ using element = element_ns::element;
 using graphics = graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
 
-int main()
+int main(int argc, char** argv)
 {
 	try {
-		scene scn; // executes parse() + build() - must be first
-		input_state in {};
-		graphics* gfx = scn.frame_ctx.state->grfx.gfx.get();
+		std::string filename;
+		if (argc > 1) {
+			DBG("config file: " << argv[1]);
+			filename = argv[1];
+		}
+		else {
+#ifdef USING_JSON
+			filename = "config.json";
+#else
+			filename = "config.dat";
+#endif
+		}
 
-		if (!scn.root) {
+		std::string config;
+		if (argc > 2) {
+			DBG("config: " << argv[2]);
+			config = argv[2];
+		}
+		else {
+			config = "box";
+		}
+
+		my_scene scene;
+		scene.parse(filename, config);
+		scene.build();
+
+		input_state in {};
+		graphics* gfx = scene.frame_ctx.state->grfx.gfx.get();
+
+		if (!scene.root) {
 			sys_error("root is null");
 		}
 
-		if (scn.poly_list.empty()) {
+		if (scene.poly_list.empty()) {
 			sys_error("no polygons");
 		}
 
@@ -35,12 +60,12 @@ int main()
 		const std::string world_name = "world";
 		const std::string box_name = "box";
 
-		element* world = scn.root->find(scn.root, world_name);
+		element* world = scene.root->find(scene.root, world_name);
 		if (!world) {
 			sys_error("find world failed");
 		}
 
-		element* box = scn.root->find(scn.root, box_name);
+		element* box = scene.root->find(scene.root, box_name);
 		if (!box) {
 			sys_error("find box failed");
 		}
@@ -48,9 +73,9 @@ int main()
 #ifdef DEBUG_PRINTS
 		DBG("initial:");
 		DBG("print tree");
-		scn.root->print_all();
+		scene.root->print_all();
 		DBG("walk list");
-		for (const auto poly : scn.poly_list) {
+		for (const auto poly : scene.poly_list) {
 			poly->print();
 		}
 #endif // DEBUG_PRINTS
@@ -65,8 +90,8 @@ int main()
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			scn.update();
-			scn.render();
+			scene.update();
+			scene.render();
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 			box->update(keep_moving);

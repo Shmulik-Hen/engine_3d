@@ -14,6 +14,13 @@ attrib::attrib(const unit dx, const unit dy, const unit dz,
 	_zoom {z}
 {
 }
+
+attrib::attrib(const unit atts[NUM_ATTRIBUTES]) :
+	_rot_x {atts[0]}, _rot_y {atts[1]}, _rot_z {atts[2]},
+	_trans_x {atts[3]}, _trans_y {atts[4]}, _trans_z {atts[5]},
+	_zoom {atts[6]}
+{
+}
 // clang-format on
 
 bool attrib::read(std::ifstream& ifs)
@@ -55,7 +62,6 @@ bool attrib::read(std::ifstream& ifs)
 
 void attrib::print() const
 {
-#ifdef DEBUG_PRINTS
 	DBG("  attrib:"
 	    << ENDL << "            rotate x:    " << FLT(_rot_x, 6) << ENDL
 	    << "            rotate y:    " << FLT(_rot_y, 6) << ENDL
@@ -64,7 +70,6 @@ void attrib::print() const
 	    << "            translate y: " << FLT(_trans_y, 6) << ENDL
 	    << "            translate z: " << FLT(_trans_z, 6) << ENDL
 	    << "            zoom:        " << FLT(_zoom, 6) << ENDL);
-#endif // DEBUG_PRINTS
 }
 
 attrib& attrib::operator+=(const attrib& a)

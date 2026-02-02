@@ -2,6 +2,7 @@
 #include <string>
 #include <cctype>
 
+// #define DEBUG_PRINTS
 #include "common.h"
 #include "config_legacy.h"
 #include "utils.h"
@@ -9,7 +10,7 @@
 namespace config_ns
 {
 
-bool parse_polygon(polygon_def& pd, std::ifstream& ifs)
+bool parse_polygon_legacy(polygon_def& pd, std::ifstream& ifs)
 {
 	LINE line;
 	bool rc, finish = false;
@@ -77,7 +78,7 @@ bool parse_polygon(polygon_def& pd, std::ifstream& ifs)
 	return true;
 }
 
-bool parse_element(element_def& ed, std::ifstream& ifs)
+bool parse_element_legacy(element_def& ed, std::ifstream& ifs)
 {
 	LINE line;
 	bool rc, finish = false;
@@ -119,7 +120,7 @@ bool parse_element(element_def& ed, std::ifstream& ifs)
 			// element active flag
 			len = read_word(ifs, line);
 			if (!len) {
-				sys_error("element::read error flag");
+				sys_error("parse_element: bad flag");
 			}
 
 			ed.active = (bool)atoi(line);
@@ -141,19 +142,18 @@ bool parse_element(element_def& ed, std::ifstream& ifs)
 	return true;
 }
 
-document parse_legacy()
+document parse_legacy(const std::string& filename, const std::string& config [[maybe_unused]])
 {
 	document doc;
 	polygon_def pd;
 	element_def ed;
 	LINE line;
 	bool rc;
-	char filename[] = "box.dat";
 	std::ifstream ifs;
 
-	ifs.open(filename, std::ios::in);
+	ifs.open(filename.c_str(), std::ios::in);
 	if (!ifs) {
-		sys_error("file not found:", filename);
+		sys_error("parse_legacy: file not found:", filename.c_str());
 	}
 
 	ifs.unsetf(std::ios::skipws);
@@ -168,16 +168,16 @@ document parse_legacy()
 		switch (line[1]) {
 		case 'p':
 			// parse until next section
-			rc = parse_polygon(pd, ifs);
+			rc = parse_polygon_legacy(pd, ifs);
 			if (!rc) {
-				sys_error("parse_polygon: failed to parse");
+				sys_error("parse_polygon_legacy: failed to parse");
 			}
 			doc.polygons.push_back(std::move(pd));
 			break;
 		case 'e':
-			rc = parse_element(ed, ifs);
+			rc = parse_element_legacy(ed, ifs);
 			if (!rc) {
-				sys_error("parse_element: failed to parse");
+				sys_error("parse_element_legacy: failed to parse");
 			}
 			doc.elements.push_back(std::move(ed));
 			break;

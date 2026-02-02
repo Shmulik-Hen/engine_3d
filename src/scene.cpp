@@ -3,6 +3,11 @@
 // #define DEBUG_PRINTS
 #include "common.h"
 #include "scene.h"
+#ifdef USING_JSON
+#include "config_json.h"
+#else
+#include "config_legacy.h"
+#endif
 
 namespace scene_ns
 {
@@ -14,10 +19,8 @@ using element = element_ns::element;
 using graphics = graphics_ns::graphics;
 using polygon = polygon_ns::polygon;
 
-scene::scene()
+my_scene::my_scene()
 {
-	parse();
-
 	frame_ctx.draw_vec = std::make_unique<drawvec_t>();
 	frame_ctx.state = std::make_unique<scene_state>();
 	frame_ctx.state->grfx.gfx = std::make_unique<graphics>("Software 3D Engine");
@@ -64,11 +67,9 @@ scene::scene()
 	DBG("vp_min_pos: {" << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_min_pos.y, 4) << "}");
 	DBG("vp_mid_pos: {" << DEC(frame_ctx.state->vp.vp_mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_mid_pos.y, 4) << "}");
 	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
-
-	build();
 }
 
-scene::~scene()
+my_scene::~my_scene()
 {
 	root = nullptr;
 	poly_list.clear();
@@ -77,7 +78,7 @@ scene::~scene()
 	frame_ctx.draw_vec->clear();
 }
 
-polygon* scene::add_polygon()
+polygon* my_scene::add_polygon()
 {
 	polygons_owned.push_back(std::make_unique<polygon>());
 	polygon* p = polygons_owned.back().get();
@@ -85,22 +86,26 @@ polygon* scene::add_polygon()
 	return p;
 }
 
-element* scene::add_element()
+element* my_scene::add_element()
 {
 	elements_owned.push_back(std::make_unique<element>());
 	return elements_owned.back().get();
 }
 
-void scene::parse()
+void my_scene::parse(const std::string& filename, const std::string& config)
 {
-	doc = config_ns::parse_legacy();
+#ifdef USING_JSON
+	doc = config_ns::parse_json(filename, config);
+#else
+	doc = config_ns::parse_legacy(filename, config);
+#endif
 
 #ifdef DEBUG_PRINTS
 	DBG("parse: number of polygons: " << (int)doc.polygons.size());
 	for (const auto& poly : doc.polygons) {
 		DBG("parse: polygon: name: " << poly.name);
 		DBG("parse: polygon: color idx: " << poly.color_index);
-		DBG("parse: poltgon: force: " << poly.force);
+		DBG("parse: polygon: force: " << poly.force);
 		for (const auto& vec : poly.points) {
 			DBG("parse: polygon: vector:");
 			vec.print();
@@ -121,12 +126,14 @@ void scene::parse()
 #endif
 }
 
-void scene::build()
+void my_scene::build()
 {
 	DBG("build: num polygon defs: " << (int)doc.polygons.size());
 	for (const auto& def : doc.polygons) {
 		polygon* poly = add_polygon();
 		poly->init_from_def(frame_ctx, def);
+		DBG("build: polygon:");
+		poly->print();
 	}
 
 	DBG("build: num element defs: " << (int)doc.elements.size());
@@ -136,10 +143,12 @@ void scene::build()
 			root = elem;
 		}
 		elem->init_from_def(poly_list, root, def);
+		DBG("build: element:");
+		elem->print();
 	}
 }
 
-void scene::update()
+void my_scene::update()
 {
 	if (!root || !frame_ctx.draw_vec) {
 		return;
@@ -157,7 +166,7 @@ void scene::update()
 #endif
 }
 
-void scene::render()
+void my_scene::render()
 {
 	if (!frame_ctx.state ||
 	    !frame_ctx.state->grfx.gfx ||
@@ -180,7 +189,7 @@ void scene::render()
 	gfx->present();
 }
 
-void scene::sort()
+void my_scene::sort()
 {
 	if (frame_ctx.draw_vec->size() > 1) {
 		// clang-format off
@@ -192,7 +201,7 @@ void scene::sort()
 	}
 }
 
-void scene::draw()
+void my_scene::draw()
 {
 	if (frame_ctx.draw_vec->empty()) {
 		DBG("draw: empty");

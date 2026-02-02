@@ -1,0 +1,112 @@
+{
+	"encoding": "UTF-8",
+	"indent": {
+		"length": 4,
+		"use_space": false
+	},
+	"version": "0.0.1",
+	"configurations": [
+		{
+			"name": "box",
+			"polygons": [
+				{
+					"name": "front",
+					"color_idx": 4,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ 120, 120, -120 ],
+						[ 120, -120, -120 ],
+						[ -120, -120, -120 ],
+						[ -120, 120, -120 ]
+					],
+					"normal": [ 0, 0, -1 ]
+				},
+				{
+					"name": "back",
+					"color_idx": 6,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ 120, 120, 120 ],
+						[ -120, 120, 120 ],
+						[ -120, -120, 120 ],
+						[ 120, -120, 120 ]
+					],
+					"normal": [ 0, 0, 1 ]
+				},
+				{
+					"name": "left",
+					"color_idx": 8,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ -120, 120, -120 ],
+						[ -120, -120, -120 ],
+						[ -120, -120, 120 ],
+						[ -120, 120, 120 ]
+					],
+					"normal": [ -1, 0, 0 ]
+				},
+				{
+					"name": "right",
+					"color_idx": 10,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ 120, 120, 120 ],
+						[ 120, -120, 120 ],
+						[ 120, -120, -120 ],
+						[ 120, 120, -120 ]
+					],
+					"normal": [ 1, 0, 0 ]
+				},
+				{
+					"name": "top",
+					"color_idx": 12,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ 120, 120, -120 ],
+						[ -120, 120, -120 ],
+						[ -120, 120, 120 ],
+						[ 120, 120, 120 ]
+					],
+					"normal": [ 0, 1, 0 ]
+				},
+				{
+					"name": "bottom",
+					"color_idx": 14,
+					"force": false,
+					"_comment": "x, y, z coordinates",
+					"points": [
+						[ 120, -120, 120 ],
+						[ -120, -120, 120 ],
+						[ -120, -120, -120 ],
+						[ 120, -120, -120 ]
+					],
+					"normal": [ 0, -1, 0 ]
+				}
+			],
+			"elements": [
+				{
+					"name": "world",
+					"parrent": "",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"polygons": [
+					]
+				},
+				{
+					"name": "box",
+					"parrent": "world",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"polygons": [ "front", "back", "left", "right", "top", "bottom" ]
+				}
+			]
+		}
+	]
+}

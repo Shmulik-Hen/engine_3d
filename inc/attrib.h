@@ -21,6 +21,7 @@ public:
 	attrib() {}
 	~attrib() {}
 	attrib(const unit, const unit, const unit, const unit, const unit, const unit, const unit);
+	attrib(const unit[NUM_ATTRIBUTES]);
 
 	bool read(std::ifstream&);
 	void print() const;

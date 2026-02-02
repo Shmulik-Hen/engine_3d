@@ -1,21 +1,44 @@
-PRJ_NAME  := box
-SRC_DIR   := ./src
-INC_DIR   := ./inc
-BLD_DIR   := ./bin
-CFG_DIR	  := ./config
-VAL_DIR   := ./validations
-CFG_FILE  := $(CFG_DIR)/$(PRJ_NAME).dat
-TARGET    := $(BLD_DIR)/$(PRJ_NAME)
-SRCS      := $(sort $(shell find $(SRC_DIR) -name '*.cpp' -printf '%p '))
-OBJS      := $(subst $(SRC_DIR),$(BLD_DIR),$(SRCS:%.cpp=%.o))
-DEPS      := $(OBJS:.o=.d)
-INC_FLAGS := $(addprefix -I,$(INC_DIR))
+SDL2 := 1
+JSON := 0
+
+PRJ_NAME   := engine_3d
+SRC_DIR    := ./src
+INC_DIR    := ./inc
+BLD_DIR    := ./bin
+CFG_DIR	   := ./config
+VAL_DIR    := ./validations
+TARGET     := $(BLD_DIR)/$(PRJ_NAME)
+SRCS       := $(sort $(shell find $(SRC_DIR) -name '*.cpp' | grep -v config_.*\.cpp | tr '\n' ' '))
+
+ifeq ($(JSON), 1)
+SRCS       += $(SRC_DIR)/config_json.cpp
+else
+SRCS       += $(SRC_DIR)/config_legacy.cpp
+endif
+
+OBJS       := $(subst $(SRC_DIR),$(BLD_DIR),$(SRCS:%.cpp=%.o))
+DEPS       := $(OBJS:.o=.d)
+INC_FLAGS  := $(addprefix -I,$(INC_DIR))
+CPPFLAGS   := -MMD -MP
+#LDFLAGS   :=
+CXXFLAGS   += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS)
+
+ifeq ($(SDL2), 1)
 SDL_FLAGS := $(shell sdl2-config --cflags)
 SDL_LIBS  := $(shell sdl2-config --libs)
-CPPFLAGS  := -MMD -MP
-#LDFLAGS   :=
+CXXFLAGS  += $(SDL_FLAGS)
 LDLIBS    += $(SDL_LIBS)
-CXXFLAGS  += -std=c++17 -Wall -Wextra -Wpedantic $(INC_FLAGS) $(SDL_FLAGS)
+endif
+
+ifeq ($(JSON), 1)
+JSON_FLAGS := $(shell pkg-config --cflags jsoncpp)
+JSON_LIBS  := $(shell pkg-config --libs jsoncpp)
+CXXFLAGS   += $(JSON_FLAGS)  $(addprefix -D,USING_JSON)
+LDLIBS     += $(JSON_LIBS)
+CFG_FILE := $(CFG_DIR)/config.json
+else
+CFG_FILE := $(CFG_DIR)/config.dat
+endif
 
 #DEBUG := 1
 ifeq ($(DEBUG), 1)
