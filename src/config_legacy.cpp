@@ -10,13 +10,14 @@
 namespace config_ns
 {
 
-bool parse_polygon_legacy(polygon_def& pd, std::ifstream& ifs)
+bool parse_polygon_legacy(AST& ast, std::ifstream& ifs)
 {
 	LINE line;
 	bool rc, finish = false;
 	vector_3 v;
 	vector_3 n;
 	int len;
+	polygon_def pd {};
 
 	while (!ifs.eof() && !finish) {
 		auto pos = ifs.tellg();
@@ -75,14 +76,16 @@ bool parse_polygon_legacy(polygon_def& pd, std::ifstream& ifs)
 		}
 	}
 
+	ast.polygons.push_back(std::move(pd));
 	return true;
 }
 
-bool parse_element_legacy(element_def& ed, std::ifstream& ifs)
+bool parse_element_legacy(AST& ast, std::ifstream& ifs)
 {
 	LINE line;
 	bool rc, finish = false;
 	int len;
+	element_def ed {};
 
 	while (!ifs.eof() && !finish) {
 		auto pos = ifs.tellg();
@@ -139,14 +142,13 @@ bool parse_element_legacy(element_def& ed, std::ifstream& ifs)
 		}
 	}
 
+	ast.elements.push_back(std::move(ed));
 	return true;
 }
 
-document parse_legacy(const std::string& filename, const std::string& config [[maybe_unused]])
+AST parse_legacy(const std::string& filename, const std::string& conf_name [[maybe_unused]])
 {
-	document doc;
-	polygon_def pd;
-	element_def ed;
+	AST ast;
 	LINE line;
 	bool rc;
 	std::ifstream ifs;
@@ -168,24 +170,22 @@ document parse_legacy(const std::string& filename, const std::string& config [[m
 		switch (line[1]) {
 		case 'p':
 			// parse until next section
-			rc = parse_polygon_legacy(pd, ifs);
+			rc = parse_polygon_legacy(ast, ifs);
 			if (!rc) {
 				sys_error("parse_polygon_legacy: failed to parse");
 			}
-			doc.polygons.push_back(std::move(pd));
 			break;
 		case 'e':
-			rc = parse_element_legacy(ed, ifs);
+			rc = parse_element_legacy(ast, ifs);
 			if (!rc) {
 				sys_error("parse_element_legacy: failed to parse");
 			}
-			doc.elements.push_back(std::move(ed));
 			break;
 		}
 	}
 
 	ifs.close();
-	return doc;
+	return ast;
 }
 
 } // namespace config_ns

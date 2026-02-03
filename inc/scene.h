@@ -34,14 +34,14 @@ public:
 
 	frame_context frame_ctx;
 
-	config_ns::document doc;
+	config_ns::AST ast;
 
 	my_scene();
 	my_scene(const my_scene&) = delete;
 	my_scene& operator=(const my_scene&) = delete;
 	my_scene(my_scene&&) = delete;
 	my_scene& operator=(my_scene&&) = delete;
-	~my_scene();
+	~my_scene() = default;
 
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();

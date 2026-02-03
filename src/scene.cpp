@@ -69,15 +69,6 @@ my_scene::my_scene()
 	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
 }
 
-my_scene::~my_scene()
-{
-	root = nullptr;
-	poly_list.clear();
-	polygons_owned.clear();
-	elements_owned.clear();
-	frame_ctx.draw_vec->clear();
-}
-
 polygon* my_scene::add_polygon()
 {
 	polygons_owned.push_back(std::make_unique<polygon>());
@@ -92,17 +83,17 @@ element* my_scene::add_element()
 	return elements_owned.back().get();
 }
 
-void my_scene::parse(const std::string& filename, const std::string& config)
+void my_scene::parse(const std::string& filename, const std::string& conf_name)
 {
 #ifdef USING_JSON
-	doc = config_ns::parse_json(filename, config);
+	ast = config_ns::parse_json(filename, conf_name);
 #else
-	doc = config_ns::parse_legacy(filename, config);
+	ast = config_ns::parse_legacy(filename, conf_name);
 #endif
 
 #ifdef DEBUG_PRINTS
-	DBG("parse: number of polygons: " << (int)doc.polygons.size());
-	for (const auto& poly : doc.polygons) {
+	DBG("parse: number of polygons: " << (int)ast.polygons.size());
+	for (const auto& poly : ast.polygons) {
 		DBG("parse: polygon: name: " << poly.name);
 		DBG("parse: polygon: color idx: " << poly.color_index);
 		DBG("parse: polygon: force: " << poly.force);
@@ -112,8 +103,8 @@ void my_scene::parse(const std::string& filename, const std::string& config)
 		}
 	}
 
-	DBG("parse: number of elements: " << (int)doc.elements.size());
-	for (const auto& elem : doc.elements) {
+	DBG("parse: number of elements: " << (int)ast.elements.size());
+	for (const auto& elem : ast.elements) {
 		DBG("parse: element: name: " << elem.name);
 		DBG("parse: element: parrent: " << elem.parent);
 		DBG("parse: element: active: " << elem.active);
@@ -128,16 +119,16 @@ void my_scene::parse(const std::string& filename, const std::string& config)
 
 void my_scene::build()
 {
-	DBG("build: num polygon defs: " << (int)doc.polygons.size());
-	for (const auto& def : doc.polygons) {
+	DBG("build: num polygon defs: " << (int)ast.polygons.size());
+	for (const auto& def : ast.polygons) {
 		polygon* poly = add_polygon();
 		poly->init_from_def(frame_ctx, def);
 		DBG("build: polygon:");
 		poly->print();
 	}
 
-	DBG("build: num element defs: " << (int)doc.elements.size());
-	for (const auto& def : doc.elements) {
+	DBG("build: num element defs: " << (int)ast.elements.size());
+	for (const auto& def : ast.elements) {
 		element* elem = add_element();
 		if (!root) {
 			root = elem;
@@ -150,10 +141,6 @@ void my_scene::build()
 
 void my_scene::update()
 {
-	if (!root || !frame_ctx.draw_vec) {
-		return;
-	}
-
 	// draw list is per-frame (non-owning)
 	frame_ctx.draw_vec->clear();
 
@@ -166,53 +153,43 @@ void my_scene::update()
 #endif
 }
 
+void my_scene::sort()
+{
+	// clang-format off
+	std::sort(frame_ctx.draw_vec->begin(), frame_ctx.draw_vec->end(),
+		  [](polygon* a, polygon* b) {
+			return a->get_depth() < b->get_depth();
+		  });
+	// clang-format on
+}
+
+void my_scene::draw()
+{
+	for (polygon* poly : *frame_ctx.draw_vec) {
+		if (poly) {
+			poly->draw(frame_ctx);
+		}
+	}
+}
+
 void my_scene::render()
 {
-	if (!frame_ctx.state ||
-	    !frame_ctx.state->grfx.gfx ||
-	    !frame_ctx.draw_vec ||
-	    frame_ctx.draw_vec->empty()) {
-		return;
-	}
-
 	graphics* gfx = frame_ctx.state->grfx.gfx.get();
 
 	// Acquire backbuffer for this frame and clear it
 	frame_ctx.state->grfx.fb = gfx->get_backbuffer();
 	gfx->fill_buffer(frame_ctx.state->grfx.fb, frame_ctx.state->grfx.clear_color);
 
-	DBG("sort");
-	sort();
+	if (!frame_ctx.draw_vec->empty()) {
+		DBG("sort");
+		sort();
+	}
+
 	DBG("draw");
 	draw();
+
 	DBG("show");
 	gfx->present();
-}
-
-void my_scene::sort()
-{
-	if (frame_ctx.draw_vec->size() > 1) {
-		// clang-format off
-		std::sort(frame_ctx.draw_vec->begin(), frame_ctx.draw_vec->end(),
-			  [](polygon* a, polygon* b) {
-				return a->get_depth() < b->get_depth();
-			  });
-		// clang-format on
-	}
-}
-
-void my_scene::draw()
-{
-	if (frame_ctx.draw_vec->empty()) {
-		DBG("draw: empty");
-		return;
-	}
-
-	for (polygon* poly : *frame_ctx.draw_vec) {
-		if (poly) {
-			poly->draw(frame_ctx);
-		}
-	}
 }
 
 } // namespace scene_ns

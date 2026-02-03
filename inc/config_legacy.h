@@ -5,6 +5,6 @@
 namespace config_ns
 {
 
-document parse_legacy(const std::string&, const std::string&);
+AST parse_legacy(const std::string&, const std::string&);
 
 } // namespace config_ns

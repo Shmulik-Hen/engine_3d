@@ -10,9 +10,10 @@
 namespace config_ns
 {
 
-bool parse_polygon_json(polygon_def& pd, const Json::Value& polygon, const unsigned int idx [[maybe_unused]])
+bool parse_polygon_json(AST& ast, const Json::Value& polygon, const unsigned int idx [[maybe_unused]])
 {
 	unit coords[NUM_COORDS];
+	polygon_def pd {};
 
 	DBG("parse_polygon: " << idx << ", name: " << polygon["name"]);
 	pd.name = polygon["name"].asString();
@@ -62,12 +63,14 @@ bool parse_polygon_json(polygon_def& pd, const Json::Value& polygon, const unsig
 	vector_3 n(coords);
 	pd.normal_cfg = n;
 
+	ast.polygons.push_back(std::move(pd));
 	return true;
 }
 
-bool parse_element_json(element_def& ed, const Json::Value& element, const unsigned int idx [[maybe_unused]])
+bool parse_element_json(AST& ast, const Json::Value& element, const unsigned int idx [[maybe_unused]])
 {
 	unit atts[NUM_ATTRIBUTES];
+	element_def ed {};
 
 	DBG("parse_element: " << idx << ", name: " << element["name"]);
 	ed.name = element["name"].asString();
@@ -99,14 +102,13 @@ bool parse_element_json(element_def& ed, const Json::Value& element, const unsig
 		ed.polygons.emplace_back(polygons[k].asString());
 	}
 
+	ast.elements.push_back(std::move(ed));
 	return true;
 }
 
-document parse_json(const std::string& filename, const std::string& config)
+AST parse_json(const std::string& filename, const std::string& conf_name)
 {
-	document doc;
-	polygon_def pd;
-	element_def ed;
+	AST ast;
 	bool rc;
 	std::ifstream ifs;
 	Json::Value root;
@@ -131,42 +133,40 @@ document parse_json(const std::string& filename, const std::string& config)
 	// std::cout << root << std::endl;
 	const Json::Value configurations = root["configurations"];
 
-	DBG("parse_json: config: " << config);
+	DBG("parse_json: conf_name: " << conf_name);
 	DBG("parse_json: num configurations: " << configurations.size());
 	for (unsigned int i = 0; i < configurations.size(); i++) {
 		const Json::Value conf = configurations[i];
 		DBG("parse_json: configuration: " << i << ", " << conf["name"]);
-		if (conf["name"] == config) {
+		if (conf["name"] == conf_name) {
 			found = true;
 			const Json::Value polygons = conf["polygons"];
 			DBG("parse_json: num polygons: " << polygons.size());
 			for (unsigned int j = 0; j < polygons.size(); j++) {
 				const Json::Value poly = polygons[j];
-				rc = parse_polygon_json(pd, poly, j);
+				rc = parse_polygon_json(ast, poly, j);
 				if (!rc) {
 					sys_error("parse_polygon_json: failed to parse");
 				}
-				doc.polygons.push_back(std::move(pd));
 			}
 
 			const Json::Value elements = conf["elements"];
 			DBG("parse_json: num elements: " << elements.size());
 			for (unsigned j = 0; j < elements.size(); j++) {
 				const Json::Value elem = elements[j];
-				rc = parse_element_json(ed, elem, j);
+				rc = parse_element_json(ast, elem, j);
 				if (!rc) {
 					sys_error("parse_element_json: failed to parse");
 				}
-				doc.elements.push_back(std::move(ed));
 			}
 		}
 	}
 
 	if (!found) {
-		sys_error("parse_json: configuration not found: ", config.c_str());
+		sys_error("parse_json: configuration not found: ", conf_name.c_str());
 	}
 
-	return doc;
+	return ast;
 }
 
 } // namespace config_ns

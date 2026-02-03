@@ -45,6 +45,7 @@ bool vector_3::read(std::ifstream& ifs)
 		if (ifs.eof())  return false;
 		// clang-format on
 		_coords[i] = strtof(line, NULL);
+		// clang-format on
 	}
 
 	return true;

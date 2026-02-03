@@ -37,7 +37,7 @@ struct element_def
 	std::vector<std::string> polygons;
 };
 
-struct document
+struct AST
 {
 	std::vector<polygon_def> polygons;
 	std::vector<element_def> elements;

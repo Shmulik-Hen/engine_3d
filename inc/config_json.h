@@ -6,6 +6,6 @@
 namespace config_ns
 {
 
-document parse_json(const std::string&, const std::string&);
+AST parse_json(const std::string&, const std::string&);
 
 } // namespace config_ns

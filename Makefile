@@ -1,5 +1,5 @@
 SDL2 := 1
-JSON := 0
+JSON := 1
 
 PRJ_NAME   := engine_3d
 SRC_DIR    := ./src
@@ -35,9 +35,6 @@ JSON_FLAGS := $(shell pkg-config --cflags jsoncpp)
 JSON_LIBS  := $(shell pkg-config --libs jsoncpp)
 CXXFLAGS   += $(JSON_FLAGS)  $(addprefix -D,USING_JSON)
 LDLIBS     += $(JSON_LIBS)
-CFG_FILE := $(CFG_DIR)/config.json
-else
-CFG_FILE := $(CFG_DIR)/config.dat
 endif
 
 #DEBUG := 1
@@ -74,7 +71,6 @@ $(TARGET): $(OBJS)
 	$(CXX) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
 build: $(TARGET)
-	cp $(CFG_FILE) $(BLD_DIR)/
 
 rebuild: clean build
 
