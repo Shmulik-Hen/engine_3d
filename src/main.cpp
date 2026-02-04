@@ -166,15 +166,36 @@ int main(int argc, char** argv)
 		// find the relevant elements to work with
 		const std::string world_name = "world";
 		const std::string box_name = "box";
+		const std::string pyramid_name = "pyramid";
+		element* box = nullptr;
+		element* pyramid = nullptr;
 
 		element* world = scene->root->find(scene->root, world_name);
 		if (!world) {
 			sys_error("find world failed");
 		}
 
-		element* box = scene->root->find(scene->root, box_name);
-		if (!box) {
-			sys_error("find box failed");
+		if (conf_name == box_name) {
+			box = scene->root->find(scene->root, box_name);
+			if (!box) {
+				sys_error("find object failed");
+			}
+		}
+		else if (conf_name == pyramid_name) {
+			pyramid = scene->root->find(scene->root, pyramid_name);
+			if (!pyramid) {
+				sys_error("find object failed");
+			}
+		}
+		else {
+			box = scene->root->find(scene->root, box_name);
+			if (!box) {
+				sys_error("find object failed");
+			}
+			pyramid = scene->root->find(scene->root, pyramid_name);
+			if (!pyramid) {
+				sys_error("find object failed");
+			}
 		}
 
 #ifdef DEBUG_PRINTS
@@ -188,10 +209,8 @@ int main(int argc, char** argv)
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib initial_att(45, 0, 45, 0, 0, 0, 1);
-		attrib keep_moving(0, 1, 0, 0, 0, 0, 1);
-
-		world->update(initial_att);
+		attrib box_keep_moving(1, 0, 0, 0, 0, 0, 1);
+		attrib pyramid_keep_moving(0, 1, 0, 0, 0, 0, 1);
 
 		input_state in {};
 		graphics* gfx = scene->frame_ctx.state->grfx.gfx.get();
@@ -200,11 +219,18 @@ int main(int argc, char** argv)
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
+			if (box) {
+				box->update(box_keep_moving);
+			}
+
+			if (pyramid) {
+				pyramid->update(pyramid_keep_moving);
+			}
+
 			scene->update();
 			scene->render();
 
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
-			box->update(keep_moving);
 		}
 
 		return 0;

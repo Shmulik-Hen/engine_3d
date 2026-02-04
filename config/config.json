@@ -10,82 +10,76 @@
 			"name": "box",
 			"polygons": [
 				{
-					"name": "front",
+					"name": "b_front",
 					"color_idx": 4,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ 120, 120, -120 ],
-						[ 120, -120, -120 ],
-						[ -120, -120, -120 ],
-						[ -120, 120, -120 ]
-					],
-					"normal": [ 0, 0, -1 ]
+						[ 100.0, 100.0, -100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
 				},
 				{
-					"name": "back",
+					"name": "b_back",
 					"color_idx": 6,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ 120, 120, 120 ],
-						[ -120, 120, 120 ],
-						[ -120, -120, 120 ],
-						[ 120, -120, 120 ]
-					],
-					"normal": [ 0, 0, 1 ]
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, 100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, 100.0 ]
+					]
 				},
 				{
-					"name": "left",
+					"name": "b_left",
 					"color_idx": 8,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ -120, 120, -120 ],
-						[ -120, -120, -120 ],
-						[ -120, -120, 120 ],
-						[ -120, 120, 120 ]
-					],
-					"normal": [ -1, 0, 0 ]
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, 100.0, 100.0 ]
+					]
 				},
 				{
-					"name": "right",
+					"name": "b_right",
 					"color_idx": 10,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ 120, 120, 120 ],
-						[ 120, -120, 120 ],
-						[ 120, -120, -120 ],
-						[ 120, 120, -120 ]
-					],
-					"normal": [ 1, 0, 0 ]
+						[ 100.0, 100.0, 100.0 ],
+						[ 100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ 100.0, 100.0, -100.0 ]
+					]
 				},
 				{
-					"name": "top",
+					"name": "b_top",
 					"color_idx": 12,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ 120, 120, -120 ],
-						[ -120, 120, -120 ],
-						[ -120, 120, 120 ],
-						[ 120, 120, 120 ]
-					],
-					"normal": [ 0, 1, 0 ]
+						[ 100.0, 100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, 100.0, 100.0 ],
+						[ 100.0, 100.0, 100.0 ]
+					]
 				},
 				{
-					"name": "bottom",
+					"name": "b_bottom",
 					"color_idx": 14,
 					"force": false,
-					"_comment": "x, y, z coordinates",
+					"_comment": "x, y, z coordinates - CCW",
 					"points": [
-						[ 120, -120, 120 ],
-						[ -120, -120, 120 ],
-						[ -120, -120, -120 ],
-						[ 120, -120, -120 ]
-					],
-					"normal": [ 0, -1, 0 ]
+						[ 100.0, -100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ 100.0, -100.0, -100.0 ]
+					]
 				}
 			],
 			"elements": [
@@ -104,7 +98,224 @@
 					"active": true,
 					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
-					"polygons": [ "front", "back", "left", "right", "top", "bottom" ]
+					"polygons": [ "b_front", "b_back", "b_left", "b_right", "b_top", "b_bottom" ]
+				}
+			]
+		},
+		{
+			"name": "pyramid",
+			"polygons": [
+				{
+					"name": "p_bottom",
+					"color_idx": 10,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "p_front",
+					"color_idx": 4,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "p_right",
+					"color_idx": 6,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ]
+					]
+				},
+				{
+					"name": "p_left",
+					"color_idx": 8,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
+				}
+			],
+			"elements": [
+				{
+					"name": "world",
+					"parrent": "",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"polygons": [
+					]
+				},
+				{
+					"name": "pyramid",
+					"parrent": "world",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
+				}
+			]
+
+		},
+		{
+			"name": "both",
+			"polygons": [
+				{
+					"name": "b_front",
+					"color_idx": 4,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, -100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "b_back",
+					"color_idx": 6,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, 100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, 100.0 ]
+					]
+				},
+				{
+					"name": "b_left",
+					"color_idx": 8,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, 100.0, 100.0 ]
+					]
+				},
+				{
+					"name": "b_right",
+					"color_idx": 10,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ 100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ 100.0, 100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "b_top",
+					"color_idx": 12,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, 100.0, 100.0 ],
+						[ 100.0, 100.0, 100.0 ]
+					]
+				},
+				{
+					"name": "b_bottom",
+					"color_idx": 14,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, -100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, -100.0, -100.0 ],
+						[ 100.0, -100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "p_bottom",
+					"color_idx": 10,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "p_front",
+					"color_idx": 4,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ 100.0, -100.0, -100.0 ]
+					]
+				},
+				{
+					"name": "p_right",
+					"color_idx": 6,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, 100.0, 100.0 ],
+						[ -100.0, 100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ]
+					]
+				},
+				{
+					"name": "p_left",
+					"color_idx": 8,
+					"force": false,
+					"_comment": "x, y, z coordinates - CCW",
+					"points": [
+						[ 100.0, -100.0, -100.0 ],
+						[ -100.0, -100.0, 100.0 ],
+						[ -100.0, 100.0, -100.0 ]
+					]
+				}
+			],
+			"elements": [
+				{
+					"name": "world",
+					"parrent": "",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"polygons": [
+					]
+				},
+				{
+					"name": "box",
+					"parrent": "world",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 20, 500, 0, 1000, 1 ],
+					"polygons": [ "b_front", "b_back", "b_left", "b_right", "b_top", "b_bottom" ]
+				},
+				{
+					"name": "pyramid",
+					"parrent": "world",
+					"active": true,
+					"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+					"attributes": [ 0, 0, 20, -500, 0, 1000, 1 ],
+					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
 				}
 			]
 		}

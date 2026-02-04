@@ -89,7 +89,7 @@ class polygon
 		void clear_scratch_pad();
 		void plot(scene_ns::frame_context&);
 		void fill(scene_ns::frame_context&);
-		void project(const vector_3_ns::vector_3&, scene_ns::frame_context&, bool force = false);
+		void project(const vector_3_ns::vector_3&, scene_ns::frame_context&, bool);
 		void draw(scene_ns::frame_context&);
 	}; // class polygon::drawing
 

@@ -48,20 +48,22 @@ bool parse_polygon_json(AST& ast, const Json::Value& polygon, const unsigned int
 		pd.points.push_back(v);
 	}
 
-	const Json::Value normal = polygon["normal"];
-	DBG("parse_polygon: " << idx << ", normal: num coords: " << normal.size());
-	if (normal.size() != NUM_COORDS) {
-		ERR("parse_polygon: coord number");
-		return false;
-	}
+	if (polygon.isMember("normal")) {
+		const Json::Value normal = polygon["normal"];
+		DBG("parse_polygon: " << idx << ", normal: num coords: " << normal.size());
+		if (normal.size() != NUM_COORDS) {
+			ERR("parse_polygon: coord number");
+			return false;
+		}
 
-	for (unsigned int k = 0; k < normal.size(); k++) {
-		DBG("parse_polygon: " << idx << ", coord: " << k << ", val: " << normal[k]);
-		coords[k] = normal[k].asFloat();
-	}
+		for (unsigned int k = 0; k < normal.size(); k++) {
+			DBG("parse_polygon: " << idx << ", coord: " << k << ", val: " << normal[k]);
+			coords[k] = normal[k].asFloat();
+		}
 
-	vector_3 n(coords);
-	pd.normal_cfg = n;
+		vector_3 n(coords);
+		pd.normal_cfg = n;
+	}
 
 	ast.polygons.push_back(std::move(pd));
 	return true;
@@ -69,7 +71,7 @@ bool parse_polygon_json(AST& ast, const Json::Value& polygon, const unsigned int
 
 bool parse_element_json(AST& ast, const Json::Value& element, const unsigned int idx [[maybe_unused]])
 {
-	unit atts[NUM_ATTRIBUTES];
+	unit atts[NUM_ATTRIBUTES] = {0, 0, 0, 0, 0, 0, 1};
 	element_def ed {};
 
 	DBG("parse_element: " << idx << ", name: " << element["name"]);
@@ -89,11 +91,11 @@ bool parse_element_json(AST& ast, const Json::Value& element, const unsigned int
 	}
 
 	for (unsigned int k = 0; k < attributes.size(); k++) {
-		DBG("parse_element: " << idx << ", att: " << k << ", val: " << attributes[k]);
+		DBG("parse_element: " << idx << ", att: " << k << ", val: " << attributes[k].asFloat());
 		atts[k] = attributes[k].asFloat();
 	}
-	attrib att(atts);
-	ed.att = att;
+	ed.att = atts;
+	ed.att.print();
 
 	const Json::Value polygons = element["polygons"];
 	DBG("parse_element: " << idx << ", num polygons: " << polygons.size());

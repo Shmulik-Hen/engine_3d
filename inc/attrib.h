@@ -34,6 +34,7 @@ public:
 	unit get_trans_z() const { return _trans_z; };
 	unit get_zoom() const { return _zoom; };
 
+	attrib& operator=(unit[NUM_ATTRIBUTES]);
 	attrib& operator+=(const attrib&);
 
 	friend std::ostream& operator<<(std::ostream&, const attrib&);

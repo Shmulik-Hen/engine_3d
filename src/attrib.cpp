@@ -72,6 +72,18 @@ void attrib::print() const
 	    << "            zoom:        " << FLT(_zoom, 6) << ENDL);
 }
 
+attrib& attrib::operator=(unit atts[NUM_ATTRIBUTES])
+{
+	_rot_x = atts[0];
+	_rot_y = atts[1];
+	_rot_z = atts[2];
+	_trans_x = atts[3];
+	_trans_y = atts[4];
+	_trans_z = atts[5];
+	_zoom = atts[6];
+	return *this;
+}
+
 attrib& attrib::operator+=(const attrib& a)
 {
 	_rot_x += a._rot_x;

@@ -301,7 +301,6 @@ void polygon::drawing::draw(frame_context& frame_ctx)
 		return;
 	}
 
-	// always false in DEBUG_POLYGON mode
 	if (_invalid) {
 		_invalid = false;
 		_scratch_pad.clear();
@@ -532,8 +531,12 @@ vector_3 polygon::find_normal()
 void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& def)
 {
 	_name = def.name;
-	_force = def.force;
 	_draw_ctx->set_color(ctx.state->grfx.gfx.get(), def.color_index);
+#ifdef DEBUG_POLYGON
+	_force = true;
+#else
+	_force = def.force;
+#endif
 
 	_points.clear();
 	for (const auto& v : def.points) {
