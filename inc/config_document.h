@@ -37,10 +37,32 @@ struct element_def
 	std::vector<std::string> polygons;
 };
 
+struct point_def
+{
+	int x;
+	int y;
+};
+
+struct environ_def
+{
+	std::optional<int> color_idx;
+	std::optional<int> light_type;
+	std::optional<vector_3> light_direction;
+	std::optional<vector_3> light_position;
+	std::optional<vector_3> camera_position;
+	std::optional<unit> focal_len;
+	std::optional<unit> near_eps;
+	std::optional<point_def> min_pos;
+	std::optional<point_def> max_pos;
+	std::optional<point_def> vp_min_pos;
+	std::optional<point_def> vp_max_pos;
+};
+
 struct AST
 {
 	std::vector<polygon_def> polygons;
 	std::vector<element_def> elements;
+	environ_def env;
 };
 
 } // namespace config_ns

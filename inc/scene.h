@@ -54,6 +54,7 @@ private:
 
 	void sort();
 	void draw();
+	void set_defaults();
 };
 
 } // namespace scene_ns

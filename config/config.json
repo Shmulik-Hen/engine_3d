@@ -128,8 +128,6 @@
 							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
-					],
-					"polygons": [
 					]
 				},
 				{
@@ -144,6 +142,20 @@
 						}
 					],
 					"polygons": [ "b_front", "b_back", "b_left", "b_right", "b_top", "b_bottom" ]
+				},
+				{
+					"type": "environment",
+					"color_idx": 0,
+					"_comment": "0 - directional, 1 - point",
+					"light_type": 0,
+					"light_direction": [ 0, 0, -1 ],
+					"light_position": [ 0, 20, -74 ],
+					"focal_len": 1500,
+					"near_eps": 1,
+					"min_pos": [ 0, 0 ],
+					"max_pos": [ 1279, 799 ],
+					"vp_min_pos": [ 0, 0 ],
+					"vp_max_pos": [ 1279, 799 ]
 				}
 			]
 		},
@@ -228,8 +240,6 @@
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
-					],
-					"polygons": [
 					]
 				},
 				{
@@ -244,6 +254,20 @@
 						}
 					],
 					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
+				},
+				{
+					"type": "environment",
+					"color_idx": 0,
+					"_comment": "0 - directional, 1 - point",
+					"light_type": 1,
+					"light_direction": [ 0, 0, -1 ],
+					"light_position": [ 0, 0, -74 ],
+					"focal_len": 1500,
+					"near_eps": 1,
+					"min_pos": [ 0, 0 ],
+					"max_pos": [ 1279, 799 ],
+					"vp_min_pos": [ 0, 0 ],
+					"vp_max_pos": [ 1279, 799 ]
 				}
 			]
 
@@ -437,8 +461,6 @@
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
-					],
-					"polygons": [
 					]
 				},
 				{
@@ -466,6 +488,20 @@
 						}
 					],
 					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
+				},
+				{
+					"type": "environment",
+					"color_idx": 0,
+					"_comment": "0 - directional, 1 - point",
+					"light_type": 0,
+					"light_direction": [ 0, 0, -1 ],
+					"light_position": [ 0, 20, -74 ],
+					"focal_len": 1500,
+					"near_eps": 1,
+					"min_pos": [ 0, 0 ],
+					"max_pos": [ 1279, 799 ],
+					"vp_min_pos": [ 0, 0 ],
+					"vp_max_pos": [ 1279, 799 ]
 				}
 			]
 		}

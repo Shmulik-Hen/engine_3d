@@ -28,6 +28,7 @@ bool parse_json_attrib(unit attribs[NUM_ATTRIBUTES], const Json::Value& attrib, 
 
 bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const unsigned int idx [[maybe_unused]])
 {
+	DBG("parse_vector: " << idx << ", num points: " << point.size());
 	if (point.size() != NUM_COORDS) {
 		ERR("parse_vector: idx: " << idx << "bad coord number");
 		return false;
@@ -37,6 +38,15 @@ bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const 
 		DBG("parse_vector: " << idx << ", coord: " << i << ", val: " << point[i]);
 		coords[i] = point[i].asFloat();
 	}
+
+	return true;
+}
+
+bool parse_json_pair(int points[2], const Json::Value& point, const unsigned int idx [[maybe_unused]])
+{
+	DBG("pair: " << idx << ", num points: " << point.size());
+	points[0] = point[0].asInt();
+	points[1] = point[1].asInt();
 
 	return true;
 }
@@ -146,6 +156,110 @@ bool parse_json_element(AST& ast, const Json::Value& element, const unsigned int
 	return true;
 }
 
+bool parse_json_environment(AST& ast, const Json::Value& object, const unsigned int idx [[maybe_unused]])
+{
+	unit coords[NUM_COORDS];
+	int points[2];
+	Json::Value val;
+	bool rc;
+
+	DBG("parse_env: environment:");
+	if (object.isMember("color_idx")) {
+		DBG("parse_env: color_idx:");
+		val = object["color_idx"];
+		ast.env.color_idx = val.asInt();
+	}
+	if (object.isMember("light_type")) {
+		DBG("parse_env: light_type:");
+		val = object["light_type"];
+		ast.env.light_type = val.asInt();
+	}
+	if (object.isMember("light_direction")) {
+		DBG("parse_env: light_direction:");
+		val = object["light_direction"];
+		rc = parse_json_vector(coords, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		vector_3 v(coords);
+		ast.env.light_direction = v;
+	}
+	if (object.isMember("light_position")) {
+		DBG("parse_env: light_position:");
+		val = object["light_position"];
+		rc = parse_json_vector(coords, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		vector_3 v(coords);
+		ast.env.light_position = v;
+	}
+	if (object.isMember("camera_position")) {
+		DBG("parse_env: camera_position:");
+		val = object["camera_position"];
+		rc = parse_json_vector(coords, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		vector_3 v(coords);
+		ast.env.camera_position = v;
+	}
+	if (object.isMember("focal_len")) {
+		DBG("parse_env: focal_len:");
+		val = object["focal_len"];
+		ast.env.focal_len = val.asFloat();
+	}
+	if (object.isMember("near_eps")) {
+		val = object["near_eps"];
+		ast.env.near_eps = val.asFloat();
+	}
+	if (object.isMember("min_pos")) {
+		DBG("parse_env: min_pos:");
+		val = object["min_pos"];
+		rc = parse_json_pair(points, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		ast.env.min_pos = config_ns::point_def {points[0], points[1]};
+	}
+	if (object.isMember("max_pos")) {
+		DBG("parse_env: max_pos:");
+		val = object["max_pos"];
+		rc = parse_json_pair(points, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		ast.env.max_pos = config_ns::point_def {points[0], points[1]};
+	}
+	if (object.isMember("vp_min_pos")) {
+		DBG("parse_env: vp_min_pos:");
+		val = object["vp_min_pos"];
+		rc = parse_json_pair(points, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		ast.env.vp_min_pos = config_ns::point_def {points[0], points[1]};
+	}
+	if (object.isMember("vp_max_pos")) {
+		DBG("parse_env: vp_max_pos:");
+		val = object["vp_max_pos"];
+		rc = parse_json_pair(points, val, idx);
+		if (!rc) {
+			return false;
+		}
+
+		ast.env.vp_max_pos = config_ns::point_def {points[0], points[1]};
+	}
+
+	return true;
+}
+
 bool parse_json_objects(AST& ast, const Json::Value& conf, const unsigned int idx [[maybe_unused]])
 {
 	bool rc;
@@ -165,6 +279,12 @@ bool parse_json_objects(AST& ast, const Json::Value& conf, const unsigned int id
 		}
 		else if (type == "element") {
 			rc = parse_json_element(ast, object, idx);
+			if (!rc) {
+				return false;
+			}
+		}
+		else if (type == "environment") {
+			rc = parse_json_environment(ast, object, idx);
 			if (!rc) {
 				return false;
 			}
