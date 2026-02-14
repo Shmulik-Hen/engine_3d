@@ -59,7 +59,7 @@ void polygon::drawing::create_bbox(frame_context& frame_ctx)
 	// update the bounding box
 	for (int i = 1; i < (int)_scratch_pad.size(); i++) {
 		curr_pos = _scratch_pad[i];
-		min_pos.x = std::min(prev_pos.x, curr_pos.x);
+		min_pos.x = std::min(min_pos.x, curr_pos.x);
 		min_pos.y = std::min(min_pos.y, curr_pos.y);
 		max_pos.x = std::max(max_pos.x, curr_pos.x);
 		max_pos.y = std::max(max_pos.y, curr_pos.y);
@@ -245,8 +245,8 @@ void polygon::drawing::project(const vector_3& original, frame_context& frame_ct
 	                                       frame_ctx.state->camera.position,
 	                                       frame_ctx.state->proj.focal_len,
 	                                       frame_ctx.state->proj.near_eps);
-	val_t x = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.x + projected.get(X_));
-	val_t y = std::lroundf((unit)frame_ctx.state->vp.vp_mid_pos.y - projected.get(Y_));
+	val_t x = std::lroundf((unit)frame_ctx.state->vp.mid_pos.x + projected.get(X_));
+	val_t y = std::lroundf((unit)frame_ctx.state->vp.mid_pos.y - projected.get(Y_));
 
 	_scratch_pad.push_back({x, y});
 }
@@ -296,12 +296,7 @@ void polygon::drawing::fill(frame_context& frame_ctx)
 
 void polygon::drawing::draw(frame_context& frame_ctx)
 {
-	if (_scratch_pad.size() < 3) {
-		_scratch_pad.clear();
-		return;
-	}
-
-	if (_invalid) {
+	if (_scratch_pad.size() < 3 || _invalid) {
 		_invalid = false;
 		_scratch_pad.clear();
 		return;

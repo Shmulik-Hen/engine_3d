@@ -52,6 +52,8 @@ public:
 
 private:
 
+	graphics_ns::graphics::point min_pos;
+	graphics_ns::graphics::point max_pos;
 	void sort();
 	void draw();
 	void set_defaults();

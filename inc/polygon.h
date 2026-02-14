@@ -59,6 +59,7 @@ class polygon
 		vector_3_ns::vector_3 _debug_fill;
 		graphics_ns::graphics::color_idx _debug_color {graphics_ns::graphics::white};
 		graphics_ns::graphics::color_idx _bbox_color {graphics_ns::graphics::green};
+		graphics_ns::graphics::color_idx _vp_color {graphics_ns::graphics::blue};
 		graphics_ns::graphics::color_idx _normal_color {graphics_ns::graphics::lime};
 		graphics_ns::graphics::color_idx _fill_color {graphics_ns::graphics::red};
 		graphics_ns::graphics::point _normal_point;
@@ -72,7 +73,6 @@ class polygon
 		graphics_ns::color_t get_color() const { return _base_color.c; }
 		graphics_ns::graphics::ARGB getdirect() const { return *_xy_addr; }
 		graphics_ns::graphics::ARGB getpixel(scene_ns::frame_context&, const graphics_ns::graphics::point&);
-		graphics_ns::graphics::frame_buffer clear();
 		void adjust_min(scene_ns::frame_context&, graphics_ns::graphics::point&);
 		void adjust_max(scene_ns::frame_context&, graphics_ns::graphics::point&);
 		void create_bbox(scene_ns::frame_context&);

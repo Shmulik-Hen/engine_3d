@@ -177,25 +177,13 @@ int main(int argc, char** argv)
 
 		if (conf_name == box_name) {
 			box = scene->root->find(scene->root, box_name);
-			if (!box) {
-				sys_error("find object failed");
-			}
 		}
 		else if (conf_name == pyramid_name) {
 			pyramid = scene->root->find(scene->root, pyramid_name);
-			if (!pyramid) {
-				sys_error("find object failed");
-			}
 		}
 		else {
 			box = scene->root->find(scene->root, box_name);
-			if (!box) {
-				sys_error("find object failed");
-			}
 			pyramid = scene->root->find(scene->root, pyramid_name);
-			if (!pyramid) {
-				sys_error("find object failed");
-			}
 		}
 
 #ifdef DEBUG_PRINTS

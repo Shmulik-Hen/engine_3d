@@ -24,6 +24,8 @@ my_scene::my_scene()
 	frame_ctx.draw_vec = std::make_unique<drawvec_t>();
 	frame_ctx.state = std::make_unique<scene_state>();
 	frame_ctx.state->grfx.gfx = std::make_unique<graphics>("Software 3D Engine");
+	min_pos = frame_ctx.state->grfx.gfx->get_min_position();
+	max_pos = frame_ctx.state->grfx.gfx->get_max_position();
 	set_defaults();
 }
 
@@ -105,52 +107,73 @@ void my_scene::build()
 		DBG("build: override: color_idx");
 		frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(static_cast<graphics_ns::graphics::color_idx>(ast.env.color_idx.value()));
 	}
+
 	if (ast.env.light_type.has_value()) {
 		DBG("build: override: light_type");
 		frame_ctx.state->light.type = ast.env.light_type.value() ? light_type::point : light_type::directional;
 	}
+
 	if (ast.env.light_direction.has_value()) {
 		DBG("build: override: light_direction");
 		frame_ctx.state->light.direction = ast.env.light_direction.value();
 	}
+
 	if (ast.env.light_position.has_value()) {
 		DBG("build: override: light_position");
 		frame_ctx.state->light.position = ast.env.light_position.value();
 	}
+
 	if (ast.env.camera_position.has_value()) {
 		DBG("build: override: camera_position");
 		frame_ctx.state->camera.position = ast.env.camera_position.value();
 	}
+
 	if (ast.env.focal_len.has_value()) {
 		DBG("build: override: focal_len");
 		frame_ctx.state->proj.focal_len = ast.env.focal_len.value();
 	}
+
 	if (ast.env.near_eps.has_value()) {
 		DBG("build: override: near_eps");
 		frame_ctx.state->proj.near_eps = ast.env.near_eps.value();
 	}
+
+	bool vp_changed = false;
 	if (ast.env.min_pos.has_value()) {
-		DBG("build: override: min_pos");
-		frame_ctx.state->vp.min_pos.x = ast.env.min_pos.value().x;
-		frame_ctx.state->vp.min_pos.y = ast.env.min_pos.value().y;
+		vp_changed = true;
+		DBG("build: override: 1: min_pos.x: " << DEC(frame_ctx.state->vp.min_pos.x, 4) << ", min_pos.y: " << DEC(frame_ctx.state->vp.min_pos.y, 4));
+		frame_ctx.state->vp.min_pos.x = std::min(min_pos.x, ast.env.min_pos.value().x);
+		frame_ctx.state->vp.min_pos.y = std::min(min_pos.y, ast.env.min_pos.value().y);
+		DBG("build: override: 2: min_pos.x: " << DEC(frame_ctx.state->vp.min_pos.x, 4) << ", min_pos.y: " << DEC(frame_ctx.state->vp.min_pos.y, 4));
 	}
+
 	if (ast.env.max_pos.has_value()) {
-		DBG("build: override: max_pos");
-		frame_ctx.state->vp.max_pos.x = ast.env.max_pos.value().x;
-		frame_ctx.state->vp.max_pos.y = ast.env.max_pos.value().y;
+		vp_changed = true;
+		DBG("build: override: 1: max_pos.x: " << DEC(frame_ctx.state->vp.max_pos.x, 4) << ", max_pos.y: " << DEC(frame_ctx.state->vp.max_pos.y, 4));
+		frame_ctx.state->vp.max_pos.x = std::min(max_pos.x, ast.env.max_pos.value().x);
+		frame_ctx.state->vp.max_pos.y = std::min(max_pos.y, ast.env.max_pos.value().y);
+		DBG("build: override: 2: max_pos.x: " << DEC(frame_ctx.state->vp.max_pos.x, 4) << ", max_pos.y: " << DEC(frame_ctx.state->vp.max_pos.y, 4));
 	}
+
+	if (vp_changed) {
+		frame_ctx.state->vp.mid_pos.x = frame_ctx.state->vp.min_pos.x + (frame_ctx.state->vp.max_pos.x - frame_ctx.state->vp.min_pos.x) / 2;
+		frame_ctx.state->vp.mid_pos.y = frame_ctx.state->vp.min_pos.y + (frame_ctx.state->vp.max_pos.y - frame_ctx.state->vp.min_pos.y) / 2;
+		DBG("build: override: mid_pos.x: " << DEC(frame_ctx.state->vp.mid_pos.x, 4) << ", mid_pos.y: " << DEC(frame_ctx.state->vp.mid_pos.y, 4));
+	}
+
 	if (ast.env.vp_min_pos.has_value()) {
-		DBG("build: override: vp_min_pos");
-		frame_ctx.state->vp.vp_min_pos.x = ast.env.vp_min_pos.value().x;
-		frame_ctx.state->vp.vp_min_pos.y = ast.env.vp_min_pos.value().y;
+		DBG("build: override: 1: vp_min_pos.x: " << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << ", vp_min_pos.y: " << DEC(frame_ctx.state->vp.vp_min_pos.y, 4));
+		frame_ctx.state->vp.vp_min_pos.x = std::max(min_pos.x, ast.env.vp_min_pos.value().x);
+		frame_ctx.state->vp.vp_min_pos.y = std::max(min_pos.y, ast.env.vp_min_pos.value().y);
+		DBG("build: override: 2: vp_min_pos.x: " << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << ", vp_min_pos.y: " << DEC(frame_ctx.state->vp.vp_min_pos.y, 4));
 	}
+
 	if (ast.env.vp_max_pos.has_value()) {
-		DBG("build: override: vp_max_pos");
-		frame_ctx.state->vp.vp_max_pos.x = ast.env.vp_max_pos.value().x;
-		frame_ctx.state->vp.vp_max_pos.y = ast.env.vp_max_pos.value().y;
+		DBG("build: override: 1: vp_max_pos.x: " << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << ", vp_max_pos.y: " << DEC(frame_ctx.state->vp.vp_max_pos.y, 4));
+		frame_ctx.state->vp.vp_max_pos.x = std::min(max_pos.x, ast.env.vp_max_pos.value().x);
+		frame_ctx.state->vp.vp_max_pos.y = std::min(max_pos.y, ast.env.vp_max_pos.value().y);
+		DBG("build: override: 2: vp_max_pos.x: " << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << ", vp_max_pos.y: " << DEC(frame_ctx.state->vp.vp_max_pos.y, 4));
 	}
-	frame_ctx.state->vp.vp_mid_pos.x = frame_ctx.state->vp.vp_min_pos.x + (frame_ctx.state->vp.vp_max_pos.x - frame_ctx.state->vp.vp_min_pos.x) / 2;
-	frame_ctx.state->vp.vp_mid_pos.y = frame_ctx.state->vp.vp_min_pos.y + (frame_ctx.state->vp.vp_max_pos.y - frame_ctx.state->vp.vp_min_pos.y) / 2;
 }
 
 void my_scene::update()
@@ -237,18 +260,19 @@ void my_scene::set_defaults()
 	frame_ctx.state->proj.near_eps = UNIT;
 	DBG("projection: focal len: " << FLT(frame_ctx.state->proj.focal_len, 3) << ", near_eps: " << FLT(frame_ctx.state->proj.near_eps, 3));
 
+	// screen
+	frame_ctx.state->vp.min_pos = min_pos;
+	frame_ctx.state->vp.max_pos = max_pos;
 	// viewport
-	frame_ctx.state->vp.min_pos = frame_ctx.state->grfx.gfx->get_min_position();
-	frame_ctx.state->vp.max_pos = frame_ctx.state->grfx.gfx->get_max_position();
-	frame_ctx.state->vp.vp_min_pos = frame_ctx.state->vp.min_pos;
-	frame_ctx.state->vp.vp_max_pos = frame_ctx.state->vp.max_pos;
-	frame_ctx.state->vp.vp_mid_pos.x = frame_ctx.state->vp.vp_min_pos.x + (frame_ctx.state->vp.vp_max_pos.x - frame_ctx.state->vp.vp_min_pos.x) / 2;
-	frame_ctx.state->vp.vp_mid_pos.y = frame_ctx.state->vp.vp_min_pos.y + (frame_ctx.state->vp.vp_max_pos.y - frame_ctx.state->vp.vp_min_pos.y) / 2;
+	frame_ctx.state->vp.vp_min_pos = min_pos;
+	frame_ctx.state->vp.vp_max_pos = max_pos;
+	frame_ctx.state->vp.mid_pos.x = frame_ctx.state->vp.vp_min_pos.x + (frame_ctx.state->vp.vp_max_pos.x - frame_ctx.state->vp.vp_min_pos.x) / 2;
+	frame_ctx.state->vp.mid_pos.y = frame_ctx.state->vp.vp_min_pos.y + (frame_ctx.state->vp.vp_max_pos.y - frame_ctx.state->vp.vp_min_pos.y) / 2;
 
 	DBG("min_pos: {" << DEC(frame_ctx.state->vp.min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.min_pos.y, 4) << "}");
 	DBG("max_pos: {" << DEC(frame_ctx.state->vp.max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.max_pos.y, 4) << "}");
+	DBG("mid_pos: {" << DEC(frame_ctx.state->vp.mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.mid_pos.y, 4) << "}");
 	DBG("vp_min_pos: {" << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_min_pos.y, 4) << "}");
-	DBG("vp_mid_pos: {" << DEC(frame_ctx.state->vp.vp_mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_mid_pos.y, 4) << "}");
 	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
 }
 

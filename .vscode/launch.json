@@ -9,7 +9,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/engine_3d",
-			"args": [ "./config/config.json", "box" ],
+			"args": [ "../config/config.json", "box" ],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin",
 			"environment": [ ],

@@ -58,9 +58,9 @@ struct viewport_state
 	// screen min/max points
 	graphics_ns::graphics::point min_pos;
 	graphics_ns::graphics::point max_pos;
+	graphics_ns::graphics::point mid_pos;
 	// view port min/mid/max points - can be screen size or less
 	graphics_ns::graphics::point vp_min_pos;
-	graphics_ns::graphics::point vp_mid_pos;
 	graphics_ns::graphics::point vp_max_pos;
 };
 
