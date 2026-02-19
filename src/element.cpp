@@ -23,13 +23,13 @@ void element::init_from_def(const polylist_t& poly_list, element* root, const co
 	}
 
 	if (def.parent.length()) {
-		element* parrent = find(root, def.parent);
-		if (!parrent) {
-			sys_error("element::read find error - _parrent_name");
+		element* parent = find(root, def.parent);
+		if (!parent) {
+			sys_error("element::read find error - _parent_name");
 		}
-		_parrent = parrent;
-		_parrent_name = def.parent;
-		add_node(parrent);
+		_parent = parent;
+		_parent_name = def.parent;
+		add_node(parent);
 	}
 
 	_polygons.clear();
@@ -46,7 +46,7 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 {
 	LINE line;
 	int len;
-	element* parrent;
+	element* parent;
 	polygon* poly;
 	std::string s;
 	bool rc, finish = false;
@@ -68,17 +68,17 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 			_name = line;
 			break;
 		case 't':
-			// read element's parrent name
+			// read element's parent name
 			len = read_word(ifs, line);
 			if (len) {
-				_parrent_name = line;
-				parrent = find(root, _parrent_name);
-				if (!parrent) {
-					sys_error("element::read find error - _parrent_name");
+				_parent_name = line;
+				parent = find(root, _parent_name);
+				if (!parent) {
+					sys_error("element::read find error - _parent_name");
 				}
 
-				add_node(parrent);
-				_parrent = parrent;
+				add_node(parent);
+				_parent = parent;
 			}
 			break;
 		case 'p':
@@ -127,7 +127,7 @@ void element::print() const
 #ifdef DEBUG_PRINTS
 	DBG(STR("element:", 1));
 	DBG(STR("  name: ", 1) << _name);
-	DBG(STR("  parrent_name: ", 1) << _parrent_name);
+	DBG(STR("  parent_name: ", 1) << _parent_name);
 	DBG(STR("  active: ", 1) << _active);
 	DBG(STR("   dirty: ", 1) << _dirty);
 	_ini_att.print();
@@ -189,7 +189,7 @@ void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& 
 		return;
 	}
 
-	if (!_parrent) {
+	if (!_parent) {
 		// only once for root
 		if (!_mats_prepared) {
 			_trans_mat.prep_trans_mat(_ini_att);
@@ -222,9 +222,9 @@ void element::update(frame_context& frame_ctx)
 {
 	matrix m_trans, m_rot;
 
-	if (_parrent) {
-		m_trans = _parrent->_trans_mat;
-		m_rot = _parrent->_rot_mat;
+	if (_parent) {
+		m_trans = _parent->_trans_mat;
+		m_rot = _parent->_rot_mat;
 	}
 	else {
 		m_trans = matrix_ns::get_unit_mat();

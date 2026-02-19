@@ -120,7 +120,7 @@
 				{
 					"type": "element",
 					"name": "world",
-					"parrent": "",
+					"parent": "",
 					"active": true,
 					"objects": [
 						{
@@ -132,8 +132,8 @@
 				},
 				{
 					"type": "element",
-					"name": "gimble",
-					"parrent": "world",
+					"name": "gimbal",
+					"parent": "world",
 					"active": true,
 					"objects": [
 						{
@@ -146,7 +146,7 @@
 				{
 					"type": "element",
 					"name": "cube",
-					"parrent": "gimble",
+					"parent": "gimbal",
 					"active": true,
 					"objects": [
 						{
@@ -249,7 +249,7 @@
 				{
 					"type": "element",
 					"name": "world",
-					"parrent": "",
+					"parent": "",
 					"active": true,
 					"objects": [
 						{
@@ -261,8 +261,8 @@
 				},
 				{
 					"type": "element",
-					"name": "gimble",
-					"parrent": "world",
+					"name": "gimbal",
+					"parent": "world",
 					"active": true,
 					"objects": [
 						{
@@ -275,7 +275,7 @@
 				{
 					"type": "element",
 					"name": "pyramid",
-					"parrent": "gimble",
+					"parent": "gimbal",
 					"active": true,
 					"objects": [
 						{
@@ -486,7 +486,7 @@
 				{
 					"type": "element",
 					"name": "world",
-					"parrent": "",
+					"parent": "",
 					"active": true,
 					"objects": [
 						{
@@ -498,8 +498,8 @@
 				},
 				{
 					"type": "element",
-					"name": "gimble",
-					"parrent": "world",
+					"name": "gimbal",
+					"parent": "world",
 					"active": true,
 					"objects": [
 						{
@@ -517,7 +517,7 @@
 				{
 					"type": "element",
 					"name": "cube",
-					"parrent": "gimble",
+					"parent": "gimbal",
 					"active": true,
 					"objects": [
 						{
@@ -531,7 +531,7 @@
 				{
 					"type": "element",
 					"name": "pyramid",
-					"parrent": "gimble",
+					"parent": "gimbal",
 					"active": true,
 					"objects": [
 						{

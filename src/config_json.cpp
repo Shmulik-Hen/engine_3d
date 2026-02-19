@@ -30,7 +30,7 @@ bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const 
 {
 	DBG("parse_vector: " << idx << ", num points: " << point.size());
 	if (point.size() != NUM_COORDS) {
-		ERR("parse_vector: idx: " << idx << "bad coord number");
+		ERR("parse_vector: bad coord number");
 		return false;
 	}
 
@@ -45,6 +45,11 @@ bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const 
 bool parse_json_pair(int points[2], const Json::Value& point, const unsigned int idx [[maybe_unused]])
 {
 	DBG("parse_pair: " << idx << ", num points: " << point.size());
+	if (point.size() != 2) {
+		ERR("parse_pair: idx: " << idx << " bad points number");
+		return false;
+	}
+
 	points[0] = point[0].asInt();
 	points[1] = point[1].asInt();
 
@@ -119,8 +124,8 @@ bool parse_json_element(AST& ast, const Json::Value& element, const unsigned int
 	DBG("parse_element: " << idx << ", name: " << element["name"]);
 	ed.name = element["name"].asString();
 
-	DBG("parse_element: " << idx << ", parrent: " << element["parrent"]);
-	ed.parent = element["parrent"].asString();
+	DBG("parse_element: " << idx << ", parent: " << element["parent"]);
+	ed.parent = element["parent"].asString();
 
 	DBG("parse_element: " << idx << ", active: " << element["active"]);
 	ed.active = element["active"].asBool();

@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 		if (optind < argc) {
 			DBG("Non-option arguments: ");
 			while (optind < argc) {
-				DBG(rgv[optind]);
+				DBG(argv[optind]);
 				if (!given_file.length()) {
 					given_file = argv[optind];
 					DBG("got a configuration file: " << given_file);
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 
 		// find the relevant elements to work with
 		const std::string world_name = "world";
-		const std::string gimble_name = "gimble";
+		const std::string gimbal_name = "gimbal";
 		const std::string cube_name = "cube";
 		const std::string pyramid_name = "pyramid";
 		element* cube = nullptr;
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 			sys_error("find world failed");
 		}
 
-		element* gimble = scene->root->find(scene->root, gimble_name);
+		element* gimbal = scene->root->find(scene->root, gimbal_name);
 
 		if (conf_name == cube_name) {
 			cube = scene->root->find(scene->root, cube_name);
@@ -207,12 +207,12 @@ int main(int argc, char** argv)
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			if (gimble) {
-				if (gimble->has_run_attrib()) {
-					gimble->update();
+			if (gimbal) {
+				if (gimbal->has_run_attrib()) {
+					gimbal->update();
 				}
 				else {
-					gimble->update(keep_moving);
+					gimbal->update(keep_moving);
 				}
 			}
 

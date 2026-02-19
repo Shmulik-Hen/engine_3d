@@ -50,8 +50,8 @@ private:
 
 	polygon_ns::polygon::polylist_t _polygons;
 	std::string _name;
-	std::string _parrent_name;
-	element* _parrent {nullptr}; // raw pointer, non-owning
+	std::string _parent_name;
+	element* _parent {nullptr}; // raw pointer, non-owning
 	matrix_ns::matrix _trans_mat;
 	matrix_ns::matrix _rot_mat;
 	attrib_ns::attrib _ini_att;

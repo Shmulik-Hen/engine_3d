@@ -13,7 +13,9 @@ constexpr unit LIGHT_ELEV(20.0f);  // light position on Y axis
 constexpr unit DEG(180.0f);
 constexpr unit PI(3.14159265358979323846f);
 constexpr unit DEG_TO_RAD = PI / DEG;
+constexpr unit NORMAL_SCALE_FACTOR(150.0f);
 
 // Scale factor for EPSILON when computing the squared tolerance
 // for detecting nearly-duplicate polygon vertices.
 static constexpr unit CONSEC_TOLERANCE_SCALE = 10.0f;
+

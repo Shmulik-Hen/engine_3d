@@ -70,7 +70,7 @@ void my_scene::parse(const std::string& filename, const std::string& conf_name)
 	DBG("parse: number of elements: " << (int)ast.elements.size());
 	for (const auto& elem : ast.elements) {
 		DBG("parse: element: name: " << elem.name);
-		DBG("parse: element: parrent: " << elem.parent);
+		DBG("parse: element: parent: " << elem.parent);
 		DBG("parse: element: active: " << elem.active);
 		DBG("parse: element: att");
 		elem.ini_att.print();
@@ -164,13 +164,13 @@ void my_scene::build()
 	}
 
 	if (ast.run.loops.has_value()) {
-		DBG("build: override: 1: loops: " << frame_ctx.state->loops);
+		DBG("build: override: 1: loops: " << frame_ctx.state->run.loops);
 		frame_ctx.state->run.loops = ast.run.loops.value();
 		DBG("build: override: 2: loops: " << frame_ctx.state->run.loops);
 	}
 
 	if (ast.run.loop_delay.has_value()) {
-		DBG("build: override: 1: loop_delay: " << frame_ctx.state->loop_delay);
+		DBG("build: override: 1: loop_delay: " << frame_ctx.state->run.loop_delay);
 		frame_ctx.state->run.loop_delay = ast.run.loop_delay.value();
 		DBG("build: override: 2: loop_delay: " << frame_ctx.state->run.loop_delay);
 	}
