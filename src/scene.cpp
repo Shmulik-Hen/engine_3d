@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 // #define DEBUG_PRINTS
 #include "common.h"
@@ -19,13 +21,13 @@ using element = element_ns::element;
 using graphics = graphics_ns::graphics;
 using polygon = polygon_ns::polygon;
 
+bool scene_ns::my_scene::_keep_going = true;
+
 my_scene::my_scene()
 {
 	frame_ctx.draw_vec = std::make_unique<drawvec_t>();
 	frame_ctx.state = std::make_unique<scene_state>();
 	frame_ctx.state->grfx.gfx = std::make_unique<graphics>("Software 3D Engine");
-	min_pos = frame_ctx.state->grfx.gfx->get_min_position();
-	max_pos = frame_ctx.state->grfx.gfx->get_max_position();
 	set_defaults();
 }
 
@@ -161,18 +163,16 @@ void my_scene::build()
 		DBG("build: override: mid_pos.x: " << DEC(frame_ctx.state->vp.mid_pos.x, 4) << ", mid_pos.y: " << DEC(frame_ctx.state->vp.mid_pos.y, 4));
 	}
 
-	if (ast.env.vp_min_pos.has_value()) {
-		DBG("build: override: 1: vp_min_pos.x: " << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << ", vp_min_pos.y: " << DEC(frame_ctx.state->vp.vp_min_pos.y, 4));
-		frame_ctx.state->vp.vp_min_pos.x = std::max(min_pos.x, ast.env.vp_min_pos.value().x);
-		frame_ctx.state->vp.vp_min_pos.y = std::max(min_pos.y, ast.env.vp_min_pos.value().y);
-		DBG("build: override: 2: vp_min_pos.x: " << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << ", vp_min_pos.y: " << DEC(frame_ctx.state->vp.vp_min_pos.y, 4));
+	if (ast.run.loops.has_value()) {
+		DBG("build: override: 1: loops: " << frame_ctx.state->loops);
+		frame_ctx.state->run.loops = ast.run.loops.value();
+		DBG("build: override: 2: loops: " << frame_ctx.state->run.loops);
 	}
 
-	if (ast.env.vp_max_pos.has_value()) {
-		DBG("build: override: 1: vp_max_pos.x: " << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << ", vp_max_pos.y: " << DEC(frame_ctx.state->vp.vp_max_pos.y, 4));
-		frame_ctx.state->vp.vp_max_pos.x = std::min(max_pos.x, ast.env.vp_max_pos.value().x);
-		frame_ctx.state->vp.vp_max_pos.y = std::min(max_pos.y, ast.env.vp_max_pos.value().y);
-		DBG("build: override: 2: vp_max_pos.x: " << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << ", vp_max_pos.y: " << DEC(frame_ctx.state->vp.vp_max_pos.y, 4));
+	if (ast.run.loop_delay.has_value()) {
+		DBG("build: override: 1: loop_delay: " << frame_ctx.state->loop_delay);
+		frame_ctx.state->run.loop_delay = ast.run.loop_delay.value();
+		DBG("build: override: 2: loop_delay: " << frame_ctx.state->run.loop_delay);
 	}
 }
 
@@ -211,6 +211,8 @@ void my_scene::draw()
 
 void my_scene::render()
 {
+	static int loops = frame_ctx.state->run.loops;
+
 	graphics* gfx = frame_ctx.state->grfx.gfx.get();
 
 	// Acquire backbuffer for this frame and clear it
@@ -227,6 +229,19 @@ void my_scene::render()
 
 	// DBG("show");
 	gfx->present();
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(frame_ctx.state->run.loop_delay));
+
+	if (frame_ctx.state->run.loops > 0) {
+		if (--loops < 1) {
+			_keep_going = false;
+		}
+	}
+}
+
+bool my_scene::keep_going()
+{
+	return _keep_going;
 }
 
 void my_scene::set_defaults()
@@ -239,6 +254,8 @@ void my_scene::set_defaults()
 	// graphics
 	frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(graphics_ns::graphics::color_idx::black);
 	DBG("clear color: " << HEX(frame_ctx.state->grfx.clear_color.c, 8));
+	min_pos = frame_ctx.state->grfx.gfx->get_min_position();
+	max_pos = frame_ctx.state->grfx.gfx->get_max_position();
 
 	// light
 	frame_ctx.state->light.type = light_type::directional;
@@ -263,17 +280,15 @@ void my_scene::set_defaults()
 	// screen
 	frame_ctx.state->vp.min_pos = min_pos;
 	frame_ctx.state->vp.max_pos = max_pos;
-	// viewport
-	frame_ctx.state->vp.vp_min_pos = min_pos;
-	frame_ctx.state->vp.vp_max_pos = max_pos;
-	frame_ctx.state->vp.mid_pos.x = frame_ctx.state->vp.vp_min_pos.x + (frame_ctx.state->vp.vp_max_pos.x - frame_ctx.state->vp.vp_min_pos.x) / 2;
-	frame_ctx.state->vp.mid_pos.y = frame_ctx.state->vp.vp_min_pos.y + (frame_ctx.state->vp.vp_max_pos.y - frame_ctx.state->vp.vp_min_pos.y) / 2;
+	frame_ctx.state->vp.mid_pos.x = min_pos.x + (max_pos.x - min_pos.x) / 2;
+	frame_ctx.state->vp.mid_pos.y = min_pos.y + (max_pos.y - min_pos.y) / 2;
 
 	DBG("min_pos: {" << DEC(frame_ctx.state->vp.min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.min_pos.y, 4) << "}");
 	DBG("max_pos: {" << DEC(frame_ctx.state->vp.max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.max_pos.y, 4) << "}");
 	DBG("mid_pos: {" << DEC(frame_ctx.state->vp.mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.mid_pos.y, 4) << "}");
-	DBG("vp_min_pos: {" << DEC(frame_ctx.state->vp.vp_min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_min_pos.y, 4) << "}");
-	DBG("vp_max_pos: {" << DEC(frame_ctx.state->vp.vp_max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.vp_max_pos.y, 4) << "}");
+
+	frame_ctx.state->run.loops = -1;
+	frame_ctx.state->run.loop_delay = 20;
 }
 
 } // namespace scene_ns

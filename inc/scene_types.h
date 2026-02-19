@@ -59,9 +59,12 @@ struct viewport_state
 	graphics_ns::graphics::point min_pos;
 	graphics_ns::graphics::point max_pos;
 	graphics_ns::graphics::point mid_pos;
-	// view port min/mid/max points - can be screen size or less
-	graphics_ns::graphics::point vp_min_pos;
-	graphics_ns::graphics::point vp_max_pos;
+};
+
+struct runtime_state
+{
+	int loops;
+	int loop_delay;
 };
 
 struct scene_state
@@ -71,6 +74,7 @@ struct scene_state
 	camera_state camera;
 	projection_state proj;
 	viewport_state vp;
+	runtime_state run;
 };
 
 using drawvec_t = std::vector<polygon_ns::polygon*>;

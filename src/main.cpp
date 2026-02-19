@@ -1,5 +1,3 @@
-#include <chrono>
-#include <thread>
 #include <filesystem>
 #include <getopt.h>
 
@@ -20,7 +18,7 @@ using input_state = graphics_ns::graphics::input_state;
 namespace fs = std::filesystem;
 
 const std::string version = "0.9";
-const std::string def_conf_name = "box";
+const std::string def_conf_name = "cube";
 const std::string def_conf_path = "../config/";
 const std::string def_file_name = "config";
 #ifdef USING_JSON
@@ -165,9 +163,10 @@ int main(int argc, char** argv)
 
 		// find the relevant elements to work with
 		const std::string world_name = "world";
-		const std::string box_name = "box";
+		const std::string gimble_name = "gimble";
+		const std::string cube_name = "cube";
 		const std::string pyramid_name = "pyramid";
-		element* box = nullptr;
+		element* cube = nullptr;
 		element* pyramid = nullptr;
 
 		element* world = scene->root->find(scene->root, world_name);
@@ -175,14 +174,16 @@ int main(int argc, char** argv)
 			sys_error("find world failed");
 		}
 
-		if (conf_name == box_name) {
-			box = scene->root->find(scene->root, box_name);
+		element* gimble = scene->root->find(scene->root, gimble_name);
+
+		if (conf_name == cube_name) {
+			cube = scene->root->find(scene->root, cube_name);
 		}
 		else if (conf_name == pyramid_name) {
 			pyramid = scene->root->find(scene->root, pyramid_name);
 		}
 		else {
-			box = scene->root->find(scene->root, box_name);
+			cube = scene->root->find(scene->root, cube_name);
 			pyramid = scene->root->find(scene->root, pyramid_name);
 		}
 
@@ -197,7 +198,8 @@ int main(int argc, char** argv)
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib box_keep_moving(1, 0, 0, 0, 0, 0, 1);
+		attrib gimble_keep_moving(0, 0, 0, 0, 0, 0, 1);
+		attrib cube_keep_moving(0, 1, 0, 0, 0, 0, 1);
 		attrib pyramid_keep_moving(0, 1, 0, 0, 0, 0, 1);
 
 		input_state in {};
@@ -207,8 +209,12 @@ int main(int argc, char** argv)
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
-			if (box) {
-				box->update(box_keep_moving);
+			if (gimble) {
+				gimble->update(gimble_keep_moving);
+			}
+
+			if (cube) {
+				cube->update(cube_keep_moving);
 			}
 
 			if (pyramid) {
@@ -217,8 +223,9 @@ int main(int argc, char** argv)
 
 			scene->update();
 			scene->render();
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+			if (!scene->keep_going()) {
+				break;
+			}
 		}
 
 		return 0;

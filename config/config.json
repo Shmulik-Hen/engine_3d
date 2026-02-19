@@ -7,11 +7,11 @@
 	"version": "0.0.1",
 	"configurations": [
 		{
-			"name": "box",
+			"name": "cube",
 			"objects": [
 				{
 					"type": "polygon",
-					"name": "b_front",
+					"name": "c_front",
 					"color_idx": 4,
 					"force": false,
 					"objects": [
@@ -29,7 +29,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_back",
+					"name": "c_back",
 					"color_idx": 6,
 					"force": false,
 					"objects": [
@@ -47,7 +47,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_left",
+					"name": "c_left",
 					"color_idx": 8,
 					"force": false,
 					"objects": [
@@ -65,7 +65,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_right",
+					"name": "c_right",
 					"color_idx": 10,
 					"force": false,
 					"objects": [
@@ -83,7 +83,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_top",
+					"name": "c_top",
 					"color_idx": 12,
 					"force": false,
 					"objects": [
@@ -101,7 +101,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_bottom",
+					"name": "c_bottom",
 					"color_idx": 14,
 					"force": false,
 					"objects": [
@@ -132,7 +132,7 @@
 				},
 				{
 					"type": "element",
-					"name": "box",
+					"name": "gimble",
 					"parrent": "world",
 					"active": true,
 					"objects": [
@@ -140,8 +140,20 @@
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
+					]
+				},
+				{
+					"type": "element",
+					"name": "cube",
+					"parrent": "gimble",
+					"active": true,
+					"objects": [
+						{
+							"type": "attribute",
+							"attrib": [ 0, 0, 45, -250, 0, 0, 1 ]
+						}
 					],
-					"polygons": [ "b_front", "b_back", "b_left", "b_right", "b_top", "b_bottom" ]
+					"polygons": [ "c_front", "c_back", "c_left", "c_right", "c_top", "c_bottom" ]
 				},
 				{
 					"type": "environment",
@@ -151,7 +163,8 @@
 					"light_direction": [ 0, 0, -1 ],
 					"light_position": [ 0, 20, -74 ],
 					"focal_len": 1500,
-					"near_eps": 1
+					"near_eps": 1,
+					"loop_delay": 10
 				}
 			]
 		},
@@ -240,8 +253,20 @@
 				},
 				{
 					"type": "element",
-					"name": "pyramid",
+					"name": "gimble",
 					"parrent": "world",
+					"active": true,
+					"objects": [
+						{
+							"type": "attribute",
+							"attrib": [ 20, 0, 0, 0, 0, 0, 1 ]
+						}
+					]
+				},
+				{
+					"type": "element",
+					"name": "pyramid",
+					"parrent": "gimble",
 					"active": true,
 					"objects": [
 						{
@@ -269,7 +294,7 @@
 			"objects": [
 				{
 					"type": "polygon",
-					"name": "b_front",
+					"name": "c_front",
 					"color_idx": 4,
 					"force": false,
 					"objects": [
@@ -287,7 +312,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_back",
+					"name": "c_back",
 					"color_idx": 6,
 					"force": false,
 					"objects": [
@@ -305,7 +330,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_left",
+					"name": "c_left",
 					"color_idx": 8,
 					"force": false,
 					"objects": [
@@ -323,7 +348,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_right",
+					"name": "c_right",
 					"color_idx": 10,
 					"force": false,
 					"objects": [
@@ -341,7 +366,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_top",
+					"name": "c_top",
 					"color_idx": 12,
 					"force": false,
 					"objects": [
@@ -359,7 +384,7 @@
 				},
 				{
 					"type": "polygon",
-					"name": "b_bottom",
+					"name": "c_bottom",
 					"color_idx": 14,
 					"force": false,
 					"objects": [
@@ -457,7 +482,7 @@
 				},
 				{
 					"type": "element",
-					"name": "box",
+					"name": "gimble",
 					"parrent": "world",
 					"active": true,
 					"objects": [
@@ -465,18 +490,30 @@
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
-					],
-					"polygons": [ "b_front", "b_back", "b_left", "b_right", "b_top", "b_bottom" ]
+					]
 				},
 				{
 					"type": "element",
-					"name": "pyramid",
-					"parrent": "world",
+					"name": "cube",
+					"parrent": "gimble",
 					"active": true,
 					"objects": [
 						{
 							"type": "attribute",
-							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
+							"attrib": [ 22.5, 0, 0, 450, 0, 400, 1 ]
+						}
+					],
+					"polygons": [ "c_front", "c_back", "c_left", "c_right", "c_top", "c_bottom" ]
+				},
+				{
+					"type": "element",
+					"name": "pyramid",
+					"parrent": "gimble",
+					"active": true,
+					"objects": [
+						{
+							"type": "attribute",
+							"attrib": [ 22.5, 0, 0, -450, 0, 400, 1 ]
 						}
 					],
 					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
@@ -489,7 +526,8 @@
 					"light_direction": [ 0, 0, -1 ],
 					"light_position": [ 0, 20, -74 ],
 					"focal_len": 1500,
-					"near_eps": 1
+					"near_eps": 1,
+					"loop_delay": 10
 				}
 			]
 		}

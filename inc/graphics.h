@@ -94,8 +94,8 @@ public:
 		color_t* pixels {nullptr}; // ARGB8888
 		val_t width {0};
 		val_t height {0};
-		val_t pitch_bytes {0}; // bytes per row (typically width * 4)
-		val_t pitch_pixels {0};
+		val_t pitch_bytes {0};  // bytes per row (typically width * 4)
+		val_t pitch_pixels {0}; // pixels per row (width)
 	};
 
 	struct input_state

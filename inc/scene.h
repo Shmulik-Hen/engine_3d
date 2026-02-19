@@ -49,9 +49,11 @@ public:
 	void build();
 	void update();
 	void render();
+	bool keep_going();
 
 private:
 
+	static bool _keep_going;
 	graphics_ns::graphics::point min_pos;
 	graphics_ns::graphics::point max_pos;
 	void sort();
