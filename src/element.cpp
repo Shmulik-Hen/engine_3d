@@ -17,7 +17,10 @@ void element::init_from_def(const polylist_t& poly_list, element* root, const co
 {
 	_name = def.name;
 	_active = def.active;
-	_att = def.att;
+	_ini_att = def.ini_att;
+	if (def.run_att.has_value()) {
+		_run_att = def.run_att.value();
+	}
 
 	if (def.parent.length()) {
 		element* parrent = find(root, def.parent);
@@ -104,7 +107,7 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 			break;
 		case 'a':
 			// element's attribute
-			rc = _att.read(ifs);
+			rc = _ini_att.read(ifs);
 			if (!rc) {
 				sys_error("element::read error attrib");
 			}
@@ -127,7 +130,7 @@ void element::print() const
 	DBG(STR("  parrent_name: ", 1) << _parrent_name);
 	DBG(STR("  active: ", 1) << _active);
 	DBG(STR("   dirty: ", 1) << _dirty);
-	_att.print();
+	_ini_att.print();
 
 	if (!_polygons.empty()) {
 		DBG("num polygons: " << (int)_polygons.size());
@@ -168,8 +171,16 @@ element* element::find(element* root, const std::string& s) const
 
 void element::update(const attrib& att)
 {
-	_att += att;
+	_ini_att += att;
 	_dirty = true;
+}
+
+void element::update()
+{
+	if (_run_att.has_value()) {
+		_ini_att += _run_att.value();
+		_dirty = true;
+	}
 }
 
 void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& frame_ctx)
@@ -181,14 +192,14 @@ void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& 
 	if (!_parrent) {
 		// only once for root
 		if (!_mats_prepared) {
-			_trans_mat.prep_trans_mat(_att);
-			_rot_mat.prep_rot_mat(_att);
+			_trans_mat.prep_trans_mat(_ini_att);
+			_rot_mat.prep_rot_mat(_ini_att);
 			_mats_prepared = true;
 		}
 	}
 	else {
-		_trans_mat.prep_trans_mat(_att);
-		_rot_mat.prep_rot_mat(_att);
+		_trans_mat.prep_trans_mat(_ini_att);
+		_rot_mat.prep_rot_mat(_ini_att);
 	}
 
 	if (_dirty) {

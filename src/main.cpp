@@ -198,9 +198,7 @@ int main(int argc, char** argv)
 #endif // DEBUG_PRINTS
 
 		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
-		attrib gimble_keep_moving(0, 0, 0, 0, 0, 0, 1);
-		attrib cube_keep_moving(0, 1, 0, 0, 0, 0, 1);
-		attrib pyramid_keep_moving(0, 1, 0, 0, 0, 0, 1);
+		attrib keep_moving(0, 0, 0, 0, 0, 0, 1);
 
 		input_state in {};
 		graphics* gfx = scene->frame_ctx.state->grfx.gfx.get();
@@ -210,15 +208,30 @@ int main(int argc, char** argv)
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
 			if (gimble) {
-				gimble->update(gimble_keep_moving);
+				if (gimble->has_run_attrib()) {
+					gimble->update();
+				}
+				else {
+					gimble->update(keep_moving);
+				}
 			}
 
 			if (cube) {
-				cube->update(cube_keep_moving);
+				if (cube->has_run_attrib()) {
+					cube->update();
+				}
+				else {
+					cube->update(keep_moving);
+				}
 			}
 
 			if (pyramid) {
-				pyramid->update(pyramid_keep_moving);
+				if (pyramid->has_run_attrib()) {
+					pyramid->update();
+				}
+				else {
+					pyramid->update(keep_moving);
+				}
 			}
 
 			scene->update();

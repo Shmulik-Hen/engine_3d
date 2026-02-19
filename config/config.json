@@ -124,8 +124,8 @@
 					"active": true,
 					"objects": [
 						{
-							"type": "attribute",
 							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
 					]
@@ -137,8 +137,9 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
-							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
+							"attrib": [ 20, 0, 0, 0, 0, 0, 1 ]
 						}
 					]
 				},
@@ -149,8 +150,14 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 0, 0, 45, -250, 0, 0, 1 ]
+						},
+						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+							"type": "attribute",
+							"motion": [ 0, -1, 0, 0, 0, 0, 1 ]
 						}
 					],
 					"polygons": [ "c_front", "c_back", "c_left", "c_right", "c_top", "c_bottom" ]
@@ -164,7 +171,7 @@
 					"light_position": [ 0, 20, -74 ],
 					"focal_len": 1500,
 					"near_eps": 1,
-					"loop_delay": 10
+					"loop_delay": 20
 				}
 			]
 		},
@@ -246,6 +253,7 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
@@ -258,6 +266,7 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 20, 0, 0, 0, 0, 0, 1 ]
 						}
@@ -270,8 +279,14 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
+						},
+						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+							"type": "attribute",
+							"motion": [ 0, 1, 0, 0, 0, 0, 1 ]
 						}
 					],
 					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
@@ -475,6 +490,7 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
 						}
@@ -487,8 +503,14 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
 							"attrib": [ 0, 0, 0, 0, 0, 0, 1 ]
+						},
+						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
+							"type": "attribute",
+							"motion": [ 1, 0, 0, 0, 0, 0, 1 ]
 						}
 					]
 				},
@@ -499,8 +521,9 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
-							"attrib": [ 22.5, 0, 0, 450, 0, 400, 1 ]
+							"attrib": [ 22.5, 0, 45, 200, 0, 0, 1 ]
 						}
 					],
 					"polygons": [ "c_front", "c_back", "c_left", "c_right", "c_top", "c_bottom" ]
@@ -512,8 +535,9 @@
 					"active": true,
 					"objects": [
 						{
+							"_comment": "x rotation, y rotation, z rotation, x translation, y translation, z translation, zoom",
 							"type": "attribute",
-							"attrib": [ 22.5, 0, 0, -450, 0, 400, 1 ]
+							"attrib": [ 22.5, 0, 0, -200, 0, 0, 1 ]
 						}
 					],
 					"polygons": [ "p_front", "p_right", "p_left", "p_bottom" ]
@@ -527,7 +551,7 @@
 					"light_position": [ 0, 20, -74 ],
 					"focal_len": 1500,
 					"near_eps": 1,
-					"loop_delay": 10
+					"loop_delay": 20
 				}
 			]
 		}

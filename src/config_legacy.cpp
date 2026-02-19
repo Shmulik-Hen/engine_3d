@@ -113,7 +113,7 @@ bool parse_element_legacy(AST& ast, std::ifstream& ifs)
 			break;
 		case 'a':
 			// adapt to your attrib format; if attrib already has read():
-			rc = ed.att.read(ifs);
+			rc = ed.ini_att.read(ifs);
 			if (!rc) {
 				ERR("parse_element: bad attrib");
 				return false;

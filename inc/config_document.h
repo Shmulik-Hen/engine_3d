@@ -30,7 +30,8 @@ struct element_def
 {
 	std::string name;
 	std::string parent; // empty or "world" etc.
-	attrib att;
+	attrib ini_att;
+	std::optional<attrib> run_att;
 	bool active {false};
 
 	// refer to polygons by name (stable for both legacy and JSON)

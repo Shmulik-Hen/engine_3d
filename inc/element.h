@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 
 #include "common.h"
@@ -37,11 +38,13 @@ public:
 	element* find(element*, const std::string&) const;
 
 	void update(const attrib_ns::attrib&);
+	void update();
 	void update(const matrix_ns::matrix&, const matrix_ns::matrix&, frame_context&);
 	void update(frame_context&);
 	void update_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
+	bool has_run_attrib() const { return _run_att.has_value(); }
 
 private:
 
@@ -51,10 +54,11 @@ private:
 	element* _parrent {nullptr}; // raw pointer, non-owning
 	matrix_ns::matrix _trans_mat;
 	matrix_ns::matrix _rot_mat;
-	attrib_ns::attrib _att;
+	attrib_ns::attrib _ini_att;
 	bool _active {false};
 	bool _dirty {false};
 	static bool _mats_prepared;
+	std::optional<attrib_ns::attrib> _run_att;
 
 	polygon_ns::polygon* find(const polygon_ns::polygon::polylist_t&, const std::string&) const;
 };

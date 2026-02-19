@@ -14,12 +14,12 @@ bool parse_json_attrib(unit attribs[NUM_ATTRIBUTES], const Json::Value& attrib, 
 {
 	DBG("parse_attrib: " << idx << ", num attribs: " << attrib.size());
 	if (attrib.size() != NUM_ATTRIBUTES) {
-		ERR("parse_polygon: bad attribs number");
+		ERR("parse_attrib: bad attribs number");
 		return false;
 	}
 
 	for (unsigned int i = 0; i < attrib.size(); i++) {
-		DBG("parse_attrib: " << idx << ", attrib: " << i << ", val: " << attrib[i]);
+		DBG("parse_attrib: " << idx << ", " << i << ", attrib: " << i << ", val: " << attrib[i]);
 		attribs[i] = attrib[i].asFloat();
 	}
 
@@ -35,7 +35,7 @@ bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const 
 	}
 
 	for (unsigned int i = 0; i < point.size(); i++) {
-		DBG("parse_vector: " << idx << ", coord: " << i << ", val: " << point[i]);
+		DBG("parse_vector: " << idx << ", " << i << ", coord: " << i << ", val: " << point[i]);
 		coords[i] = point[i].asFloat();
 	}
 
@@ -44,7 +44,7 @@ bool parse_json_vector(unit coords[NUM_COORDS], const Json::Value& point, const 
 
 bool parse_json_pair(int points[2], const Json::Value& point, const unsigned int idx [[maybe_unused]])
 {
-	DBG("pair: " << idx << ", num points: " << point.size());
+	DBG("parse_pair: " << idx << ", num points: " << point.size());
 	points[0] = point[0].asInt();
 	points[1] = point[1].asInt();
 
@@ -72,17 +72,17 @@ bool parse_json_polygon(AST& ast, const Json::Value& polygon, const unsigned int
 	for (unsigned int i = 0; i < objects.size(); i++) {
 		const Json::Value object = objects[i];
 		const Json::Value type = object["type"];
-		DBG("parse_polygon: " << idx << ", type: " << type.asString());
+		DBG("parse_polygon: " << idx << ", " << i << ", type: " << type.asString());
 		if (type == "vector") {
 			const Json::Value& points = object["points"];
-			DBG("parse_polygon: " << idx << ", num points: " << points.size());
+			DBG("parse_polygon: " << idx << ", " << i << ", num points: " << points.size());
 			if (points.size() < MIN_VECTORS) {
-				ERR("parse_polygon: " << idx << " too few vectors: " << points.size() << " required at least: " << MIN_VECTORS);
+				ERR("parse_polygon: " << idx << ", " << i << " too few vectors: " << points.size() << " required at least: " << MIN_VECTORS);
 				return false;
 			}
 			for (unsigned int j = 0; j < points.size(); j++) {
 				const Json::Value& point = points[j];
-				rc = parse_json_vector(coords, point, idx);
+				rc = parse_json_vector(coords, point, j);
 				if (!rc) {
 					return false;
 				}
@@ -91,9 +91,9 @@ bool parse_json_polygon(AST& ast, const Json::Value& polygon, const unsigned int
 		}
 		else if (polygon.isMember("normal")) {
 			const Json::Value& points = object["points"];
-			DBG("parse_polygon: " << idx << ", num coords: " << points.size());
+			DBG("parse_polygon: " << idx << ", " << i << ", num coords: " << points.size());
 			const Json::Value& point = points[0];
-			rc = parse_json_vector(coords, point, idx);
+			rc = parse_json_vector(coords, point, i);
 			if (!rc) {
 				return false;
 			}
@@ -130,15 +130,31 @@ bool parse_json_element(AST& ast, const Json::Value& element, const unsigned int
 	for (unsigned int i = 0; i < objects.size(); i++) {
 		const Json::Value object = objects[i];
 		const Json::Value type = object["type"];
-		DBG("parse_element: " << idx << ", type: " << type.asString());
+		DBG("parse_element: " << idx << ", " << i << ", type: " << type.asString());
 		if (type == "attribute") {
-			const Json::Value attrib = object["attrib"];
-			rc = parse_json_attrib(atts, attrib, idx);
-			if (!rc) {
-				return false;
+			if (object.isMember("attrib")) {
+				const Json::Value attrib = object["attrib"];
+				DBG("parse ini attribs");
+				rc = parse_json_attrib(atts, attrib, i);
+				if (!rc) {
+					return false;
+				}
+				ed.ini_att = atts;
+				ed.ini_att.print();
 			}
-			ed.att = atts;
-			ed.att.print();
+			else if (object.isMember("motion")) {
+				DBG("parse motion attribs");
+				const Json::Value motion = object["motion"];
+				rc = parse_json_attrib(atts, motion, i);
+				if (!rc) {
+					return false;
+				}
+				ed.run_att = atts;
+				ed.run_att.value().print();
+			}
+			else {
+				WARN("parse_element: unsupported attrib type" << type.asString());
+			}
 		}
 		else {
 			WARN("parse_element: unsupported object type" << type.asString());
@@ -269,22 +285,22 @@ bool parse_json_objects(AST& ast, const Json::Value& conf, const unsigned int id
 	for (unsigned int i = 0; i < objects.size(); i++) {
 		const Json::Value object = objects[i];
 		const Json::Value type = object["type"];
-		DBG("parse_object: " << idx << " , type: " << type.asString());
+		DBG("parse_object: " << idx << ", " << i << " , type: " << type.asString());
 
 		if (type == "polygon") {
-			rc = parse_json_polygon(ast, object, idx);
+			rc = parse_json_polygon(ast, object, i);
 			if (!rc) {
 				return false;
 			}
 		}
 		else if (type == "element") {
-			rc = parse_json_element(ast, object, idx);
+			rc = parse_json_element(ast, object, i);
 			if (!rc) {
 				return false;
 			}
 		}
 		else if (type == "environment") {
-			rc = parse_json_environment(ast, object, idx);
+			rc = parse_json_environment(ast, object, i);
 			if (!rc) {
 				return false;
 			}
@@ -333,10 +349,10 @@ AST parse_json(const std::string& filename, const std::string& conf_name)
 		const Json::Value conf = configurations[i];
 		DBG("parse_json: configuration: " << i << ", " << conf["name"]);
 		if (conf["name"] == conf_name) {
+			found = true;
 			rc = parse_json_objects(ast, conf, i);
-			if (rc) {
-				found = true;
-				break;
+			if (!rc) {
+				sys_error("parse_json: configuration parse failed: ", conf_name.c_str());
 			}
 		}
 	}
