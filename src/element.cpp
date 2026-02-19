@@ -13,11 +13,40 @@ using polylist_t = polygon_ns::polygon::polylist_t;
 
 bool element_ns::element::_mats_prepared = false;
 
+void element::init_from_def(const polylist_t& poly_list, element* root, const config_ns::element_def& def)
+{
+	_name = def.name;
+	_active = def.active;
+	_ini_att = def.ini_att;
+	if (def.run_att.has_value()) {
+		_run_att = def.run_att.value();
+	}
+
+	if (def.parent.length()) {
+		element* parent = find(root, def.parent);
+		if (!parent) {
+			sys_error("element::read find error - _parent_name");
+		}
+		_parent = parent;
+		_parent_name = def.parent;
+		add_node(parent);
+	}
+
+	_polygons.clear();
+	for (const auto& name : def.polygons) {
+		polygon* poly = find(poly_list, name);
+		if (!poly) {
+			sys_error("element::read find error -  polygon");
+		}
+		_polygons.push_back(poly);
+	}
+}
+
 bool element::read(const polylist_t& poly_list, element* root, std::ifstream& ifs)
 {
 	LINE line;
 	int len;
-	element* parrent;
+	element* parent;
 	polygon* poly;
 	std::string s;
 	bool rc, finish = false;
@@ -39,17 +68,17 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 			_name = line;
 			break;
 		case 't':
-			// read element's parrent name
+			// read element's parent name
 			len = read_word(ifs, line);
 			if (len) {
-				_parrent_name = line;
-				parrent = find(root, _parrent_name);
-				if (!parrent) {
-					sys_error("element::read find error - _parrent_name");
+				_parent_name = line;
+				parent = find(root, _parent_name);
+				if (!parent) {
+					sys_error("element::read find error - _parent_name");
 				}
 
-				add_node(parrent);
-				_parrent = parrent;
+				add_node(parent);
+				_parent = parent;
 			}
 			break;
 		case 'p':
@@ -78,7 +107,7 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 			break;
 		case 'a':
 			// element's attribute
-			rc = _att.read(ifs);
+			rc = _ini_att.read(ifs);
 			if (!rc) {
 				sys_error("element::read error attrib");
 			}
@@ -96,36 +125,36 @@ bool element::read(const polylist_t& poly_list, element* root, std::ifstream& if
 void element::print() const
 {
 #ifdef DEBUG_PRINTS
-	DBG(STR("  element:", 1));
-	DBG(STR("    name: ", 1) << _name);
-	DBG(STR("    parrent_name: ", 1) << _parrent_name);
-	DBG(STR("    active: ", 1) << _active);
-	DBG(STR("     dirty: ", 1) << _dirty);
-	_att.print();
+	DBG(STR("element:", 1));
+	DBG(STR("  name: ", 1) << _name);
+	DBG(STR("  parent_name: ", 1) << _parent_name);
+	DBG(STR("  active: ", 1) << _active);
+	DBG(STR("   dirty: ", 1) << _dirty);
+	_ini_att.print();
 
 	if (!_polygons.empty()) {
-		DBG(STR("    polygons:", 1));
-		for (const auto poly : _polygons) {
+		DBG("num polygons: " << (int)_polygons.size());
+		DBG(STR("  polygons:", 1));
+		for (const auto& poly : _polygons) {
 			poly->print();
 		}
 	}
 #endif // DEBUG_PRINTS
 }
 
-void prn(void* p [[maybe_unused]])
-{
 #ifdef DEBUG_PRINTS
-	element* e = (element*)p;
+static void prn(element_ns::element* e, void* data [[maybe_unused]])
+{
 	if (e) {
 		e->print();
 	}
-#endif // DEBUG_PRINTS
 }
+#endif // DEBUG_PRINTS
 
 void element::print_all()
 {
 #ifdef DEBUG_PRINTS
-	this->print_tree(prn);
+	this->print_tree(prn, NULL);
 #endif // DEBUG_PRINTS
 }
 
@@ -142,8 +171,16 @@ element* element::find(element* root, const std::string& s) const
 
 void element::update(const attrib& att)
 {
-	_att += att;
+	_ini_att += att;
 	_dirty = true;
+}
+
+void element::update()
+{
+	if (_run_att.has_value()) {
+		_ini_att += _run_att.value();
+		_dirty = true;
+	}
 }
 
 void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& frame_ctx)
@@ -152,17 +189,17 @@ void element::update(const matrix& p_trans, const matrix& p_rot, frame_context& 
 		return;
 	}
 
-	if (!_parrent) {
+	if (!_parent) {
 		// only once for root
 		if (!_mats_prepared) {
-			_trans_mat.prep_trans_mat(_att);
-			_rot_mat.prep_rot_mat(_att);
+			_trans_mat.prep_trans_mat(_ini_att);
+			_rot_mat.prep_rot_mat(_ini_att);
 			_mats_prepared = true;
 		}
 	}
 	else {
-		_trans_mat.prep_trans_mat(_att);
-		_rot_mat.prep_rot_mat(_att);
+		_trans_mat.prep_trans_mat(_ini_att);
+		_rot_mat.prep_rot_mat(_ini_att);
 	}
 
 	if (_dirty) {
@@ -185,9 +222,9 @@ void element::update(frame_context& frame_ctx)
 {
 	matrix m_trans, m_rot;
 
-	if (_parrent) {
-		m_trans = _parrent->_trans_mat;
-		m_rot = _parrent->_rot_mat;
+	if (_parent) {
+		m_trans = _parent->_trans_mat;
+		m_rot = _parent->_rot_mat;
 	}
 	else {
 		m_trans = matrix_ns::get_unit_mat();

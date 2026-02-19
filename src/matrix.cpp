@@ -157,7 +157,7 @@ void matrix::print() const
 	DBG("matrix:");
 	for (int i = X_; i <= O_; i++) {
 		for (int j = X_; j <= O_; j++) {
-			DBG("    [" << i << "][" << j << "] : " << _mat[i][j]);
+			DBG("  [" << i << "][" << j << "] : " << _mat[i][j]);
 		}
 	}
 	DBG("");

@@ -21,6 +21,7 @@ public:
 	attrib() {}
 	~attrib() {}
 	attrib(const unit, const unit, const unit, const unit, const unit, const unit, const unit);
+	attrib(const unit[NUM_ATTRIBUTES]);
 
 	bool read(std::ifstream&);
 	void print() const;
@@ -33,6 +34,7 @@ public:
 	unit get_trans_z() const { return _trans_z; };
 	unit get_zoom() const { return _zoom; };
 
+	attrib& operator=(unit[NUM_ATTRIBUTES]);
 	attrib& operator+=(const attrib&);
 
 	friend std::ostream& operator<<(std::ostream&, const attrib&);

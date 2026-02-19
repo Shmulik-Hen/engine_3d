@@ -357,9 +357,18 @@ void graphics::init_graphics()
 	// misc
 	_perf_freq = static_cast<std::uint64_t>(SDL_GetPerformanceFrequency());
 
-	DBG("graphics:" << ENDL << STR("  final values:", 1) << ENDL
-	                << STR("    buff size: ", 14) << DEC(_buf_a.size(), 4) << ENDL
-	                << STR("    freq: ", 14) << DEC(_perf_freq, 8) << ENDL);
+	DBG("graphics:");
+	DBG("  title:         " << _title);
+	DBG("  width:         " << _w);
+	DBG("  height:        " << _h);
+	DBG("  scale:         " << _scale);
+	DBG("  scaled width:  " << _scaled_w);
+	DBG("  scaled height: " << _scaled_h);
+	DBG("  win size:      " << _win_size);
+	DBG("  pitch bytes:   " << _pitch_bytes);
+	DBG("  pitch pixels:  " << _pitch_pixels);
+	DBG("  buff size:     " << DEC(_buf_a.size(), 4));
+	DBG("  freq:          " << DEC(_perf_freq, 8) << ENDL);
 }
 
 void graphics::swap_buffers()

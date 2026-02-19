@@ -7,6 +7,7 @@
 #include "graphics.h"
 #include "polygon.h"
 #include "scene_types.h"
+#include "config_document.h"
 
 // clang-format off
 namespace element_ns { class element; }
@@ -17,7 +18,7 @@ namespace polygon_ns { class polygon; }
 namespace scene_ns
 {
 
-class scene
+class my_scene
 {
 public:
 
@@ -33,22 +34,31 @@ public:
 
 	frame_context frame_ctx;
 
-	scene();
-	scene(const scene&) = delete;
-	scene& operator=(const scene&) = delete;
-	scene(scene&&) = delete;
-	scene& operator=(scene&&) = delete;
-	~scene();
+	config_ns::AST ast;
+
+	my_scene();
+	my_scene(const my_scene&) = delete;
+	my_scene& operator=(const my_scene&) = delete;
+	my_scene(my_scene&&) = delete;
+	my_scene& operator=(my_scene&&) = delete;
+	~my_scene() = default;
 
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
+	void parse(const std::string&, const std::string&);
+	void build();
 	void update();
 	void render();
+	bool keep_going();
 
 private:
 
+	static bool _keep_going;
+	graphics_ns::graphics::point min_pos;
+	graphics_ns::graphics::point max_pos;
 	void sort();
 	void draw();
+	void set_defaults();
 };
 
 } // namespace scene_ns

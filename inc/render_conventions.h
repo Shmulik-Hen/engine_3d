@@ -11,7 +11,7 @@ namespace render_ns
 // "Front facing" means dot(N, V) < 0
 inline bool front_facing(const vector_3_ns::vector_3& N,
                          const vector_3_ns::vector_3& V_cam_to_surface,
-                         int force)
+                         bool force)
 {
 	return force || (vector_3_ns::vector_3::dot(N, V_cam_to_surface) < -EPSILON);
 }
