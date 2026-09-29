@@ -1,6 +1,6 @@
 #pragma once
 #include <fstream>
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include "config_document.h"
 
 namespace config_ns
