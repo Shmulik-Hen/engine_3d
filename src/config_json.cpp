@@ -27,14 +27,14 @@ static bool check_version(const Json::Value& root, const uint32_t array[VERSION_
 		return false;
 	}
 
-	if (!root[JSON_STR_VER].isArray() || root[JSON_STR_VER].size() != VERSION_NUM_FIELDS) {
+	Json::Value ver = root[JSON_STR_VER];
+	if (!ver.isArray() || ver.size() != VERSION_NUM_FIELDS) {
 		ERR(JSON_STR_VER << " is not an array or illegal size: required: "
-		                 << VERSION_NUM_FIELDS << ", current: " << root[JSON_STR_VER].size());
+		                 << VERSION_NUM_FIELDS << ", current: " << ver.size());
 		return false;
 	}
 
 	bool match = true;
-	const Json::Value ver = root[JSON_STR_VER];
 	for (uint32_t i = 0; i < VERSION_NUM_FIELDS; i++) {
 		if (!ver[i].isUInt()) {
 			ERR(JSON_STR_VER << "[" << i << "] is not an unsigned integer");
@@ -48,9 +48,9 @@ static bool check_version(const Json::Value& root, const uint32_t array[VERSION_
 	}
 
 	if (!match) {
-		ERR("unsupported version: required: "
-		    << array[0] << "." << array[1] << "." << array[2]
-		    << ", current: " << ver[0] << "." << ver[1] << "." << ver[2]);
+		ERR(JSON_STR_VER << " unsupported version: required: "
+		                 << array[0] << "." << array[1] << "." << array[2]
+		                 << ", current: " << ver[0] << "." << ver[1] << "." << ver[2]);
 		return false;
 	}
 
@@ -67,12 +67,12 @@ static bool parse_json_attrib(const Json::Value& attrib, unit array[NUM_ATTRIBUT
 
 	for (uint32_t i = 0; i < NUM_ATTRIBUTES; i++) {
 		if (!attrib[i].isDouble()) {
-			ERR(JSON_STR_ATTR << " must all be floats");
+			ERR(JSON_STR_ATTR << " must all be floating point numbers");
 			return false;
 		}
 
-		DBG("parse_attrib:" << JSON_STR_ATTR << "[" << i << "]: " << attrib[i].asFloat());
 		array[i] = attrib[i].asFloat();
+		DBG("parse_attrib:" << JSON_STR_ATTR << "[" << i << "]: " << array[i]);
 	}
 
 	return true;
@@ -88,12 +88,12 @@ static bool parse_json_vector(const Json::Value& vector, unit array[NUM_COORDS])
 
 	for (uint32_t i = 0; i < NUM_COORDS; i++) {
 		if (!vector[i].isDouble()) {
-			ERR(JSON_STR_ATTR << " must all be floating point numbers");
+			ERR(JSON_STR_VEC << " must all be floating point numbers");
 			return false;
 		}
 
-		DBG("parse_vector:" << JSON_STR_VEC << "[" << i << "]: " << vector[i].asFloat());
 		array[i] = vector[i].asFloat();
+		DBG("parse_vector:" << JSON_STR_VEC << "[" << i << "]: " << array[i]);
 	}
 
 	return true;
@@ -109,12 +109,12 @@ static bool parse_json_pair(const Json::Value& pair, uint32_t array[NUM_POINTS])
 
 	for (uint32_t i = 0; i < NUM_POINTS; i++) {
 		if (!pair[0].isUInt()) {
-			ERR(JSON_STR_VER << " must all be unsigned integers");
+			ERR(JSON_STR_PAIR << " must all be unsigned integers");
 			return false;
 		}
 
-		DBG("parse_pair:" << JSON_STR_PAIR << "[" << i << "]: " << pair[i].asUInt());
 		array[i] = pair[i].asUInt();
+		DBG("parse_pair:" << JSON_STR_PAIR << "[" << i << "]: " << array[i]);
 	}
 
 	return true;
@@ -133,45 +133,49 @@ static bool parse_json_polygon(const Json::Value& polygon, AST& ast)
 
 	if (polygon.isMember(JSON_STR_NAME)) {
 		if (polygon[JSON_STR_NAME].asString().empty()) {
-			ERR(JSON_STR_NAME << " is empty");
+			ERR(JSON_STR_POLY << ": " << JSON_STR_NAME << " is empty");
 			return false;
 		}
-		DBG("parse_polygon: " << JSON_STR_NAME << ": " << polygon[JSON_STR_NAME].asString());
+
 		pd.name = polygon[JSON_STR_NAME].asString();
+		DBG("parse_polygon: " << JSON_STR_NAME << ": " << pd.name);
 	}
 
 	if (polygon.isMember(JSON_STR_COLOR)) {
 		if (!polygon[JSON_STR_COLOR].isUInt()) {
-			ERR(JSON_STR_COLOR << " must be an unsigned integer");
+			ERR(JSON_STR_POLY << ": " << JSON_STR_COLOR << " must be an unsigned integer");
 			return false;
 		}
-		DBG("parse_polygon: " << JSON_STR_COLOR << ": " << polygon[JSON_STR_COLOR].asUInt());
+
 		pd.color_index = polygon[JSON_STR_COLOR].asUInt();
+		DBG("parse_polygon: " << JSON_STR_COLOR << ": " << pd.color_index);
 	}
 
 	if (polygon.isMember(JSON_STR_FORCE)) {
 		if (!polygon[JSON_STR_FORCE].isBool()) {
-			ERR(JSON_STR_FORCE << " must be a boolean");
+			ERR(JSON_STR_POLY << ": " << JSON_STR_FORCE << " must be a boolean");
 			return false;
 		}
-		DBG("parse_polygon: " << JSON_STR_FORCE << ": " << polygon[JSON_STR_FORCE].asBool());
+
 		pd.force = polygon[JSON_STR_FORCE].asBool();
+		DBG("parse_polygon: " << JSON_STR_FORCE << ": " << pd.force);
 	}
 
 	if (polygon.isMember(JSON_STR_VECS)) {
 		if (!polygon[JSON_STR_VECS].isArray()) {
-			ERR(JSON_STR_VECS << " is not an array");
+			ERR(JSON_STR_POLY << ": " << JSON_STR_VECS << " is not an array");
 			return false;
 		}
-		DBG("parse_polygon: num " << JSON_STR_VECS << ": " << polygon[JSON_STR_VECS].size());
+
 		const Json::Value vectors = polygon[JSON_STR_VECS];
-		const size_t size = polygon[JSON_STR_VECS].size();
+		const std::size_t size = vectors.size();
+		DBG("parse_polygon: " << JSON_STR_VECS << ": size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value& vector = vectors[i];
 			rc = parse_json_vector(vector, coords);
 			if (!rc) {
-				ERR(JSON_STR_VECS << "[" << i << "]: parse_json_vector() failed");
+				ERR(JSON_STR_POLY << ": " << JSON_STR_VECS << "[" << i << "]: parse_json_vector() failed");
 				return false;
 			}
 
@@ -195,30 +199,39 @@ static bool parse_json_mesh(const Json::Value& mesh, AST& ast)
 
 	if (mesh.isMember(JSON_STR_NAME)) {
 		if (mesh[JSON_STR_NAME].asString().empty()) {
-			ERR(JSON_STR_NAME << " is empty");
+			ERR(JSON_STR_MESH << ": " << JSON_STR_NAME << " is empty");
 			return false;
 		}
-		DBG("parse_mesh: " << JSON_STR_NAME << ": " << mesh[JSON_STR_NAME].asString());
+
 		md.name = mesh[JSON_STR_NAME].asString();
+		DBG("parse_mesh: " << JSON_STR_NAME << ": " << md.name);
 	}
 
 	if (mesh.isMember(JSON_STR_POLYS)) {
 		if (!mesh[JSON_STR_POLYS].isArray()) {
-			ERR(JSON_STR_POLYS << " is not an array");
+			ERR(JSON_STR_MESH << ": " << JSON_STR_POLYS << " is not an array");
 			return false;
 		}
-		DBG("parse_mesh: " << JSON_STR_POLYS << " size: " << mesh[JSON_STR_POLYS].size());
-		const Json::Value poly_namess = mesh[JSON_STR_POLYS];
-		const size_t size = mesh[JSON_STR_POLYS].size();
+
+		const Json::Value poly_names = mesh[JSON_STR_POLYS];
+		const std::size_t size = poly_names.size();
+		DBG("parse_mesh: " << JSON_STR_POLYS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
-			if (poly_namess[i].asString().empty()) {
-				ERR(JSON_STR_POLYS << "[" << i << "]: " << " is empty");
+			const Json::Value poly = poly_names[i];
+			if (!poly.isString()) {
+				ERR(JSON_STR_MESH << ": " << JSON_STR_POLYS << "[" << i << "]: " << " is not a string");
 				return false;
 			}
 
-			DBG("parse_mesh: " << JSON_STR_POLYS << "[" << i << "]: " << poly_namess[i].asString());
-			md.polygons.push_back(poly_namess[i].asString());
+			const std::string name = poly_names[i].asString();
+			if (name.empty()) {
+				ERR(JSON_STR_MESH << ": " << JSON_STR_POLYS << "[" << i << "]: " << " is empty");
+				return false;
+			}
+
+			md.polygons.push_back(name);
+			DBG("parse_mesh: " << JSON_STR_POLYS << "[" << i << "]: " << name);
 		}
 	}
 
@@ -237,20 +250,22 @@ static bool parse_json_element_def(const Json::Value& element, AST& ast)
 
 	if (element.isMember(JSON_STR_NAME)) {
 		if (element[JSON_STR_NAME].asString().empty()) {
-			ERR(JSON_STR_NAME << " is empty");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_NAME << " is empty");
 			return false;
 		}
-		DBG("parse_elem_def: " << JSON_STR_NAME << ": " << element[JSON_STR_NAME].asString());
+
 		ed.name = element[JSON_STR_NAME].asString();
+		DBG("parse_elem_def: " << JSON_STR_NAME << ": " << ed.name);
 	}
 
 	if (element.isMember(JSON_STR_MESH)) {
 		if (element[JSON_STR_MESH].asString().empty()) {
-			ERR(JSON_STR_MESH << " is empty");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_MESH << " is empty");
 			return false;
 		}
-		DBG("parse_elem_def: " << JSON_STR_MESH << ": " << element[JSON_STR_MESH].asString());
-		ed.mesh = element[JSON_STR_NAME].asString();
+
+		ed.mesh = element[JSON_STR_MESH].asString();
+		DBG("parse_elem_def: " << JSON_STR_MESH << ": " << ed.mesh);
 	}
 
 	ast.element_defs.push_back(std::move(ed));
@@ -269,11 +284,12 @@ static bool parse_json_element_ref(const Json::Value& element, AST& ast)
 
 	if (element.isMember(JSON_STR_NAME)) {
 		if (element[JSON_STR_NAME].asString().empty()) {
-			ERR(JSON_STR_NAME << " is empty");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_NAME << " is empty");
 			return false;
 		}
-		DBG("parse_elem_ref: " << JSON_STR_NAME << ": " << element[JSON_STR_NAME].asString());
+
 		er.name = element[JSON_STR_NAME].asString();
+		DBG("parse_elem_ref: " << JSON_STR_NAME << ": " << er.name);
 	}
 
 	if (element.isMember(JSON_STR_PAREN)) {
@@ -283,9 +299,10 @@ static bool parse_json_element_ref(const Json::Value& element, AST& ast)
 		}
 		else {
 			if (element[JSON_STR_PAREN].asString().empty()) {
-				ERR(JSON_STR_PAREN << " is empty");
+				ERR(JSON_STR_ELEM << ": " << JSON_STR_PAREN << " is empty");
 				return false;
 			}
+
 			DBG("parse_elem_ref: " << JSON_STR_PAREN << ": " << element[JSON_STR_PAREN].asString());
 			er.parent = std::optional<std::string> {element[JSON_STR_PAREN].asString()};
 		}
@@ -293,20 +310,22 @@ static bool parse_json_element_ref(const Json::Value& element, AST& ast)
 
 	if (element.isMember(JSON_STR_ACT)) {
 		if (!element[JSON_STR_ACT].isBool()) {
-			ERR(JSON_STR_ACT << " is not a boolean");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_ACT << " is not a boolean");
 			return false;
 		}
-		DBG("parse_elem_ref: " << JSON_STR_ACT << ": " << element[JSON_STR_ACT].asBool());
+
 		er.active = element[JSON_STR_ACT].asBool();
+		DBG("parse_elem_ref: " << JSON_STR_ACT << ": " << er.active);
 	}
 
 	if (element.isMember(JSON_STR_REF)) {
 		if (element[JSON_STR_REF].asString().empty()) {
-			ERR(JSON_STR_REF << " is empty");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_REF << " is empty");
 			return false;
 		}
+
 		DBG("parse_elem_ref: " << JSON_STR_REF << ": " << element[JSON_STR_REF].asString());
-		er.ref = std::optional<std::string> {element[JSON_STR_PAREN].asString()};
+		er.ref = std::optional<std::string> {element[JSON_STR_REF].asString()};
 	}
 
 	if (element.isMember(JSON_STR_ATTR)) {
@@ -314,12 +333,13 @@ static bool parse_json_element_ref(const Json::Value& element, AST& ast)
 
 		rc = parse_json_attrib(element[JSON_STR_ATTR], array);
 		if (!rc) {
-			ERR(JSON_STR_ATTR << ": parse_json_attrib() failed");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_ATTR << ": parse_json_attrib() failed");
 			return false;
 		}
 
 		attrib att(array);
 		er.ini_att = att;
+		att.print();
 	}
 
 	if (element.isMember(JSON_STR_MOTN)) {
@@ -327,12 +347,13 @@ static bool parse_json_element_ref(const Json::Value& element, AST& ast)
 
 		rc = parse_json_attrib(element[JSON_STR_MOTN], array);
 		if (!rc) {
-			ERR(JSON_STR_MOTN << ": parse_json_attrib() failed");
+			ERR(JSON_STR_ELEM << ": " << JSON_STR_MOTN << ": parse_json_attrib() failed");
 			return false;
 		}
 
 		attrib att(array);
 		er.run_att = att;
+		att.print();
 	}
 
 	ast.element_refs.push_back(std::move(er));
@@ -344,6 +365,7 @@ static bool parse_json_library(const Json::Value& root, AST& ast)
 	bool rc;
 
 	if (!root.isMember(JSON_STR_LIB)) {
+		// silently fail - will be caught during validaton
 		return true;
 	}
 
@@ -355,18 +377,19 @@ static bool parse_json_library(const Json::Value& root, AST& ast)
 
 	if (library.isMember(JSON_STR_POLYS)) {
 		if (!library[JSON_STR_POLYS].isArray()) {
-			ERR(JSON_STR_POLYS << " is not an array");
+			ERR(JSON_STR_LIB << ": " << JSON_STR_POLYS << " is not an array");
 			return false;
 		}
-		DBG("parse_lib: " << JSON_STR_POLYS << " size: " << library[JSON_STR_POLYS].size());
+
 		const Json::Value polygons = library[JSON_STR_POLYS];
-		const size_t size = library[JSON_STR_POLYS].size();
+		const std::size_t size = polygons.size();
+		DBG("parse_lib: " << JSON_STR_POLYS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value polygon = polygons[i];
 			rc = parse_json_polygon(polygon, ast);
 			if (!rc) {
-				ERR(JSON_STR_POLYS << "[" << i << "]: parse_json_polygon() failed");
+				ERR(JSON_STR_LIB << ": " << JSON_STR_POLYS << "[" << i << "]: parse_json_polygon() failed");
 				return false;
 			}
 		}
@@ -374,18 +397,19 @@ static bool parse_json_library(const Json::Value& root, AST& ast)
 
 	if (library.isMember(JSON_STR_MESHS)) {
 		if (!library[JSON_STR_MESHS].isArray()) {
-			ERR(JSON_STR_MESHS << " is not an array");
+			ERR(JSON_STR_LIB << ": " << JSON_STR_MESHS << " is not an array");
 			return false;
 		}
-		DBG("parse_lib: " << JSON_STR_POLYS << " size: " << library[JSON_STR_MESHS].size());
+
 		const Json::Value meshes = library[JSON_STR_MESHS];
-		const size_t size = library[JSON_STR_MESHS].size();
+		const std::size_t size = meshes.size();
+		DBG("parse_lib: " << JSON_STR_MESHS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value mesh = meshes[i];
 			rc = parse_json_mesh(mesh, ast);
 			if (!rc) {
-				ERR(JSON_STR_MESHS << "[" << i << "]: parse_json_mesh() failed");
+				ERR(JSON_STR_LIB << ": " << JSON_STR_MESHS << "[" << i << "]: parse_json_mesh() failed");
 				return false;
 			}
 		}
@@ -393,18 +417,19 @@ static bool parse_json_library(const Json::Value& root, AST& ast)
 
 	if (library.isMember(JSON_STR_ELEMS)) {
 		if (!library[JSON_STR_ELEMS].isArray()) {
-			ERR(JSON_STR_ELEMS << " is not an array");
+			ERR(JSON_STR_LIB << ": " << JSON_STR_ELEMS << " is not an array");
 			return false;
 		}
-		DBG("parse_lib: " << JSON_STR_ELEMS << " size: " << library[JSON_STR_ELEMS].size());
+
 		const Json::Value elements = library[JSON_STR_ELEMS];
-		const size_t size = library[JSON_STR_ELEMS].size();
+		const std::size_t size = elements.size();
+		DBG("parse_lib: " << JSON_STR_ELEMS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value element = elements[i];
 			rc = parse_json_element_def(element, ast);
 			if (!rc) {
-				ERR(JSON_STR_MESHS << "[" << i << "]: parse_json_element_ref() failed");
+				ERR(JSON_STR_LIB << ": " << JSON_STR_MESHS << "[" << i << "]: parse_json_element_ref() failed");
 				return false;
 			}
 		}
@@ -424,6 +449,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	uint32_t points[NUM_POINTS];
 
 	if (!scene.isMember(JSON_STR_ENV)) {
+		// silently fail - will be caught during validaton
 		return true;
 	}
 
@@ -432,16 +458,16 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		return false;
 	}
 
-	DBG("parse_env: num fields: " << scene[JSON_STR_ENV].size());
-
 	const Json::Value env = scene[JSON_STR_ENV];
+	DBG("parse_env: num fields: " << env.size());
 
 	if (env.isMember(JSON_STR_COLOR)) {
 		DBG("parse_env: found: " << JSON_STR_COLOR);
 		if (!env[JSON_STR_COLOR].isUInt()) {
-			ERR(JSON_STR_COLOR << " must be an unsigned integer");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_COLOR << " must be an unsigned integer");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_COLOR << ": " << env[JSON_STR_COLOR].asUInt());
 		sd.env.color_idx = env[JSON_STR_COLOR].asUInt();
 	}
@@ -449,9 +475,10 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	if (env.isMember(JSON_STR_LIGHT_TYPE)) {
 		DBG("parse_env: found: " << JSON_STR_LIGHT_TYPE);
 		if (!env[JSON_STR_LIGHT_TYPE].isUInt()) {
-			ERR(JSON_STR_COLOR << " must be an unsigned integer");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_LIGHT_TYPE << " must be an unsigned integer");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_LIGHT_TYPE << ": " << env[JSON_STR_LIGHT_TYPE].asUInt());
 		sd.env.light_type = env[JSON_STR_LIGHT_TYPE].asUInt();
 	}
@@ -460,7 +487,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		DBG("parse_env: found: " << JSON_STR_LIGHT_DIR);
 		rc = parse_json_vector(env[JSON_STR_LIGHT_DIR], coords);
 		if (!rc) {
-			ERR(JSON_STR_LIGHT_DIR << "parse_json_vector() failed");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_LIGHT_DIR << "parse_json_vector() failed");
 			return false;
 		}
 
@@ -473,7 +500,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		DBG("parse_env: found: " << JSON_STR_LIGHT_POS);
 		rc = parse_json_vector(env[JSON_STR_LIGHT_POS], coords);
 		if (!rc) {
-			ERR(JSON_STR_LIGHT_POS << "parse_json_vector() failed");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_LIGHT_POS << "parse_json_vector() failed");
 			return false;
 		}
 
@@ -486,7 +513,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		DBG("parse_env: found: " << JSON_STR_CAM_POS);
 		rc = parse_json_vector(env[JSON_STR_CAM_POS], coords);
 		if (!rc) {
-			ERR(JSON_STR_CAM_POS << "parse_json_vector() failed");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_CAM_POS << "parse_json_vector() failed");
 			return false;
 		}
 
@@ -498,9 +525,10 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	if (env.isMember(JSON_STR_FOCAL_LEN)) {
 		DBG("parse_env: found: " << JSON_STR_FOCAL_LEN);
 		if (!env[JSON_STR_FOCAL_LEN].isDouble()) {
-			ERR(JSON_STR_FOCAL_LEN << " must be an floating point number");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_FOCAL_LEN << " must be a floating point number");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_FOCAL_LEN << ": " << env[JSON_STR_FOCAL_LEN].asFloat());
 		sd.env.focal_len = env[JSON_STR_FOCAL_LEN].asFloat();
 	}
@@ -508,9 +536,10 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	if (env.isMember(JSON_STR_NEAR_EPS)) {
 		DBG("parse_env: found: " << JSON_STR_NEAR_EPS);
 		if (!env[JSON_STR_NEAR_EPS].isDouble()) {
-			ERR(JSON_STR_NEAR_EPS << " must be an floating point number");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_NEAR_EPS << " must be a floating point number");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_NEAR_EPS << ": " << env[JSON_STR_NEAR_EPS].asFloat());
 		sd.env.near_eps = env[JSON_STR_NEAR_EPS].asFloat();
 	}
@@ -518,9 +547,10 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	if (env.isMember(JSON_STR_LOOPS)) {
 		DBG("parse_env: found: " << JSON_STR_LOOPS);
 		if (!env[JSON_STR_LOOPS].isInt()) {
-			ERR(JSON_STR_LOOPS << " must be an unsigned integer");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_LOOPS << " must be an integer");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_LOOPS << ": " << env[JSON_STR_LOOPS].asInt());
 		sd.run.loops = env[JSON_STR_LOOPS].asInt();
 	}
@@ -528,9 +558,10 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 	if (env.isMember(JSON_STR_LOOP_DELAY)) {
 		DBG("parse_env: found: " << JSON_STR_LOOP_DELAY);
 		if (!env[JSON_STR_LOOP_DELAY].isUInt()) {
-			ERR(JSON_STR_LOOP_DELAY << " must be an unsigned integer");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_LOOP_DELAY << " must be an unsigned integer");
 			return false;
 		}
+
 		DBG("parse_env: " << JSON_STR_LOOP_DELAY << ": " << env[JSON_STR_LOOP_DELAY].asUInt());
 		sd.run.loop_delay = env[JSON_STR_LOOP_DELAY].asUInt();
 	}
@@ -539,7 +570,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		DBG("parse_env: found: " << JSON_STR_MIN_POS);
 		rc = parse_json_pair(env[JSON_STR_MIN_POS], points);
 		if (!rc) {
-			ERR(JSON_STR_MIN_POS << "parse_json_pair() failed");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_MIN_POS << "parse_json_pair() failed");
 			return false;
 		}
 
@@ -551,7 +582,7 @@ static bool parse_json_environment(const Json::Value& scene, scene_def& sd)
 		DBG("parse_env: found: " << JSON_STR_MAX_POS);
 		rc = parse_json_pair(env[JSON_STR_MAX_POS], points);
 		if (!rc) {
-			ERR(JSON_STR_MAX_POS << "parse_json_pair() failed");
+			ERR(JSON_STR_ENV << ": " << JSON_STR_MAX_POS << "parse_json_pair() failed");
 			return false;
 		}
 
@@ -574,27 +605,29 @@ static bool parse_json_scene(const Json::Value& scene, AST& ast)
 
 	if (scene.isMember(JSON_STR_NAME)) {
 		if (scene[JSON_STR_NAME].asString().empty()) {
-			ERR(JSON_STR_NAME << " is empty");
+			ERR(JSON_STR_SCN << ": " << JSON_STR_NAME << " is empty");
 			return false;
 		}
-		DBG("parse_elem_ref: " << JSON_STR_NAME << ": " << scene[JSON_STR_NAME].asString());
+
 		sd.name = scene[JSON_STR_NAME].asString();
+		DBG("parse_elem_ref: " << JSON_STR_NAME << ": " << sd.name);
 	}
 
 	if (scene.isMember(JSON_STR_ELEMS)) {
 		if (!scene[JSON_STR_ELEMS].isArray()) {
-			ERR(JSON_STR_ELEMS << " is not an array");
+			ERR(JSON_STR_SCN << ": " << JSON_STR_ELEMS << " is not an array");
 			return false;
 		}
-		DBG("parse_lib: " << JSON_STR_ELEMS << " size: " << scene[JSON_STR_ELEMS].size());
+
 		const Json::Value elements = scene[JSON_STR_ELEMS];
-		const size_t size = scene[JSON_STR_ELEMS].size();
+		const std::size_t size = elements.size();
+		DBG("parse_lib: " << JSON_STR_ELEMS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value element = elements[i];
 			rc = parse_json_element_ref(element, ast);
 			if (!rc) {
-				ERR(JSON_STR_ELEMS << "[" << i << "]: parse_json_element_ref() failed");
+				ERR(JSON_STR_SCN << ": " << JSON_STR_ELEMS << "[" << i << "]: parse_json_element_ref() failed");
 				return false;
 			}
 		}
@@ -603,7 +636,7 @@ static bool parse_json_scene(const Json::Value& scene, AST& ast)
 	if (scene.isMember(JSON_STR_ENV)) {
 		rc = parse_json_environment(scene, sd);
 		if (!rc) {
-			ERR("parse_json_environment() failed");
+			ERR(JSON_STR_SCN << ": " << "parse_json_environment() failed");
 			return false;
 		}
 	}
@@ -617,6 +650,7 @@ static bool parse_json_scenes(const Json::Value& root, AST& ast)
 	bool rc;
 
 	if (!root.isMember(JSON_STR_SCNS)) {
+		// silently fail - will be caught during validaton
 		return true;
 	}
 
@@ -624,9 +658,10 @@ static bool parse_json_scenes(const Json::Value& root, AST& ast)
 		ERR(JSON_STR_SCNS << " is not an array");
 		return false;
 	}
-	DBG("parse_scenes: " << JSON_STR_SCNS << " size: " << root[JSON_STR_SCNS].size());
+
 	const Json::Value scenes = root[JSON_STR_SCNS];
-	const std::size_t size = root[JSON_STR_SCNS].size();
+	const std::size_t size = scenes.size();
+	DBG("parse_scenes: " << JSON_STR_SCNS << " size: " << size);
 
 	for (uint32_t i = 0; i < size; i++) {
 		const Json::Value scene = scenes[i];
