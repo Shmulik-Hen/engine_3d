@@ -621,7 +621,7 @@ static bool parse_json_scene(const Json::Value& scene, AST& ast)
 
 		const Json::Value elements = scene[JSON_STR_ELEMS];
 		const std::size_t size = elements.size();
-		DBG("parse_lib: " << JSON_STR_ELEMS << " size: " << size);
+		DBG("parse_elem_ref: " << JSON_STR_ELEMS << " size: " << size);
 
 		for (uint32_t i = 0; i < size; i++) {
 			const Json::Value element = elements[i];
