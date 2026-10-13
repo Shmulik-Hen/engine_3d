@@ -45,14 +45,14 @@ element* my_scene::add_element()
 	return elements_owned.back().get();
 }
 
-void my_scene::parse(const std::string& filename, const std::string& conf_name)
+void my_scene::parse(const std::string& filename)
 {
 	DBG("parse");
 
 #ifdef USING_JSON
-	ast = config_ns::parse_json(filename, conf_name);
+	ast = config_ns::parse_json(filename);
 #else
-	ast = config_ns::parse_legacy(filename, conf_name);
+	ast = config_ns::parse_legacy(filename);
 #endif
 
 #ifdef DEBUG_PRINTS
@@ -83,6 +83,7 @@ void my_scene::parse(const std::string& filename, const std::string& conf_name)
 
 void my_scene::build()
 {
+#if 0
 	DBG("build");
 
 	DBG("build: num polygon defs: " << (int)ast.polygons.size());
@@ -174,6 +175,7 @@ void my_scene::build()
 		frame_ctx.state->run.loop_delay = ast.run.loop_delay.value();
 		DBG("build: override: 2: loop_delay: " << frame_ctx.state->run.loop_delay);
 	}
+#endif // 0
 }
 
 void my_scene::update()

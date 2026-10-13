@@ -150,7 +150,8 @@ int main(int argc, char** argv)
 			sys_error("failed to initialize scene");
 		}
 
-		scene->parse(filename, conf_name);
+		scene->parse(filename);
+#if 0
 		scene->build();
 
 		if (!scene->root) {
@@ -240,7 +241,7 @@ int main(int argc, char** argv)
 				break;
 			}
 		}
-
+#endif // 0
 		return 0;
 	}
 	catch (const std::exception& e) {

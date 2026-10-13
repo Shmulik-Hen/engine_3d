@@ -1,4 +1,5 @@
 #pragma once
+
 #include <fstream>
 #include "config_document.h"
 

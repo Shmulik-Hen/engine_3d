@@ -35,6 +35,8 @@ constexpr int Z_ = 2;
 constexpr int O_ = 3;
 
 constexpr int MIN_VECTORS = 3;
-constexpr int NUM_COORDS = O_;
+constexpr int MIN_MESHES = 1;
+constexpr int NUM_POINTS = 2;
 constexpr int NUM_ATTRIBUTES = 7;
+constexpr int NUM_COORDS = O_;
 

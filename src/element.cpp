@@ -13,6 +13,7 @@ using polylist_t = polygon_ns::polygon::polylist_t;
 
 void element::init_from_def(const polylist_t& poly_list, element* root, const config_ns::element_def& def)
 {
+#if 0
 	_name = def.name;
 	_active = def.active;
 	_ini_att = def.ini_att;
@@ -38,6 +39,7 @@ void element::init_from_def(const polylist_t& poly_list, element* root, const co
 		}
 		_polygons.push_back(poly);
 	}
+#endif // 0
 }
 
 bool element::read(const polylist_t& poly_list, element* root, std::ifstream& ifs)

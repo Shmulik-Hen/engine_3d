@@ -797,6 +797,7 @@ vector_3 polygon::find_normal()
 
 void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& def)
 {
+#if 0
 	_name = def.name;
 	_draw_ctx->set_base_color(ctx.state->grfx.gfx.get(), def.color_index);
 #ifdef DEBUG_POLYGON
@@ -827,6 +828,7 @@ void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& de
 			_normal = _normal * -UNIT;
 		}
 	}
+#endif // 0
 }
 
 bool polygon::read(const graphics* gfx, std::ifstream& ifs)

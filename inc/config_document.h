@@ -16,44 +16,58 @@ using attrib = attrib_ns::attrib;
 
 struct polygon_def
 {
+	// required fields
 	std::string name;
-	int color_index {0};
+	uint32_t color_index {0};
 	bool force {false};
+	std::vector<vector_3> vertices;
+};
 
-	std::vector<vector_3> points;
-
-	// keep for transition; later we can drop it
-	std::optional<vector_3> normal_cfg;
+struct mesh_def
+{
+	// required fields
+	std::string name;
+	std::vector<std::string> polygons;
 };
 
 struct element_def
 {
+	// required fields
 	std::string name;
-	std::string parent; // empty or "world" etc.
-	attrib ini_att;
-	std::optional<attrib> run_att;
-	bool active {false};
+	std::string mesh;
+};
+struct element_ref
+{
+	// required fields
+	std::string name;
+	bool active;
 
-	// refer to polygons by name (stable for both legacy and JSON)
-	std::vector<std::string> polygons;
+	// optional fields
+	std::optional<std::string> ref;
+	std::optional<std::string> parent; // null means "root"
+	std::optional<attrib> ini_att;
+	std::optional<attrib> run_att;
 };
 
 struct point_def
 {
-	int x;
-	int y;
+	// required fields
+	uint32_t x;
+	uint32_t y;
 };
 
 struct runtime_def
 {
+	// optional fields
 	std::optional<int> loops;
-	std::optional<int> loop_delay;
+	std::optional<uint32_t> loop_delay;
 };
 
 struct environ_def
 {
-	std::optional<int> color_idx;
-	std::optional<int> light_type;
+	// optional fields
+	std::optional<uint32_t> color_idx;
+	std::optional<uint32_t> light_type;
 	std::optional<vector_3> light_direction;
 	std::optional<vector_3> light_position;
 	std::optional<vector_3> camera_position;
@@ -63,12 +77,20 @@ struct environ_def
 	std::optional<point_def> max_pos;
 };
 
+struct scene_def
+{
+	std::string name;
+	environ_def env;
+	runtime_def run;
+};
+
 struct AST
 {
 	std::vector<polygon_def> polygons;
-	std::vector<element_def> elements;
-	environ_def env;
-	runtime_def run;
+	std::vector<mesh_def> meshes;
+	std::vector<element_def> element_defs;
+	std::vector<element_ref> element_refs;
+	std::vector<scene_def> scene_defs;
 };
 
 } // namespace config_ns
