@@ -17,7 +17,7 @@ using graphics = graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
 namespace fs = std::filesystem;
 
-const std::string version = "0.9";
+const std::string version = "0.10";
 const std::string def_conf_name = "cube";
 const std::string def_conf_path = "../config/";
 const std::string def_file_name = "config";
@@ -34,8 +34,12 @@ void usage(std::string str)
 	fprintf(stdout, "\nUsage: %s [OPTIONS]... [CONFIG_FILE] [CONFIG_NAME]\n", str.c_str());
 	fprintf(stdout, "Render animated 3D objects\n\n");
 	fprintf(stdout, "OPTIONS:\n");
-	fprintf(stdout, "  -c, --conf <config name>\tspecify a configuration name to choose\n");
-	fprintf(stdout, "  -f, --file <config file>\tspecify a JSON file name to read the configuration from\n");
+	fprintf(stdout, "  -c, --conf <config name>\tspecify a configuration name to choose (default 'config')\n");
+#ifdef USING_JSON
+	fprintf(stdout, "  -f, --file <config file>\tspecify a configuration JSON file name (default config.json)\n");
+#else
+	fprintf(stdout, "  -f, --file <config file>\tspecify a configuration DAT file name (default config.dat)\n");
+#endif
 	fprintf(stdout, "  -h, --help\t\t\tdisplay this help and exit\n");
 	fprintf(stdout, "  -u, --usage\t\t\tdisplay this help and exit\n");
 	fprintf(stdout, "  -v, --version\t\t\toutput version information and exit\n");
@@ -88,6 +92,9 @@ int main(int argc, char** argv)
 				return 0;
 			case 'v':
 				std::cout << version << std::endl;
+#ifdef USING_JSON
+				std::cout << "JSON configuration version " << JSON_VER_MAJ << "." << JSON_VER_MIN << "." << JSON_VER_REV << std::endl;
+#endif
 				return 0;
 			default:
 				std::cerr << "?? getopt_long returned character code 0" << std::oct << c << std::endl;
@@ -111,7 +118,6 @@ int main(int argc, char** argv)
 				}
 				optind++;
 			}
-			DBG("");
 		}
 
 		if (argc == 1) {

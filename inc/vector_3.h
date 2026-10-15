@@ -13,7 +13,7 @@ class vector_3
 private:
 
 	unit _coords[dim];
-	bool is_valid_coord(int i) const { return (i >= X_ && i <= Z_); }
+	bool is_valid_coord(uint32_t i) const { return (i >= X_ && i <= Z_); }
 
 public:
 

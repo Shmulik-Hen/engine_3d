@@ -12,9 +12,9 @@
 #include "config_document.h"
 
 // clang-format off
-namespace attrib_ns { class attrib; }
+namespace attrib_ns   { class attrib; }
 namespace graphics_ns { class graphics; }
-namespace matrix_ns { class matrix; }
+namespace matrix_ns   { class matrix; }
 namespace vector_3_ns { class vector_3; }
 // clang-format on
 

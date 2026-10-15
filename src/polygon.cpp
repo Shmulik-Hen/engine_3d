@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
-#include <cstdint>
 
 // #define DEBUG_PRINTS
 #include "polygon.h"

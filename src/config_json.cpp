@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <vector>
 
-#define DEBUG_PRINTS
+// #define DEBUG_PRINTS
 #include "common.h"
 #include "config_json.h"
 #include "utils.h"
@@ -17,10 +17,9 @@ const std::string JSON_STR_SCN = "scene";
 const std::string JSON_STR_VEC = "vector";
 const std::string JSON_STR_PAIR = "pair";
 const std::string JSON_STR_POLY = "polygon";
-const std::string JSON_STR_MESH = "mesh";
 const std::string JSON_STR_ELEM = "element";
 
-static bool check_version(const Json::Value& root, const uint32_t array[VERSION_NUM_FIELDS])
+static bool check_version(const Json::Value& root, const uint32_t array[JSON_VER_FIELDS])
 {
 	if (!root.isMember(JSON_STR_VER)) {
 		ERR(JSON_STR_VER << " is missing");
@@ -28,14 +27,14 @@ static bool check_version(const Json::Value& root, const uint32_t array[VERSION_
 	}
 
 	Json::Value ver = root[JSON_STR_VER];
-	if (!ver.isArray() || ver.size() != VERSION_NUM_FIELDS) {
+	if (!ver.isArray() || ver.size() != JSON_VER_FIELDS) {
 		ERR(JSON_STR_VER << " is not an array or illegal size: required: "
-		                 << VERSION_NUM_FIELDS << ", current: " << ver.size());
+		                 << JSON_VER_FIELDS << ", current: " << ver.size());
 		return false;
 	}
 
 	bool match = true;
-	for (uint32_t i = 0; i < VERSION_NUM_FIELDS; i++) {
+	for (uint32_t i = 0; i < JSON_VER_FIELDS; i++) {
 		if (!ver[i].isUInt()) {
 			ERR(JSON_STR_VER << "[" << i << "] is not an unsigned integer");
 			return false;
@@ -700,7 +699,7 @@ AST parse_json(const std::string& filename)
 		sys_error("parseFromStream() failed with: ", errs.c_str());
 	}
 
-	uint32_t version[VERSION_NUM_FIELDS] = {MAJOR, MINOR, REVISION};
+	uint32_t version[JSON_VER_FIELDS] = {JSON_VER_MAJ, JSON_VER_MIN, JSON_VER_REV};
 	rc = check_version(root, version);
 	if (!rc) {
 		sys_error("unsupported config version in: ", filename.c_str());

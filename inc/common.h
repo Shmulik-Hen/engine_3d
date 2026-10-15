@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <cstdint>
 
 const std::string ERR_PFX = "Error: ";
 const std::string WARN_PFX = "Warning: ";
@@ -29,14 +30,18 @@ const std::string DBG_PFX = "Debug: ";
 #endif // DEBUG_PRINTS
 
 // coordinates
-constexpr int X_ = 0;
-constexpr int Y_ = 1;
-constexpr int Z_ = 2;
-constexpr int O_ = 3;
+constexpr uint32_t X_ = 0;
+constexpr uint32_t Y_ = 1;
+constexpr uint32_t Z_ = 2;
+constexpr uint32_t O_ = 3;
 
-constexpr int MIN_VECTORS = 3;
-constexpr int MIN_MESHES = 1;
-constexpr int NUM_POINTS = 2;
-constexpr int NUM_ATTRIBUTES = 7;
-constexpr int NUM_COORDS = O_;
+constexpr uint32_t MIN_VECTORS = 3;
+constexpr uint32_t MIN_MESHES = 1;
+constexpr uint32_t NUM_POINTS = 2;
+constexpr uint32_t NUM_ATTRIBUTES = 7;
+constexpr uint32_t NUM_COORDS = O_;
 
+const uint32_t JSON_VER_MAJ = 0;
+const uint32_t JSON_VER_MIN = 0;
+const uint32_t JSON_VER_REV = 3;
+const uint32_t JSON_VER_FIELDS = 3;
