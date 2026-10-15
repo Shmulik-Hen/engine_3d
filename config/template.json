@@ -6,51 +6,8 @@
 		"use_space": false
 	},
 
-	"comment version": [
-		"mandatory",
-	],
 	"version": [ 0, 0, 3 ],
 
-	"comment colors": [
-		"0.  black",
-		"1.  grey",
-		"2.  silver",
-		"3.  white",
-		"4.  red",
-		"5.  maroon",
-		"6.  yellow",
-		"7.  olive",
-		"8.  lime",
-		"9.  green",
-		"10. aqua",
-		"11. teal",
-		"12. blue",
-		"13. navy",
-		"14. magenta",
-		"15. purple"
-
-	],
-
-	"comment library": [
-		"collection of all the objects",
-		"at least 1 of each polygons, meshes, elements",
-		"",
-		"global:",
-		"order is not important",
-		"name: string: must not be null/empty",
-		"",
-		"polygons:",
-		"color_idx: unsigned integer: see clors comment above",
-		"force: boolean: always visible",
-		"vectors: array: at least 3 vector",
-		"vector: array: exactly 3 floating point coords (x, y, z)",
-		"",
-		"meshes:",
-		"polygons: string: at least 1 of a valid polygon",
-		"",
-		"elements:",
-		"mesh: string: exactly 1 of a valid mesh"
-	],
 	"library":
 	{
 		"polygons": [
@@ -79,38 +36,6 @@
 			}
 		]
 	},
-	"comment scenes": [
-		"collection of all the scenes",
-		"at least 1",
-		"",
-		"global:",
-		"order is not important",
-		"name: string: must not be null/empty",
-		"",
-		"scene:",
-		"parent: string: name of a valid parent. null means root (exactly 1)",
-		"active: boolean: movable - gets regular updates",
-		"ref: string: exactly 1 of a valid library element (optional)",
-		"attrib, motion",
-		"exactly 7 floating point numbers",
-		"[X transform, Y transform, Z transform, ",
-		"X rotation, Y rotation, Z rotation,",
-		"zoom factor]",
-		"attrib: array: initial position (optional)",
-		"motion: array: continuous movement (optional)",
-		"",
-		"environment: optional field with all optional values",
-		"color_idx: unsigned int: background color",
-		"light_type: unsigned int: 0 - directional, 1 - point",
-		"light_direction: vector",
-		"light_position: vector",
-		"camera_position: vector",
-		"focal_len: floating point number",
-		"near_eps: floating point number: at which minimal angle to make a polygon disappear",
-		"min_pos/max_pos: array: exactly 2 unsigned integers of viewport",
-		"loops: integer: how many loops to run. negative means endless",
-		"loop_delay: unsigned integer: how many msec between frames"
-	],
 	"scenes": [
 		{
 			"name": "cube",
