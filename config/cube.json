@@ -112,23 +112,10 @@
 					"parent": "world",
 					"active": true,
 					"ref": "cube_body",
-					"attrib": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"origin": [ 0, 0, 0, 0, 0, 0, 1 ],
 					"motion": [ 0, 0, 0, 0, 0, 0, 1 ]
 				}
-			],
-			"environment": {
-				"color_idx": 0,
-				"light_type": 0,
-				"light_direction": [ 0.0, 0.0, 1.0 ],
-				"light_position": [ 0.0, 20.0, 75.0 ],
-				"camera_position": [ 0.0, 0.0, 1000.0 ],
-				"focal_len": 2000.0,
-				"near_eps": 1.0,
-				"min_pos": [ 0, 0 ],
-				"max_pos": [ 1280, 800 ],
-				"loops": -1,
-				"loop_delay": 20
-			}
+			]
 		}
 	]
 }

@@ -232,12 +232,12 @@ void matrix::prep_trans_mat(const attrib& a)
 	unit tx = a.get_trans_x();
 	unit ty = a.get_trans_y();
 	unit tz = a.get_trans_z();
-	unit zm = a.get_zoom();
+	unit sc = a.get_scale();
 
 	DBG("prep_trans_mat:");
-	DBG("      rx: " << FLT(rx, 6) << " ry: " << FLT(ry, 6) << " rz: " << FLT(rz, 6));
-	DBG("      tx: " << FLT(tx, 6) << " ty: " << FLT(ty, 6) << " tz: " << FLT(tz, 6));
-	DBG("    zoom: " << FLT(zm, 6));
+	DBG("      rx:  " << FLT(rx, 6) << " ry: " << FLT(ry, 6) << " rz: " << FLT(rz, 6));
+	DBG("      tx:  " << FLT(tx, 6) << " ty: " << FLT(ty, 6) << " tz: " << FLT(tz, 6));
+	DBG("    scale: " << FLT(sc, 6));
 
 	unit srx = std::sin(rx);
 	unit sry = std::sin(ry);
@@ -249,19 +249,19 @@ void matrix::prep_trans_mat(const attrib& a)
 	DBG("     srx: " << FLT(srx, 6) << " sry: " << FLT(sry, 6) << " srz: " << FLT(srz, 6));
 	DBG("     crx: " << FLT(crx, 6) << " cry: " << FLT(cry, 6) << " crz: " << FLT(crz, 6) << ENDL);
 
-	_mat[X_][X_] = (zm * cry * crz);
-	_mat[X_][Y_] = (zm * -cry * srz);
-	_mat[X_][Z_] = (zm * -sry);
+	_mat[X_][X_] = (sc * cry * crz);
+	_mat[X_][Y_] = (sc * -cry * srz);
+	_mat[X_][Z_] = (sc * -sry);
 	_mat[X_][O_] = tx;
 
-	_mat[Y_][X_] = (zm * (crx * srz - srx * sry * crz));
-	_mat[Y_][Y_] = (zm * (crx * crz + srx * sry * srz));
-	_mat[Y_][Z_] = (zm * -srx * cry);
+	_mat[Y_][X_] = (sc * (crx * srz - srx * sry * crz));
+	_mat[Y_][Y_] = (sc * (crx * crz + srx * sry * srz));
+	_mat[Y_][Z_] = (sc * -srx * cry);
 	_mat[Y_][O_] = ty;
 
-	_mat[Z_][X_] = (zm * (srx * srz + crx * sry * crz));
-	_mat[Z_][Y_] = (zm * (srx * crz - crx * sry * srz));
-	_mat[Z_][Z_] = (zm * crx * cry);
+	_mat[Z_][X_] = (sc * (srx * srz + crx * sry * crz));
+	_mat[Z_][Y_] = (sc * (srx * crz - crx * sry * srz));
+	_mat[Z_][Z_] = (sc * crx * cry);
 	_mat[Z_][O_] = tz;
 
 	_mat[O_][X_] = ZERO;

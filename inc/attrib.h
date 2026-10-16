@@ -14,7 +14,7 @@ class attrib
 	unit _trans_x {ZERO}; // x-axis translation
 	unit _trans_y {ZERO}; // y-axis translation
 	unit _trans_z {ZERO}; // z-axis translation
-	unit _zoom {UNIT};
+	unit _scale {UNIT};
 
 public:
 
@@ -32,7 +32,7 @@ public:
 	unit get_trans_x() const { return _trans_x; };
 	unit get_trans_y() const { return _trans_y; };
 	unit get_trans_z() const { return _trans_z; };
-	unit get_zoom() const { return _zoom; };
+	unit get_scale() const { return _scale; };
 
 	attrib& operator=(unit[NUM_ATTRIBUTES]);
 	attrib& operator+=(const attrib&);

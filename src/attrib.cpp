@@ -11,14 +11,14 @@ attrib::attrib(const unit dx, const unit dy, const unit dz,
 	       const unit z) :
 	_rot_x {dx}, _rot_y {dy}, _rot_z {dz},
 	_trans_x {ox}, _trans_y {oy}, _trans_z {oz},
-	_zoom {z}
+	_scale {z}
 {
 }
 
 attrib::attrib(const unit atts[NUM_ATTRIBUTES]) :
 	_rot_x {atts[0]}, _rot_y {atts[1]}, _rot_z {atts[2]},
 	_trans_x {atts[3]}, _trans_y {atts[4]}, _trans_z {atts[5]},
-	_zoom {atts[6]}
+	_scale {atts[6]}
 {
 }
 // clang-format on
@@ -54,7 +54,7 @@ bool attrib::read(std::ifstream& ifs)
 
 	while ((!read_word(ifs, line)) && (!ifs.eof()));
 	if (ifs.eof())  return false;
-	_zoom = strtof(line, NULL);
+	_scale = strtof(line, NULL);
 	// clang-format on
 
 	return true;
@@ -69,7 +69,7 @@ void attrib::print() const
 	    << "            translate x: " << FLT(_trans_x, 6) << ENDL
 	    << "            translate y: " << FLT(_trans_y, 6) << ENDL
 	    << "            translate z: " << FLT(_trans_z, 6) << ENDL
-	    << "            zoom:        " << FLT(_zoom, 6) << ENDL);
+	    << "            scale:       " << FLT(_scale, 6) << ENDL);
 }
 
 attrib& attrib::operator=(unit atts[NUM_ATTRIBUTES])
@@ -80,7 +80,7 @@ attrib& attrib::operator=(unit atts[NUM_ATTRIBUTES])
 	_trans_x = atts[3];
 	_trans_y = atts[4];
 	_trans_z = atts[5];
-	_zoom = atts[6];
+	_scale = atts[6];
 	return *this;
 }
 
@@ -92,14 +92,14 @@ attrib& attrib::operator+=(const attrib& a)
 	_trans_x += a._trans_x;
 	_trans_y += a._trans_y;
 	_trans_z += a._trans_z;
-	_zoom *= a._zoom;
+	_scale *= a._scale;
 	return *this;
 }
 
 std::ostream& operator<<(std::ostream& os, const attrib& a)
 {
 	return os << '(' << a._rot_x << ',' << a._rot_y << ',' << a._rot_z << ','
-	          << a._trans_x << ',' << a._trans_y << ',' << a._trans_z << ',' << a._zoom << ')';
+	          << a._trans_x << ',' << a._trans_y << ',' << a._trans_z << ',' << a._scale << ')';
 }
 
 std::istream& operator>>(std::istream& is, attrib& a)
@@ -110,7 +110,7 @@ std::istream& operator>>(std::istream& is, attrib& a)
 	is >> a._trans_x;
 	is >> a._trans_y;
 	is >> a._trans_z;
-	is >> a._zoom;
+	is >> a._scale;
 	return is;
 }
 

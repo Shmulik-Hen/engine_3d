@@ -202,13 +202,16 @@ Each vector is an unnamed array containing **exactly three floating-point coordi
 | `parent` | String or null | Name of a valid parent; `null` identifies the root. |
 | `active` | Boolean | Enables or disables the scene element. |
 | `ref` | String | Optional name of a valid library element. |
-| `attrib` | Array | Optional initial position and orientation. |
-| `motion` | Array | Optional continuous movement. |
+| `origin` | Attributes | Optional initial position and orientation. (see below) |
+| `motion` | Attributes | Optional continuous movement. (see below) |
 
-The `attrib` and `motion` arrays contain **exactly seven floating-point values**:
+##### Attributes
+
+Each attribute is an array containing **exactly seven floating-point values**:
+Attribute fields:
 
 ```text
-[ X Rotation, Y Rotation, Z Rotation, X Transform, Y Transform, Z Transform, Scale factor ]
+[ X Rotation, Y Rotation, Z Rotation, X Translate, Y Translate, Z Translate, Scale factor ]
 ```
 
 The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for twice the size.
@@ -289,7 +292,7 @@ See [`config/template.json`](config/template.json).
 					"parent": "world",
 					"active": true,
 					"ref": "cube_body",
-					"attrib": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"origin": [ 0, 0, 0, 0, 0, 0, 1 ],
 					"motion": [ 0, 0, 0, 0, 0, 0, 1 ]
 				}
 			],

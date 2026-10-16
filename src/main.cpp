@@ -204,7 +204,7 @@ int main(int argc, char** argv)
 		}
 #endif // DEBUG_PRINTS
 
-		// attrib(rotationX, rotationY, rotationZ, positionX, positionY, positionZ, zoom)
+		// attrib(rotationX, rotationY, rotationZ, translationX, translationY, translationZ, scale)
 		attrib keep_moving(0, 0, 0, 0, 0, 0, 1);
 
 		input_state in {};

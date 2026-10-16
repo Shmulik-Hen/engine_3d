@@ -23,7 +23,7 @@ const std::string JSON_STR_SCNS  = "scenes";
 const std::string JSON_STR_PAREN = "parent";
 const std::string JSON_STR_ACT   = "active";
 const std::string JSON_STR_REF   = "ref";
-const std::string JSON_STR_ATTR  = "attrib";
+const std::string JSON_STR_ORIG  = "origin";
 const std::string JSON_STR_MOTN  = "motion";
 const std::string JSON_STR_ENV   = "environment";
 // environment field names

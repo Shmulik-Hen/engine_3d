@@ -50,7 +50,7 @@
 					"parent": "world",
 					"active": true,
 					"ref": "cube_body",
-					"attrib": [ 0, 0, 0, 0, 0, 0, 1 ],
+					"origin": [ 0, 0, 0, 0, 0, 0, 1 ],
 					"motion": [ 0, 0, 0, 0, 0, 0, 1 ]
 				}
 			],
