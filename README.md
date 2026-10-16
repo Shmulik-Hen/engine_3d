@@ -82,45 +82,48 @@ A child inherits its parent's transformations while retaining its own local tran
 
 ```text
 World
-|----Gimbal
-|    |----Airplane
-|    |    |----Right Wing
-|    |    |    |----Aileron
-|    |    |    |    \----Trim
-|    |    |    \----Flap
-|    |    |----Left Wing
-|    |    |    |----Aileron
-|    |    |    |    \----Trim
-|    |    |    \----Flap
-|    |    |----Right Horizontal Stabilizer
-|    |    |    |----Elevator
-|    |    |    \    \----Trim
-|    |    |----Left Horizontal Stabilizer
-|    |    |    |----Elevator
-|    |    |    \    \----Trim
-|    |    |----Vertical Stabilizer
-|    |    |    |----Rudder
-|    |    |    \    \----Trim
-|    |    |----Propeller
-|    |    |    |    |----Blade 1
-|    |    |    |    |----Blade 2
-|    |    |    |    |----Blade 3
-|    |    |    |    \----Blade 4
-|    |    |    |----Right Landing Gear
-|    |    |    |    \----Wheel
-|    |    |    |----Left Landing Gear
-|    |    |    |    \----Wheel
-|    |    |    |----Front Landing Gear
-|    |    \    \    \----Wheel
-|    |----Land
-|    |    |----Background
-|    |    |    |----Control Tower
-|    |    |    |----Buildings
-|    |    |    \----Mountains
-\    \    \----Landing Strip
+  ├──Gimbal
+  │    └──Airplane
+  │         ├──Right Wing
+  │         │    ├──Aileron
+  │         │    │      └──Trim
+  │         │    └──Flap
+  │         ├──Left Wing
+  │         │    ├──Aileron
+  │         │    │    └──Trim
+  │         │    └──Flap
+  │         ├──Right Horizontal Stabilizer
+  │         │    └──Elevator
+  │         │         └──Trim
+  │         ├──Left Horizontal Stabilizer
+  │         │    └──Elevator
+  │         │         └──Trim
+  │         ├──Vertical Stabilizer
+  │         │    └──Rudder
+  │         │         └──Trim
+  │         ├──Propeller
+  │         │    ├──Blade 1
+  │         │    ├──Blade 2
+  │         │    ├──Blade 3
+  │         │    └──Blade 4
+  │         ├──Right Landing Gear
+  │         │    └──Wheel
+  │         ├──Left Landing Gear
+  │         │    └──Wheel
+  │         └──Front Landing Gear
+  │              └──Wheel
+  └──Land
+       ├──Background
+       │    ├──Control Tower
+       │    ├──Buildings
+       │    └──Mountains
+       └──Landing Strip
 ```
 
 ## JSON configuration
 
+Scenes and their hierarchical relationships are defined in JSON configuration files located in the config/ directory.
+
 The scene hierarchy is described in a JSON configuration file. Usually under ../config/ .
-See ./JSON.md for details.
+
+See [JSON configuration](./JSON.md) for details.

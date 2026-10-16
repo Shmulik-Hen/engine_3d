@@ -368,7 +368,7 @@ polygon::drawing::scratchpad_t polygon::drawing::clip_polygon_to_screen(frame_co
 		[B](const point& p) { return p.y <= B; },
 		[intersect_y, B](const point& S, const point& E) { return intersect_y(S, E, B); });
 
-	// Final sanity: if we ended with <3 vertices, it’s fully clipped
+	// Final sanity: if we ended with <3 vectors, it’s fully clipped
 	if (poly.size() < 3) {
 		poly.clear();
 	}
@@ -770,7 +770,7 @@ vector_3 polygon::find_normal()
 		return vector_3::normalize(cr);
 	}
 	else {
-		// --- Robust path for 4+ vertices: Newell's method ---
+		// --- Robust path for 4+ vectors: Newell's method ---
 		vector_3 nn(ZERO, ZERO, ZERO);
 
 		for (std::size_t i = 0; i < n; ++i) {
@@ -796,7 +796,6 @@ vector_3 polygon::find_normal()
 
 void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& def)
 {
-#if 0
 	_name = def.name;
 	_draw_ctx->set_base_color(ctx.state->grfx.gfx.get(), def.color_index);
 #ifdef DEBUG_POLYGON
@@ -806,7 +805,7 @@ void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& de
 #endif
 
 	_points.clear();
-	for (const auto& v : def.points) {
+	for (const auto& v : def.vectors) {
 		_points.push_back(v);
 	}
 
@@ -817,17 +816,6 @@ void polygon::init_from_def(frame_context& ctx, const config_ns::polygon_def& de
 	// compute fill + normal from geometry
 	_fill = find_fill();
 	_normal = find_normal();
-
-	// optional: if cfg normal exists, assert winding matches during transition
-	if (def.normal_cfg.has_value()) {
-		_config_normal = vector_3::normalize(def.normal_cfg.value());
-		if (vector_3::dot(_normal, _config_normal) < ZERO) {
-			// either flip or warn; I recommend warn+flip until old configs cleaned
-			WARN("computed normal != configuration normal. flipping");
-			_normal = _normal * -UNIT;
-		}
-	}
-#endif // 0
 }
 
 bool polygon::read(const graphics* gfx, std::ifstream& ifs)

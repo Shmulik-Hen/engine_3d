@@ -73,7 +73,7 @@ void my_scene::parse(const std::string& filename)
 		DBG("parse: element: parent: " << elem.parent);
 		DBG("parse: element: active: " << elem.active);
 		DBG("parse: element: att");
-		elem.ini_att.print();
+		elem.origin.print();
 		for (const auto& poly : elem.polygons) {
 			DBG("parse: element: polygon: " << poly);
 		}

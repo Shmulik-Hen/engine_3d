@@ -215,7 +215,7 @@ int main(int argc, char** argv)
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
 			if (gimbal) {
-				if (gimbal->has_run_attrib()) {
+				if (gimbal->has_motionrib()) {
 					gimbal->update();
 				}
 				else {
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 			}
 
 			if (cube) {
-				if (cube->has_run_attrib()) {
+				if (cube->has_motionrib()) {
 					cube->update();
 				}
 				else {
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
 			}
 
 			if (pyramid) {
-				if (pyramid->has_run_attrib()) {
+				if (pyramid->has_motionrib()) {
 					pyramid->update();
 				}
 				else {

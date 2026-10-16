@@ -27,5 +27,5 @@ constexpr int DEF_LOOP_NUM(-1); // endless
 constexpr int DEF_LOOP_DELAY(20);
 
 // Scale factor for EPSILON when computing the squared tolerance
-// for detecting nearly-duplicate polygon vertices.
+// for detecting nearly-duplicate polygon vectors.
 static constexpr unit CONSEC_TOLERANCE_SCALE = 10.0f;

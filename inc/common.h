@@ -2,14 +2,20 @@
 
 #include <iomanip>
 #include <iostream>
-#include <cstdint>
 
-const std::string ERR_PFX = "Error: ";
-const std::string WARN_PFX = "Warning: ";
-const std::string INFO_PFX = "Info: ";
+#include <constants.h>
+
 const std::string SEP = ", ";
 const std::string PFX = ": ";
 const std::string SFX = ";";
+const std::string DOT = ".";
+const std::string LP = "(";
+const std::string RP = ")";
+const std::string LB = "[";
+const std::string RB = "]";
+const std::string ERR_PFX = "Error" + SEP;
+const std::string WARN_PFX = "Warning" + SEP;
+const std::string INFO_PFX = "Info" + SEP;
 
 #define ENDL      std::endl
 #define FLUSH     std::flush
@@ -23,25 +29,8 @@ const std::string SFX = ";";
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << FLUSH
 
 #ifdef DEBUG_PRINTS
-const std::string DBG_PFX = "Debug: ";
+const std::string DBG_PFX = "Debug" + SEP;
 #define DBG(s) std::cout << STR(DBG_PFX, 1) << s << ENDL << FLUSH
 #else
 #define DBG(...)
 #endif // DEBUG_PRINTS
-
-// coordinates
-constexpr uint32_t X_ = 0;
-constexpr uint32_t Y_ = 1;
-constexpr uint32_t Z_ = 2;
-constexpr uint32_t O_ = 3;
-
-constexpr uint32_t MIN_VECTORS = 3;
-constexpr uint32_t MIN_MESHES = 1;
-constexpr uint32_t NUM_POINTS = 2;
-constexpr uint32_t NUM_ATTRIBUTES = 7;
-constexpr uint32_t NUM_COORDS = O_;
-
-const uint32_t JSON_VER_MAJ = 0;
-const uint32_t JSON_VER_MIN = 0;
-const uint32_t JSON_VER_REV = 3;
-const uint32_t JSON_VER_FIELDS = 3;

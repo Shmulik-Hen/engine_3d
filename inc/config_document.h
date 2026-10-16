@@ -19,7 +19,7 @@ struct polygon_def
 	std::string name;
 	uint32_t color_index {0};
 	bool force {false};
-	std::vector<vector_3> vertices;
+	std::vector<vector_3> vectors;
 };
 
 struct mesh_def
@@ -29,30 +29,45 @@ struct mesh_def
 	std::vector<std::string> polygons;
 };
 
-struct element_def
+struct lib_elem_def
 {
 	// required fields
 	std::string name;
 	std::string mesh;
 };
-struct element_ref
+
+struct scene_elem_def
 {
 	// required fields
 	std::string name;
-	bool active;
+	bool active {false};
 
 	// optional fields
 	std::optional<std::string> ref;
 	std::optional<std::string> parent; // null means "root"
-	std::optional<attrib> ini_att;
-	std::optional<attrib> run_att;
+	std::optional<attrib> origin;
+	std::optional<attrib> motion;
+};
+
+// merged during build from lib_elem_def + scene_elem_def
+struct element_def
+{
+	// required fields
+	std::string name;
+	std::string parent; // null means "root"
+	std::optional<attrib> origin;
+	std::optional<attrib> motion;
+	bool active {false};
+
+	// refer to polygons by name (stable for both legacy and JSON)
+	std::vector<std::string> polygons;
 };
 
 struct point_def
 {
 	// required fields
-	uint32_t x;
-	uint32_t y;
+	uint32_t x {0};
+	uint32_t y {0};
 };
 
 struct runtime_def
@@ -76,19 +91,24 @@ struct environ_def
 	std::optional<point_def> max_pos;
 };
 
+struct library_def
+{
+	std::vector<polygon_def> polygons;
+	std::vector<mesh_def> meshes;
+	std::vector<lib_elem_def> lib_elem_defs;
+};
+
 struct scene_def
 {
 	std::string name;
 	environ_def env;
 	runtime_def run;
+	std::vector<scene_elem_def> scene_elem_defs;
 };
 
 struct AST
 {
-	std::vector<polygon_def> polygons;
-	std::vector<mesh_def> meshes;
-	std::vector<element_def> element_defs;
-	std::vector<element_ref> element_refs;
+	library_def library_defs;
 	std::vector<scene_def> scene_defs;
 };
 

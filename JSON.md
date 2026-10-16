@@ -1,4 +1,4 @@
-# JSON Convfiguration
+# JSON Configuration
 
 **Parsing** verifies JSON syntax, field types, and fixed-length arrays.
 **Validation** checks duplicates, completeness, value constraints, references, and scene hierarchy.
@@ -15,7 +15,7 @@ The library contains definitions of **polygons**, **meshes**, and **elements**, 
 
 - Each element references one valid 3D mesh.
 - Each mesh references at least one valid polygon.
-- Each polygon has **3–8 consecutive vertices** describing a **planar, closed shape**.
+- Each polygon has **3–8 consecutive vectors** describing a **planar, closed shape**.
 - Vertex winding order (**CW/CCW**) determines which side of a polygon is visible.
 - Multiple elements can reuse the same mesh.
 - Object and field order is not significant.
@@ -81,8 +81,8 @@ Each vector is an unnamed array containing **exactly three floating-point coordi
 | `parent` | String or null | Name of a valid parent; `null` identifies the root. |
 | `active` | Boolean | Enables or disables the scene element. |
 | `ref` | String | Optional name of a valid library element. |
-| `origin` | Attributes | Optional initial position and orientation. (see below) |
-| `motion` | Attributes | Optional continuous movement. (see below) |
+| `origin` | Array | Optional initial position and orientation attributes. (see below) |
+| `motion` | Array | Optional continuous movement attributes. (see below) |
 
 ##### Attributes
 
@@ -103,7 +103,7 @@ The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for tw
 
 | Field | JSON type | Description |
 |---|---|---|
-| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point (spotlight). |
+| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light. |
 | `light_direction` | Vector | Direction of the light. |
 | `light_position` | Vector | Position of the light. |
 | `camera_position` | Vector | Position of the camera. |

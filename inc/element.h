@@ -44,7 +44,7 @@ public:
 	void update_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
-	bool has_run_attrib() const { return _run_att.has_value(); }
+	bool has_motionrib() const { return _motion.has_value(); }
 
 	bool _world_dirty {false};
 
@@ -56,10 +56,10 @@ private:
 	element* _parent {nullptr}; // raw pointer, non-owning
 	matrix_ns::matrix _trans_mat;
 	matrix_ns::matrix _rot_mat;
-	attrib_ns::attrib _ini_att;
+	attrib_ns::attrib _origin;
 	bool _active {false};
 	bool _dirty {false};
-	std::optional<attrib_ns::attrib> _run_att;
+	std::optional<attrib_ns::attrib> _motion;
 
 	polygon_ns::polygon* find(const polygon_ns::polygon::polylist_t&, const std::string&) const;
 };
