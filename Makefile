@@ -1,7 +1,7 @@
 SDL2 := 1
 JSON := 1
 
-PRJ_NAME   := engine_3d
+PRJ_NAME   := 3D_engine
 SRC_DIR    := ./src
 INC_DIR    := ./inc
 BLD_DIR    := ./bin

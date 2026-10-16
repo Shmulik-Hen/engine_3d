@@ -39,8 +39,8 @@ Pass an option to `make`, for example `make DEBUG=1`.
 
 ```sh
 cd ./bin/
-./engine_3d --file ../config/config.json --conf config
-./engine_3d --help
+./3D_engine --file ../config/config.json --conf config
+./3D_engine --help
 ```
 
 ## Concepts
