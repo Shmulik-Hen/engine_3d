@@ -2,7 +2,6 @@
 
 #include <iomanip>
 #include <iostream>
-
 #include <constants.h>
 
 const std::string SEP = ", ";

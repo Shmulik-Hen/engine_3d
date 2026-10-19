@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <getopt.h>
+#include <string>
 
 // #define DEBUG_PRINTS
 #include "common.h"
@@ -17,11 +18,13 @@ using graphics = graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
 namespace fs = std::filesystem;
 
-const std::string version = "0.10";
+const std::string version = std::to_string(APP_VER_MAJ) + DOT + std::to_string(APP_VER_MIN) + DOT + std::to_string(APP_VER_REV);
 const std::string def_conf_name = "cube";
 const std::string def_conf_path = "../config/";
 const std::string def_file_name = "config";
 #ifdef USING_JSON
+const std::string json_version = std::to_string(JSON_VER_MAJ) + DOT + std::to_string(JSON_VER_MIN) + DOT + std::to_string(JSON_VER_REV);
+const std::string json_ver_label = "JSON configuration version ";
 const std::string ext = ".json";
 #else
 const std::string ext = ".dat";
@@ -93,7 +96,7 @@ int main(int argc, char** argv)
 			case 'v':
 				std::cout << version << std::endl;
 #ifdef USING_JSON
-				std::cout << "JSON configuration version " << JSON_VER_MAJ << "." << JSON_VER_MIN << "." << JSON_VER_REV << std::endl;
+				std::cout << json_ver_label << json_version << std::endl;
 #endif
 				return 0;
 			default:
