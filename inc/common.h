@@ -4,6 +4,7 @@
 #include <iostream>
 #include <constants.h>
 
+const std::string SPC = " ";
 const std::string SEP = ", ";
 const std::string PFX = ": ";
 const std::string SFX = ";";
@@ -12,13 +13,13 @@ const std::string LP = "(";
 const std::string RP = ")";
 const std::string LB = "[";
 const std::string RB = "]";
-const std::string ERR_PFX = "Error" + SEP;
-const std::string WARN_PFX = "Warning" + SEP;
-const std::string INFO_PFX = "Info" + SEP;
+const std::string ERR_PFX = "Error" + PFX;
+const std::string WARN_PFX = "Warning" + PFX;
+const std::string INFO_PFX = "Info" + PFX;
 
 #define ENDL      std::endl
 #define FLUSH     std::flush
-#define FUNC      STR(__PRETTY_FUNCTION__, 1) << PFX
+#define FUNC      STR(__PRETTY_FUNCTION__, 1) << SFX
 #define HEX(n, w) "0x" << std::hex << std::setw((w)) << std::setfill('0') << std::right << (n)
 #define DEC(n, w) std::dec << std::setw((w)) << std::setfill(' ') << std::right << (n)
 #define FLT(n, p) std::setprecision((p)) << std::fixed << (n)
@@ -28,7 +29,7 @@ const std::string INFO_PFX = "Info" + SEP;
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << FLUSH
 
 #ifdef DEBUG_PRINTS
-const std::string DBG_PFX = "Debug" + SEP;
+const std::string DBG_PFX = "Debug" + PFX;
 #define DBG(s) std::cout << STR(DBG_PFX, 1) << s << ENDL << FLUSH
 #else
 #define DBG(...)

@@ -50,8 +50,8 @@
 					"parent": "world",
 					"active": true,
 					"ref": "cube_body",
-					"origin": [ 0, 0, 0, 0, 0, 0, 1 ],
-					"motion": [ 0, 0, 0, 0, 0, 0, 1 ]
+					"origin": [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+					"motion": [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ]
 				}
 			],
 			"environment": {
