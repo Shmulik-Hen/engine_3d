@@ -38,9 +38,21 @@ Pass an option to `make`, for example `make DEBUG=1`.
 ## Running the engine
 
 ```sh
+./bin/3D_engine --file ./config/config.json --conf config
+```
+or:
+```sh
 cd ./bin/
 ./3D_engine --file ../config/config.json --conf config
+```
+usage:
+```sh
 ./3D_engine --help
+```
+
+show app and JSON supported configuration version:
+```sh
+./3D_engine --version
 ```
 
 ## Concepts
