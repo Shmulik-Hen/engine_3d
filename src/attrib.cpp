@@ -23,53 +23,16 @@ attrib::attrib(const unit atts[NUM_ATTRIBUTES]) :
 }
 // clang-format on
 
-bool attrib::read(std::ifstream& ifs)
-{
-	LINE line;
-
-	// clang-format off
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_rot_x = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_rot_y = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_rot_z = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_trans_x = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_trans_y = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_trans_z = strtof(line, NULL);
-
-	while ((!read_word(ifs, line)) && (!ifs.eof()));
-	if (ifs.eof())  return false;
-	_scale = strtof(line, NULL);
-	// clang-format on
-
-	return true;
-}
-
 void attrib::print() const
 {
-	DBG("  attrib:"
-	    << ENDL << "            rotate x:    " << FLT(_rot_x, 6) << ENDL
-	    << "            rotate y:    " << FLT(_rot_y, 6) << ENDL
-	    << "            rotate z:    " << FLT(_rot_z, 6) << ENDL
-	    << "            translate x: " << FLT(_trans_x, 6) << ENDL
-	    << "            translate y: " << FLT(_trans_y, 6) << ENDL
-	    << "            translate z: " << FLT(_trans_z, 6) << ENDL
-	    << "            scale:       " << FLT(_scale, 6) << ENDL);
+	DBG("  attrib:" << ENDL
+	                << "            rotate x:    " << FLT(_rot_x, 6) << ENDL
+	                << "            rotate y:    " << FLT(_rot_y, 6) << ENDL
+	                << "            rotate z:    " << FLT(_rot_z, 6) << ENDL
+	                << "            translate x: " << FLT(_trans_x, 6) << ENDL
+	                << "            translate y: " << FLT(_trans_y, 6) << ENDL
+	                << "            translate z: " << FLT(_trans_z, 6) << ENDL
+	                << "            scale:       " << FLT(_scale, 6) << ENDL);
 }
 
 attrib& attrib::operator=(unit atts[NUM_ATTRIBUTES])
@@ -94,24 +57,6 @@ attrib& attrib::operator+=(const attrib& a)
 	_trans_z += a._trans_z;
 	_scale *= a._scale;
 	return *this;
-}
-
-std::ostream& operator<<(std::ostream& os, const attrib& a)
-{
-	return os << '(' << a._rot_x << ',' << a._rot_y << ',' << a._rot_z << ','
-	          << a._trans_x << ',' << a._trans_y << ',' << a._trans_z << ',' << a._scale << ')';
-}
-
-std::istream& operator>>(std::istream& is, attrib& a)
-{
-	is >> a._rot_x;
-	is >> a._rot_y;
-	is >> a._rot_z;
-	is >> a._trans_x;
-	is >> a._trans_y;
-	is >> a._trans_z;
-	is >> a._scale;
-	return is;
 }
 
 } // namespace attrib_ns

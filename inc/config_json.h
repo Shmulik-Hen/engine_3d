@@ -39,6 +39,6 @@ const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
 // clang-format on
 
-AST parse_json(const std::string&);
+bool parse_json(std::ifstream&, config_ns::AST&);
 
 } // namespace config_ns

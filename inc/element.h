@@ -31,7 +31,6 @@ public:
 	~element() = default;
 
 	void init_from_def(const polygon_ns::polygon::polylist_t&, element*, const config_ns::element_def&);
-	bool read(const polygon_ns::polygon::polylist_t&, element*, std::ifstream&);
 	void print() const;
 	void print_all();
 
@@ -44,7 +43,7 @@ public:
 	void update_all(frame_context&);
 
 	const std::string get_name() const { return _name; }
-	bool has_motionrib() const { return _motion.has_value(); }
+	bool has_motion() const { return _motion.has_value(); }
 
 	bool _world_dirty {false};
 

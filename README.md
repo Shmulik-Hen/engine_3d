@@ -50,7 +50,7 @@ usage:
 ./3D_engine --help
 ```
 
-show app and JSON supported configuration version:
+version:
 ```sh
 ./3D_engine --version
 ```

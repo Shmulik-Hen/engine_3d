@@ -5,11 +5,7 @@
 // #define DEBUG_PRINTS
 #include "common.h"
 #include "scene.h"
-#ifdef USING_JSON
 #include "config_json.h"
-#else
-#include "config_legacy.h"
-#endif
 
 namespace scene_ns
 {
@@ -45,15 +41,17 @@ element* my_scene::add_element()
 	return elements_owned.back().get();
 }
 
-void my_scene::parse(const std::string& filename)
+bool my_scene::parse(std::ifstream& ifs)
 {
+	bool rc;
+
 	DBG("parse");
 
-#ifdef USING_JSON
-	ast = config_ns::parse_json(filename);
-#else
-	ast = config_ns::parse_legacy(filename);
-#endif
+	rc = config_ns::parse_json(ifs, ast);
+	if (!rc) {
+		ERR("parse_json() failed");
+		return false;
+	}
 
 #ifdef DEBUG_PRINTS
 	DBG("parse: Library");
@@ -122,7 +120,9 @@ void my_scene::parse(const std::string& filename)
 			}
 		}
 	}
+
 #endif
+	return true;
 }
 
 void my_scene::build()

@@ -186,7 +186,7 @@ See [`config/template.json`](./config/template.json).
 				"focal_len": 2000.0,
 				"near_eps": 1.0,
 				"min_pos": [ 0, 0 ],
-				"max_pos": [ 1280, 800 ],
+				"max_pos": [ 1279, 799 ],
 				"loops": -1,
 				"loop_delay": 20
 			}

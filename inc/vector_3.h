@@ -23,7 +23,6 @@ public:
 	vector_3(const unit, const unit, const unit);
 	~vector_3() = default;
 
-	bool read(std::ifstream&);
 	void print() const;
 	unit get(int) const;
 	void set(const int, const unit&);

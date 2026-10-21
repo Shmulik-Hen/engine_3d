@@ -35,22 +35,6 @@ vector_3::vector_3(const unit x, const unit y, const unit z)
 	_coords[Z_] = z;
 }
 
-bool vector_3::read(std::ifstream& ifs)
-{
-	LINE line;
-
-	for (uint32_t i = X_; i <= Z_; i++) {
-		// clang-format off
-		while ((!read_word(ifs, line)) && (!ifs.eof()));
-		if (ifs.eof())  return false;
-		// clang-format on
-		_coords[i] = strtof(line, NULL);
-		// clang-format on
-	}
-
-	return true;
-}
-
 void vector_3::print() const
 {
 	DBG(STR("  vector:", 1));

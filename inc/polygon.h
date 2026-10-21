@@ -156,7 +156,6 @@ public:
 	double get_depth() const { return _depth; }
 
 	void init_from_def(frame_context&, const config_ns::polygon_def&);
-	bool read(const graphics_ns::graphics*, std::ifstream&);
 	void print() const;
 	void draw(scene_ns::frame_context&);
 	void update(matrix_ns::matrix&, matrix_ns::matrix&, scene_ns::frame_context&);

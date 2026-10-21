@@ -6,7 +6,6 @@
 // #define DEBUG_PRINTS
 #include "common.h"
 #include "config_json.h"
-#include "utils.h"
 
 namespace config_ns
 {
@@ -712,48 +711,41 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 	return true;
 }
 
-AST parse_json(const std::string& filename)
+bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 {
-	AST ast;
-	bool rc;
-	std::ifstream ifs;
 	Json::Value root;
 	Json::CharReaderBuilder builder;
 	std::string errs;
 	std::string err_str;
+	bool rc;
 
-	DBG(DBG_JSON << PFX << "file name" << PFX << filename);
-	ifs.open(filename.c_str(), std::ios::in);
-	if (!ifs) {
-		sys_error("file not found: ", filename.c_str());
-	}
-
-	ifs.unsetf(std::ios::skipws);
 	builder["collectComments"] = false;
 	builder["rejectDupKeys"] = true;
 	builder["allowTrailingCommas"] = false;
 
 	rc = parseFromStream(builder, ifs, &root, &errs);
-	ifs.close();
 	if (!rc) {
-		sys_error("parseFromStream() failed with", errs.c_str());
+		ERR("parseFromStream() failed with" << PFX << errs);
+		return false;
 	}
 
 	if (!root.isObject()) {
-		sys_error("JSON root is not an object");
+		ERR("JSON root is not an object");
+		return false;
 	}
 
 	// Mandatory. checked during parse
 	if (!root.isMember(JSON_STR_VER)) {
-		std::string s = JSON_STR_VER + " is missing in" + filename;
-		sys_error(s.c_str());
+		ERR(JSON_STR_VER << PFX << "is missing");
+		return false;
 	}
 
 	Json::Value& ver = root[JSON_STR_VER];
 	uint32_t version[JSON_VER_FIELDS] = {JSON_VER_MAJ, JSON_VER_MIN, JSON_VER_REV};
 	rc = check_json_version(ver, version);
 	if (!rc) {
-		sys_error("check_json_version() failed in", filename.c_str());
+		ERR("check_json_version() failed");
+		return false;
 	}
 
 	// will be caught during validate
@@ -762,7 +754,8 @@ AST parse_json(const std::string& filename)
 		library_def ld {};
 		rc = parse_json_library(library, ld);
 		if (!rc) {
-			sys_error("parse_json_library() failed in", filename.c_str());
+			ERR("parse_json_library() failed");
+			return false;
 		}
 
 		ast.library_defs = ld;
@@ -771,8 +764,8 @@ AST parse_json(const std::string& filename)
 	// will be caught during validate
 	if (root.isMember(JSON_STR_SCNS)) {
 		if (!root[JSON_STR_SCNS].isArray()) {
-			std::string s = JSON_STR_SCNS + PFX + ERR_ARR + PFX + filename;
-			sys_error(s.c_str());
+			ERR(JSON_STR_SCNS << PFX << ERR_ARR);
+			return false;
 		}
 
 		const Json::Value& scenes = root[JSON_STR_SCNS];
@@ -784,7 +777,8 @@ AST parse_json(const std::string& filename)
 
 			rc = parse_json_scene(scene, i, sd);
 			if (!rc) {
-				sys_error("parse_json_scene() failed in", filename.c_str());
+				ERR("parse_json_scene() failed");
+				return false;
 			}
 			i++;
 
@@ -794,7 +788,7 @@ AST parse_json(const std::string& filename)
 
 	DBG(DBG_JSON << PFX << DBG_NUM << SPC << JSON_STR_SCNS << PFX << ast.scene_defs.size());
 
-	return ast;
+	return true;
 }
 
 } // namespace config_ns

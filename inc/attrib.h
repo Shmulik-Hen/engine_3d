@@ -23,7 +23,6 @@ public:
 	attrib(const unit, const unit, const unit, const unit, const unit, const unit, const unit);
 	attrib(const unit[NUM_ATTRIBUTES]);
 
-	bool read(std::ifstream&);
 	void print() const;
 
 	unit get_rot_x() const { return _rot_x; };
@@ -36,9 +35,6 @@ public:
 
 	attrib& operator=(unit[NUM_ATTRIBUTES]);
 	attrib& operator+=(const attrib&);
-
-	friend std::ostream& operator<<(std::ostream&, const attrib&);
-	friend std::istream& operator>>(std::istream&, attrib&);
 };
 
 } // namespace attrib_ns

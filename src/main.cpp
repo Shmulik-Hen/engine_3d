@@ -22,13 +22,9 @@ const std::string version = std::to_string(APP_VER_MAJ) + DOT + std::to_string(A
 const std::string def_conf_name = "cube";
 const std::string def_conf_path = "../config/";
 const std::string def_file_name = "config";
-#ifdef USING_JSON
 const std::string json_version = std::to_string(JSON_VER_MAJ) + DOT + std::to_string(JSON_VER_MIN) + DOT + std::to_string(JSON_VER_REV);
-const std::string json_ver_label = "JSON configuration version ";
+const std::string json_ver_label = "JSON configuration version " + json_version;
 const std::string ext = ".json";
-#else
-const std::string ext = ".dat";
-#endif
 const std::string def_conf_file = def_conf_path + def_file_name + ext;
 
 void usage(std::string str)
@@ -38,11 +34,7 @@ void usage(std::string str)
 	fprintf(stdout, "Render animated 3D objects\n\n");
 	fprintf(stdout, "OPTIONS:\n");
 	fprintf(stdout, "  -c, --conf <config name>\tspecify a configuration name to choose (default 'config')\n");
-#ifdef USING_JSON
 	fprintf(stdout, "  -f, --file <config file>\tspecify a configuration JSON file name (default config.json)\n");
-#else
-	fprintf(stdout, "  -f, --file <config file>\tspecify a configuration DAT file name (default config.dat)\n");
-#endif
 	fprintf(stdout, "  -h, --help\t\t\tdisplay this help and exit\n");
 	fprintf(stdout, "  -u, --usage\t\t\tdisplay this help and exit\n");
 	fprintf(stdout, "  -v, --version\t\t\toutput version information and exit\n");
@@ -94,13 +86,12 @@ int main(int argc, char** argv)
 				usage(prog);
 				return 0;
 			case 'v':
-				std::cout << version << std::endl;
-#ifdef USING_JSON
-				std::cout << json_ver_label << json_version << std::endl;
-#endif
+				std::cout << version << std::endl
+					  << json_ver_label << std::endl;
 				return 0;
 			default:
-				std::cerr << "?? getopt_long returned character code 0" << std::oct << c << std::endl;
+				std::cerr << "?? getopt_long returned character code 0"
+					  << std::oct << c << std::endl;
 				usage(prog);
 				return 0;
 			}
@@ -159,7 +150,19 @@ int main(int argc, char** argv)
 			sys_error("failed to initialize scene");
 		}
 
-		scene->parse(filename);
+		DBG("file name" << PFX << filename);
+		std::ifstream ifs;
+		ifs.open(filename.c_str(), std::ios::in);
+		if (!ifs) {
+			sys_error("file not found: ", filename.c_str());
+		}
+
+		ifs.unsetf(std::ios::skipws);
+		bool rc = scene->parse(ifs);
+		ifs.close();
+		if (!rc) {
+			sys_error("scene->parse() failed");
+		}
 #if 0
 		scene->build();
 
@@ -218,7 +221,7 @@ int main(int argc, char** argv)
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
 
 			if (gimbal) {
-				if (gimbal->has_motionrib()) {
+				if (gimbal->has_motion()) {
 					gimbal->update();
 				}
 				else {
@@ -227,7 +230,7 @@ int main(int argc, char** argv)
 			}
 
 			if (cube) {
-				if (cube->has_motionrib()) {
+				if (cube->has_motion()) {
 					cube->update();
 				}
 				else {
@@ -236,7 +239,7 @@ int main(int argc, char** argv)
 			}
 
 			if (pyramid) {
-				if (pyramid->has_motionrib()) {
+				if (pyramid->has_motion()) {
 					pyramid->update();
 				}
 				else {
