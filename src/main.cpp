@@ -3,9 +3,8 @@
 #include <string>
 
 // #define DEBUG_PRINTS
-#include "common.h"
-#include "scene.h"
 #include "utils.h"
+#include "scene.h"
 
 using namespace attrib_ns;
 using namespace element_ns;
@@ -18,13 +17,13 @@ using graphics = graphics_ns::graphics;
 using input_state = graphics_ns::graphics::input_state;
 namespace fs = std::filesystem;
 
-const std::string version = std::to_string(APP_VER_MAJ) + DOT + std::to_string(APP_VER_MIN) + DOT + std::to_string(APP_VER_REV);
-const std::string def_conf_name = "cube";
-const std::string def_conf_path = "../config/";
-const std::string def_file_name = "config";
-const std::string json_version = std::to_string(JSON_VER_MAJ) + DOT + std::to_string(JSON_VER_MIN) + DOT + std::to_string(JSON_VER_REV);
-const std::string json_ver_label = "JSON configuration version " + json_version;
-const std::string ext = ".json";
+constexpr std::string_view def_conf_name = "cube";
+constexpr std::string_view def_conf_path = "../config/";
+constexpr std::string_view def_file_name = "config";
+constexpr std::string_view ext = ".json";
+constexpr std::string_view ver = "JSON configuration version";
+const std::string version = JSON_STR_VER + PFX + std::to_string(APP_VER_MAJ) + DOT + std::to_string(APP_VER_MIN) + DOT + std::to_string(APP_VER_REV);
+const std::string json_version(ver + PFX + std::to_string(JSON_VER_MAJ) + DOT + std::to_string(JSON_VER_MIN) + DOT + std::to_string(JSON_VER_REV));
 const std::string def_conf_file = def_conf_path + def_file_name + ext;
 
 void usage(std::string str)
@@ -87,7 +86,7 @@ int main(int argc, char** argv)
 				return 0;
 			case 'v':
 				std::cout << version << std::endl
-					  << json_ver_label << std::endl;
+					  << json_version << std::endl;
 				return 0;
 			default:
 				std::cerr << "?? getopt_long returned character code 0"
@@ -163,6 +162,12 @@ int main(int argc, char** argv)
 		if (!rc) {
 			sys_error("scene->parse() failed");
 		}
+
+		rc = scene->validate();
+		if (!rc) {
+			sys_error("scene->validate() failed");
+		}
+
 #if 0
 		scene->build();
 
@@ -175,10 +180,10 @@ int main(int argc, char** argv)
 		}
 
 		// find the relevant elements to work with
-		const std::string world_name = "world";
-		const std::string gimbal_name = "gimbal";
-		const std::string cube_name = "cube";
-		const std::string pyramid_name = "pyramid";
+		constexpr std::string_view world_name = "world";
+		constexpr std::string_view gimbal_name = "gimbal";
+		constexpr std::string_view cube_name = "cube";
+		constexpr std::string_view pyramid_name = "pyramid";
 		element* cube = nullptr;
 		element* pyramid = nullptr;
 

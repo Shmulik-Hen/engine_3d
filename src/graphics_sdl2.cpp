@@ -4,6 +4,7 @@
 // #define DEBUG_PRINTS
 #include "graphics.h"
 #include "utils.h"
+#include "constants.h"
 
 namespace graphics_ns
 {
@@ -48,8 +49,8 @@ graphics::graphics(const char* title) :
 
 graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_title {title},
-	_w {std::min(width, MAX_X)},
-	_h {std::min(height, MAX_Y)},
+	_w {std::min(width, (int)MAX_X)},
+	_h {std::min(height, (int)MAX_Y)},
 	_scale {scale},
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},

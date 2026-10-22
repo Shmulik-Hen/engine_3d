@@ -43,7 +43,7 @@ void vector_3::print() const
 	}
 }
 
-unit vector_3::get(int i) const
+unit vector_3::get(uint32_t i) const
 {
 	if (is_valid_coord(i)) {
 		return _coords[i];
@@ -52,7 +52,7 @@ unit vector_3::get(int i) const
 	return ZERO;
 }
 
-void vector_3::set(const int i, const unit& u)
+void vector_3::set(const uint32_t i, const unit& u)
 {
 	if (is_valid_coord(i)) {
 		_coords[i] = u;
@@ -170,21 +170,6 @@ vector_3& vector_3::operator-=(const vector_3& v)
 	_coords[Z_] -= v._coords[Z_];
 
 	return *this;
-}
-
-std::ostream& operator<<(std::ostream& os, const vector_3& v)
-{
-	return os << '(' << v._coords[X_] << ','
-	          << v._coords[Y_] << ','
-	          << v._coords[Z_] << ')';
-}
-
-std::istream& operator>>(std::istream& is, vector_3& v)
-{
-	is >> v._coords[X_];
-	is >> v._coords[Y_];
-	is >> v._coords[Z_];
-	return is;
 }
 
 } // namespace vector_3_ns

@@ -46,6 +46,7 @@ public:
 	polygon_ns::polygon* add_polygon();
 	element_ns::element* add_element();
 	bool parse(std::ifstream&);
+	bool validate();
 	void build();
 	void update();
 	void render();

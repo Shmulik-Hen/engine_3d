@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "utils.h"
 #include "unit.h"
 
 namespace vector_3_ns
@@ -13,7 +13,7 @@ class vector_3
 private:
 
 	unit _coords[dim];
-	bool is_valid_coord(uint32_t i) const { return (i >= X_ && i <= Z_); }
+	bool is_valid_coord(uint32_t i) const { return (i <= Z_); }
 
 public:
 
@@ -24,8 +24,8 @@ public:
 	~vector_3() = default;
 
 	void print() const;
-	unit get(int) const;
-	void set(const int, const unit&);
+	unit get(uint32_t) const;
+	void set(const uint32_t, const unit&);
 	static unit dot(const vector_3&, const vector_3&);
 	static vector_3 cross(const vector_3&, const vector_3&);
 	static vector_3 project(const vector_3&, const vector_3&);
@@ -38,9 +38,6 @@ public:
 	vector_3& operator=(const vector_3&) = default;
 	vector_3& operator+=(const vector_3&);
 	vector_3& operator-=(const vector_3&);
-
-	friend std::ostream& operator<<(std::ostream&, const vector_3&);
-	friend std::istream& operator>>(std::istream&, vector_3&);
 };
 
 } // namespace vector_3_ns

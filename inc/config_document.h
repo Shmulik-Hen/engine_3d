@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <string_view>
 
 #include "attrib.h"
 #include "vector_3.h"
@@ -12,6 +13,70 @@ namespace config_ns
 
 using vector_3 = vector_3_ns::vector_3;
 using attrib = attrib_ns::attrib;
+
+// clang-format off
+// supported field names
+const std::string JSON_STR_VER   = "version";
+const std::string JSON_STR_NAME  = "name";
+const std::string JSON_STR_LIB   = "library";
+const std::string JSON_STR_POLYS = "polygons";
+const std::string JSON_STR_COLOR = "color_idx";
+const std::string JSON_STR_FORCE = "force";
+const std::string JSON_STR_VECS  = "vectors";
+const std::string JSON_STR_MESHS = "meshes";
+const std::string JSON_STR_ELEMS = "elements";
+const std::string JSON_STR_MESH  = "mesh";
+const std::string JSON_STR_SCNS  = "scenes";
+const std::string JSON_STR_PAREN = "parent";
+const std::string JSON_STR_ACT   = "active";
+const std::string JSON_STR_REF   = "ref";
+const std::string JSON_STR_ORIG  = "origin";
+const std::string JSON_STR_MOTN  = "motion";
+const std::string JSON_STR_ENV   = "environment";
+// environment field names
+const std::string JSON_STR_LIGHT_TYPE = "light_type";
+const std::string JSON_STR_LIGHT_DIR  = "light_direction";
+const std::string JSON_STR_LIGHT_POS  = "light_position";
+const std::string JSON_STR_CAM_POS    = "camera_position";
+const std::string JSON_STR_FOCAL_LEN  = "focal_len";
+const std::string JSON_STR_NEAR_EPS   = "near_eps";
+const std::string JSON_STR_MIN_POS    = "min_pos";
+const std::string JSON_STR_MAX_POS    = "max_pos";
+const std::string JSON_STR_LOOPS      = "loops";
+const std::string JSON_STR_LOOP_DELAY = "loop_delay";
+// debug/error messages
+constexpr std::string_view STR_PRS       = "parse";
+constexpr std::string_view STR_VAL       = "validate";
+constexpr std::string_view JSON_STR_SCN  = "scene";
+constexpr std::string_view JSON_STR_ATT  = "attrib";
+constexpr std::string_view JSON_STR_VEC  = "vector";
+constexpr std::string_view JSON_STR_PAIR = "pair";
+constexpr std::string_view JSON_STR_POLY = "polygon";
+constexpr std::string_view JSON_STR_ELEM = "element";
+constexpr std::string_view JSON_STR_ROTX = "X rotation   ";
+constexpr std::string_view JSON_STR_ROTY = "Y rotation   ";
+constexpr std::string_view JSON_STR_ROTZ = "Z rotation   ";
+constexpr std::string_view JSON_STR_TRNX = "X translation";
+constexpr std::string_view JSON_STR_TRNY = "Y translation";
+constexpr std::string_view JSON_STR_TRNZ = "Z translation";
+constexpr std::string_view JSON_STR_SCL  = "scale factor ";
+constexpr std::string_view ERR_VER       = " unsupported version";
+constexpr std::string_view ERR_REQ       = "required";
+constexpr std::string_view ERR_CURR      = "current";
+constexpr std::string_view ERR_OBJ       = "not an object";
+constexpr std::string_view ERR_ARR       = "not an array";
+constexpr std::string_view ERR_UINT      = "not an unsigned integer";
+constexpr std::string_view ERR_INT       = "not an integer";
+constexpr std::string_view ERR_STR       = "not a string";
+constexpr std::string_view ERR_FLOAT     = "not a floating point";
+constexpr std::string_view ERR_BOOL      = "not a boolean";
+constexpr std::string_view ERR_SIZE      = "illegal array size";
+constexpr std::string_view ERR_FAIL      = "failed";
+#ifdef DEBUG_PRINTS
+constexpr std::string_view DBG_SIZE  = "size";
+constexpr std::string_view DBG_FOUND = "found";
+#endif // DEBUG_PRINTS
+// clang-format on
 
 struct polygon_def
 {
@@ -106,10 +171,16 @@ struct scene_def
 	std::vector<scene_elem_def> scene_elem_defs;
 };
 
+struct validate_def
+{
+	uint32_t max_colors {0};
+};
+
 struct AST
 {
 	library_def library_defs;
 	std::vector<scene_def> scene_defs;
+	validate_def valids;
 };
 
 } // namespace config_ns

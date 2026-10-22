@@ -3,9 +3,10 @@
 #include <thread>
 
 // #define DEBUG_PRINTS
-#include "common.h"
+#include "utils.h"
 #include "scene.h"
-#include "config_json.h"
+#include "parse_json.h"
+#include "validate.h"
 
 namespace scene_ns
 {
@@ -123,6 +124,13 @@ bool my_scene::parse(std::ifstream& ifs)
 
 #endif
 	return true;
+}
+
+bool my_scene::validate()
+{
+	DBG("validate");
+
+	return config_ns::validate_ast(ast);
 }
 
 void my_scene::build()
@@ -335,6 +343,9 @@ void my_scene::set_defaults()
 
 	frame_ctx.state->run.loops = DEF_LOOP_NUM;
 	frame_ctx.state->run.loop_delay = DEF_LOOP_DELAY;
+
+	// limits for validations
+	ast.valids.max_colors = frame_ctx.state->grfx.gfx->get_num_colors();
 }
 
 } // namespace scene_ns

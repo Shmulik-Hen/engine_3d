@@ -1,6 +1,5 @@
 #include <cstring>
 
-#include "common.h"
 #include "utils.h"
 
 system_error sys_error(const char* s1, const char* s2)
