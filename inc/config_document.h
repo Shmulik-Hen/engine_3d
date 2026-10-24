@@ -44,38 +44,48 @@ const std::string JSON_STR_MIN_POS    = "min_pos";
 const std::string JSON_STR_MAX_POS    = "max_pos";
 const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
-// debug/error messages
-constexpr std::string_view STR_PRS       = "parse";
-constexpr std::string_view STR_VAL       = "validate";
-constexpr std::string_view JSON_STR_SCN  = "scene";
-constexpr std::string_view JSON_STR_ATT  = "attrib";
-constexpr std::string_view JSON_STR_VEC  = "vector";
-constexpr std::string_view JSON_STR_PAIR = "pair";
-constexpr std::string_view JSON_STR_POLY = "polygon";
-constexpr std::string_view JSON_STR_ELEM = "element";
-constexpr std::string_view JSON_STR_ROTX = "X rotation   ";
-constexpr std::string_view JSON_STR_ROTY = "Y rotation   ";
-constexpr std::string_view JSON_STR_ROTZ = "Z rotation   ";
-constexpr std::string_view JSON_STR_TRNX = "X translation";
-constexpr std::string_view JSON_STR_TRNY = "Y translation";
-constexpr std::string_view JSON_STR_TRNZ = "Z translation";
-constexpr std::string_view JSON_STR_SCL  = "scale factor ";
-constexpr std::string_view ERR_VER       = " unsupported version";
-constexpr std::string_view ERR_REQ       = "required";
-constexpr std::string_view ERR_CURR      = "current";
-constexpr std::string_view ERR_OBJ       = "not an object";
-constexpr std::string_view ERR_ARR       = "not an array";
-constexpr std::string_view ERR_UINT      = "not an unsigned integer";
-constexpr std::string_view ERR_INT       = "not an integer";
-constexpr std::string_view ERR_STR       = "not a string";
-constexpr std::string_view ERR_FLOAT     = "not a floating point";
-constexpr std::string_view ERR_BOOL      = "not a boolean";
-constexpr std::string_view ERR_SIZE      = "illegal array size";
-constexpr std::string_view ERR_FAIL      = "failed";
-#ifdef DEBUG_PRINTS
-constexpr std::string_view DBG_SIZE  = "size";
-constexpr std::string_view DBG_FOUND = "found";
-#endif // DEBUG_PRINTS
+// error/debug messages
+constexpr std::string_view STR_NUM  = "num";
+constexpr std::string_view STR_RUN  = "run";
+constexpr std::string_view STR_PRS  = "parse";
+constexpr std::string_view STR_VAL  = "validate";
+constexpr std::string_view STR_SCN  = "scene";
+constexpr std::string_view STR_ATT  = "attrib";
+constexpr std::string_view STR_VEC  = "vector";
+constexpr std::string_view STR_PAIR = "pair";
+constexpr std::string_view STR_POLY = "polygon";
+constexpr std::string_view STR_ELEM = "element";
+constexpr std::string_view STR_ROTX = "rotation X";
+constexpr std::string_view STR_ROTY = "rotation Y";
+constexpr std::string_view STR_ROTZ = "rotation Z";
+constexpr std::string_view STR_TRNX = "translation X";
+constexpr std::string_view STR_TRNY = "translation Y";
+constexpr std::string_view STR_TRNZ = "translation Z";
+constexpr std::string_view STR_SCL  = "scale factor";
+constexpr std::string_view STR_AST  = "ast";
+constexpr std::string_view STR_VLDT = "validate";
+constexpr std::string_view STR_VALS = "values";
+constexpr std::string_view STR_REFS = "references";
+constexpr std::string_view STR_HIER = "hierarchy";
+constexpr std::string_view STR_CORD = "coord";
+constexpr std::string_view ERR_VER  = " unsupported version";
+constexpr std::string_view ERR_REQ  = "requires";
+constexpr std::string_view ERR_CURR = "current";
+constexpr std::string_view ERR_OBJ  = "not an object";
+constexpr std::string_view ERR_ARR  = "not an array";
+constexpr std::string_view ERR_UINT = "not an unsigned integer";
+constexpr std::string_view ERR_INT  = "not an integer";
+constexpr std::string_view ERR_STR  = "not a string";
+constexpr std::string_view ERR_REAL = "not a floating point";
+constexpr std::string_view ERR_BOOL = "not a boolean";
+constexpr std::string_view ERR_SIZE = "illegal array size";
+constexpr std::string_view ERR_FAIL = "failed";
+constexpr std::string_view ERR_DET  = "errors detected !";
+constexpr std::string_view ERR_MISS = "is missing";
+constexpr std::string_view ERR_ILG  = "is illegal";
+constexpr std::string_view ERR_NULL = "is null";
+constexpr std::string_view ERR_ATLST = "at least";
+constexpr std::string_view ERR_EMPTY = "is empty";
 // clang-format on
 
 struct polygon_def
@@ -119,13 +129,13 @@ struct element_def
 {
 	// required fields
 	std::string name;
+	bool active {false};
+	std::vector<std::string> polygons;
+
+	// optional fields
 	std::string parent; // null means "root"
 	std::optional<attrib> origin;
 	std::optional<attrib> motion;
-	bool active {false};
-
-	// refer to polygons by name (stable for both legacy and JSON)
-	std::vector<std::string> polygons;
 };
 
 struct point_def
@@ -158,6 +168,7 @@ struct environ_def
 
 struct library_def
 {
+	// required fields
 	std::vector<polygon_def> polygons;
 	std::vector<mesh_def> meshes;
 	std::vector<lib_elem_def> lib_elem_defs;
@@ -165,15 +176,18 @@ struct library_def
 
 struct scene_def
 {
+	// required fields
 	std::string name;
-	environ_def env;
-	runtime_def run;
 	std::vector<scene_elem_def> scene_elem_defs;
+
+	// optional fields
+	std::optional<environ_def> env;
+	std::optional<runtime_def> run;
 };
 
 struct validate_def
 {
-	uint32_t max_colors {0};
+	uint32_t max_color_idx {0};
 };
 
 struct AST

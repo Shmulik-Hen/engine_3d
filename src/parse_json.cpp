@@ -12,19 +12,21 @@ namespace config_ns
 
 // clang-format off
 #ifdef DEBUG_PRINTS
-constexpr std::string_view DBG_VER  = "check_ver";
-constexpr std::string_view DBG_ATT  = "parse_attrib";
-constexpr std::string_view DBG_VEC  = "parse_vector";
-constexpr std::string_view DBG_PAIR = "parse_pair";
-constexpr std::string_view DBG_POLY = "parse_polygon";
-constexpr std::string_view DBG_MESH = "parse_mesh";
-constexpr std::string_view DBG_EDEF = "parse_elem_def";
-constexpr std::string_view DBG_EREF = "parse_elem_ref";
-constexpr std::string_view DBG_LIB  = "parse_lib";
-constexpr std::string_view DBG_ENV  = "parse_env";
-constexpr std::string_view DBG_SCN  = "parse_scene";
-constexpr std::string_view DBG_JSON = "parse_json";
-constexpr std::string_view DBG_NUM  = "final num";
+constexpr std::string_view DBG_VER   = "check_ver";
+constexpr std::string_view DBG_ATT   = "parse_attrib";
+constexpr std::string_view DBG_VEC   = "parse_vector";
+constexpr std::string_view DBG_PAIR  = "parse_pair";
+constexpr std::string_view DBG_POLY  = "parse_polygon";
+constexpr std::string_view DBG_MESH  = "parse_mesh";
+constexpr std::string_view DBG_EDEF  = "parse_elem_def";
+constexpr std::string_view DBG_EREF  = "parse_elem_ref";
+constexpr std::string_view DBG_LIB   = "parse_lib";
+constexpr std::string_view DBG_ENV   = "parse_env";
+constexpr std::string_view DBG_SCN   = "parse_scene";
+constexpr std::string_view DBG_JSON  = "parse_json";
+constexpr std::string_view DBG_NUM   = "final num";
+constexpr std::string_view DBG_SIZE  = "size";
+constexpr std::string_view DBG_FOUND = "found";
 #endif // DEBUG_PRINTS
 // clang-format on
 
@@ -74,12 +76,12 @@ static bool check_json_version(const Json::Value& ver, const uint32_t array[JSON
 static bool parse_json_attrib(const Json::Value& attrib, const std::string& name, unit array[NUM_ATTRIBUTES])
 {
 	if (!attrib.isArray()) {
-		ERR(STR_PRS << PFX << JSON_STR_ATT << PFX << name << PFX << ERR_ARR);
+		ERR(STR_PRS << PFX << STR_ATT << PFX << name << PFX << ERR_ARR);
 		return false;
 	}
 
 	if (attrib.size() != NUM_ATTRIBUTES) {
-		ERR(STR_PRS << PFX << JSON_STR_ATT << PFX << name << PFX << ERR_SIZE
+		ERR(STR_PRS << PFX << STR_ATT << PFX << name << PFX << ERR_SIZE
 		            << PFX << ERR_REQ << PFX << NUM_ATTRIBUTES << SEP
 		            << ERR_CURR << PFX << attrib.size());
 		return false;
@@ -87,8 +89,8 @@ static bool parse_json_attrib(const Json::Value& attrib, const std::string& name
 
 	for (uint32_t i = 0; i < NUM_ATTRIBUTES; i++) {
 		if (!attrib[i].isDouble()) {
-			ERR(STR_PRS << PFX << JSON_STR_ATT << PFX << name
-			            << LB << (i + 1) << RB << PFX << ERR_FLOAT);
+			ERR(STR_PRS << PFX << STR_ATT << PFX << name
+			            << LB << (i + 1) << RB << PFX << ERR_REAL);
 			return false;
 		}
 
@@ -103,12 +105,12 @@ static bool parse_json_attrib(const Json::Value& attrib, const std::string& name
 static bool parse_json_vector(const Json::Value& vector, const std::string& name, unit array[NUM_COORDS])
 {
 	if (!vector.isArray()) {
-		ERR(STR_PRS << PFX << JSON_STR_VEC << LB << name << RB << PFX << ERR_ARR);
+		ERR(STR_PRS << PFX << STR_VEC << LB << name << RB << PFX << ERR_ARR);
 		return false;
 	}
 
 	if (vector.size() != NUM_COORDS) {
-		ERR(STR_PRS << PFX << JSON_STR_VEC << LB << name << RB
+		ERR(STR_PRS << PFX << STR_VEC << LB << name << RB
 		            << PFX << ERR_SIZE << PFX
 		            << ERR_REQ << PFX << NUM_COORDS << SEP
 		            << ERR_CURR << PFX << vector.size());
@@ -117,13 +119,13 @@ static bool parse_json_vector(const Json::Value& vector, const std::string& name
 
 	for (uint32_t i = 0; i < NUM_COORDS; i++) {
 		if (!vector[i].isDouble()) {
-			ERR(STR_PRS << PFX << JSON_STR_VEC << LB << name << RB
-			            << LB << (i + 1) << RB << PFX << ERR_FLOAT);
+			ERR(STR_PRS << PFX << STR_VEC << LB << name << RB
+			            << LB << (i + 1) << RB << PFX << ERR_REAL);
 			return false;
 		}
 
 		array[i] = vector[i].asFloat();
-		DBG(STR_PRS << PFX << DBG_VEC << LB << name << RB << PFX << JSON_STR_VEC
+		DBG(STR_PRS << PFX << DBG_VEC << LB << name << RB << PFX << STR_VEC
 		            << LB << (i + 1) << RB << PFX << FLT(array[i], 6));
 	}
 
@@ -133,12 +135,12 @@ static bool parse_json_vector(const Json::Value& vector, const std::string& name
 static bool parse_json_pair(const Json::Value& pair, const std::string& name, uint32_t array[NUM_POINTS])
 {
 	if (!pair.isArray()) {
-		ERR(STR_PRS << PFX << JSON_STR_PAIR << PFX << name << PFX << ERR_ARR);
+		ERR(STR_PRS << PFX << STR_PAIR << PFX << name << PFX << ERR_ARR);
 		return false;
 	}
 
 	if (pair.size() != NUM_POINTS) {
-		ERR(STR_PRS << PFX << JSON_STR_PAIR << PFX << name << PFX << ERR_SIZE
+		ERR(STR_PRS << PFX << STR_PAIR << PFX << name << PFX << ERR_SIZE
 		            << PFX << ERR_REQ << PFX << NUM_POINTS << SEP
 		            << ERR_CURR << PFX << pair.size());
 		return false;
@@ -146,13 +148,13 @@ static bool parse_json_pair(const Json::Value& pair, const std::string& name, ui
 
 	for (uint32_t i = 0; i < NUM_POINTS; i++) {
 		if (!pair[i].isUInt()) {
-			ERR(STR_PRS << PFX << JSON_STR_PAIR << PFX << name
+			ERR(STR_PRS << PFX << STR_PAIR << PFX << name
 			            << LB << (i + 1) << RB << PFX << ERR_UINT);
 			return false;
 		}
 
 		array[i] = pair[i].asUInt();
-		DBG(STR_PRS << PFX << DBG_PAIR << PFX << name << PFX << JSON_STR_PAIR
+		DBG(STR_PRS << PFX << DBG_PAIR << PFX << name << PFX << STR_PAIR
 		            << LB << (i + 1) << RB << PFX << array[i]);
 	}
 
@@ -164,14 +166,14 @@ static bool parse_json_polygon(const Json::Value& polygon, const int idx, polygo
 	bool rc;
 
 	if (!polygon.isObject()) {
-		ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+		ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 		            << PFX << ERR_OBJ);
 		return false;
 	}
 
 	if (polygon.isMember(JSON_STR_NAME)) {
 		if (!polygon[JSON_STR_NAME].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_NAME << PFX << ERR_STR);
 			return false;
 		}
@@ -183,7 +185,7 @@ static bool parse_json_polygon(const Json::Value& polygon, const int idx, polygo
 
 	if (polygon.isMember(JSON_STR_COLOR)) {
 		if (!polygon[JSON_STR_COLOR].isUInt()) {
-			ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_COLOR << PFX << ERR_UINT);
 			return false;
 		}
@@ -195,7 +197,7 @@ static bool parse_json_polygon(const Json::Value& polygon, const int idx, polygo
 
 	if (polygon.isMember(JSON_STR_FORCE)) {
 		if (!polygon[JSON_STR_FORCE].isBool()) {
-			ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_FORCE << PFX << ERR_BOOL);
 			return false;
 		}
@@ -207,7 +209,7 @@ static bool parse_json_polygon(const Json::Value& polygon, const int idx, polygo
 
 	if (polygon.isMember(JSON_STR_VECS)) {
 		if (!polygon[JSON_STR_VECS].isArray()) {
-			ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_VECS << PFX << ERR_ARR);
 			return false;
 		}
@@ -221,7 +223,7 @@ static bool parse_json_polygon(const Json::Value& polygon, const int idx, polygo
 		for (const auto& vector : vectors) {
 			rc = parse_json_vector(vector, std::to_string(i), coords);
 			if (!rc) {
-				ERR(STR_PRS << PFX << JSON_STR_POLY << LB << (idx + 1) << RB
+				ERR(STR_PRS << PFX << STR_POLY << LB << (idx + 1) << RB
 				            << JSON_STR_VECS << LB << (i + 1) << RB << PFX
 				            << "parse_json_vector()" << SPC << ERR_FAIL);
 				return false;
@@ -291,14 +293,14 @@ static bool parse_json_mesh(const Json::Value& mesh, const int idx, mesh_def& md
 static bool parse_json_lib_elem_def(const Json::Value& element, const int idx, lib_elem_def& ed)
 {
 	if (!element.isObject()) {
-		ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+		ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 		            << PFX << ERR_OBJ);
 		return false;
 	}
 
 	if (element.isMember(JSON_STR_NAME)) {
 		if (!element[JSON_STR_NAME].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_NAME << PFX << ERR_STR);
 			return false;
 		}
@@ -310,7 +312,7 @@ static bool parse_json_lib_elem_def(const Json::Value& element, const int idx, l
 
 	if (element.isMember(JSON_STR_MESH)) {
 		if (!element[JSON_STR_MESH].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_MESH << PFX << ERR_STR);
 			return false;
 		}
@@ -328,14 +330,14 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 	bool rc;
 
 	if (!element.isObject()) {
-		ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+		ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 		            << PFX << ERR_OBJ);
 		return false;
 	}
 
 	if (element.isMember(JSON_STR_NAME)) {
 		if (!element[JSON_STR_NAME].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_NAME << PFX << ERR_STR);
 			return false;
 		}
@@ -358,7 +360,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 			ed.parent = std::optional<std::string> {element[JSON_STR_PAREN].asString()};
 		}
 		else {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_PAREN << PFX << ERR_STR);
 			return false;
 		}
@@ -366,7 +368,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 
 	if (element.isMember(JSON_STR_ACT)) {
 		if (!element[JSON_STR_ACT].isBool()) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_ACT << PFX << ERR_BOOL);
 			return false;
 		}
@@ -378,7 +380,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 
 	if (element.isMember(JSON_STR_REF)) {
 		if (!element[JSON_STR_REF].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_REF << PFX << ERR_STR);
 			return false;
 		}
@@ -393,7 +395,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 
 		rc = parse_json_attrib(element[JSON_STR_ORIG], JSON_STR_ORIG, array);
 		if (!rc) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_ORIG << PFX
 			            << "parse_json_attrib()" << SPC << ERR_FAIL);
 			return false;
@@ -409,7 +411,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const int idx,
 
 		rc = parse_json_attrib(element[JSON_STR_MOTN], JSON_STR_MOTN, array);
 		if (!rc) {
-			ERR(STR_PRS << PFX << JSON_STR_ELEM << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_ELEM << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_MOTN << PFX
 			            << "parse_json_attrib()" << SPC << ERR_FAIL);
 			return false;
@@ -604,7 +606,7 @@ static bool parse_json_environment(const Json::Value& env, environ_def& ed, runt
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << DBG_FOUND << SPC << JSON_STR_FOCAL_LEN);
 		if (!env[JSON_STR_FOCAL_LEN].isDouble()) {
 			ERR(STR_PRS << PFX << JSON_STR_ENV << PFX
-			            << JSON_STR_FOCAL_LEN << PFX << ERR_FLOAT);
+			            << JSON_STR_FOCAL_LEN << PFX << ERR_REAL);
 			return false;
 		}
 
@@ -617,7 +619,7 @@ static bool parse_json_environment(const Json::Value& env, environ_def& ed, runt
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << DBG_FOUND << SPC << JSON_STR_NEAR_EPS);
 		if (!env[JSON_STR_NEAR_EPS].isDouble()) {
 			ERR(STR_PRS << PFX << JSON_STR_ENV << PFX
-			            << JSON_STR_NEAR_EPS << PFX << ERR_FLOAT);
+			            << JSON_STR_NEAR_EPS << PFX << ERR_REAL);
 			return false;
 		}
 
@@ -690,14 +692,14 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 	bool rc;
 
 	if (!scene.isObject()) {
-		ERR(STR_PRS << PFX << JSON_STR_SCN << LB << (idx + 1) << RB
+		ERR(STR_PRS << PFX << STR_SCN << LB << (idx + 1) << RB
 		            << PFX << ERR_ARR);
 		return false;
 	}
 
 	if (scene.isMember(JSON_STR_NAME)) {
 		if (!scene[JSON_STR_NAME].isString()) {
-			ERR(STR_PRS << PFX << JSON_STR_SCN << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_SCN << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_NAME << PFX << ERR_STR);
 			return false;
 		}
@@ -708,7 +710,7 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 
 	if (scene.isMember(JSON_STR_ELEMS)) {
 		if (!scene[JSON_STR_ELEMS].isArray()) {
-			ERR(STR_PRS << PFX << JSON_STR_SCN << LB << (idx + 1) << RB
+			ERR(STR_PRS << PFX << STR_SCN << LB << (idx + 1) << RB
 			            << PFX << JSON_STR_ELEMS << PFX << ERR_ARR);
 			return false;
 		}
@@ -722,7 +724,7 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 			scene_elem_def ed {};
 			rc = parse_json_scene_elem_def(element, i, ed);
 			if (!rc) {
-				ERR(STR_PRS << PFX << JSON_STR_SCN << LB << (idx + 1) << RB << PFX
+				ERR(STR_PRS << PFX << STR_SCN << LB << (idx + 1) << RB << PFX
 				            << JSON_STR_ELEMS << LB << (i + 1) << RB << PFX
 				            << "parse_json_scene_elem_def()" << SPC << ERR_FAIL);
 				return false;
@@ -741,7 +743,7 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 
 		rc = parse_json_environment(env, ed, rd);
 		if (!rc) {
-			ERR(STR_PRS << PFX << JSON_STR_SCN << PFX
+			ERR(STR_PRS << PFX << STR_SCN << PFX
 			            << "parse_json_environment()" << SPC << ERR_FAIL);
 			return false;
 		}

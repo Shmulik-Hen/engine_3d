@@ -54,75 +54,6 @@ bool my_scene::parse(std::ifstream& ifs)
 		return false;
 	}
 
-#ifdef DEBUG_PRINTS
-	DBG("parse: Library");
-	DBG("parse: number of polygons: " << ast.library_defs.polygons.size());
-	for (const auto& poly : ast.library_defs.polygons) {
-		DBG("parse: polygon: name: " << poly.name);
-		DBG("parse: polygon: color idx: " << poly.color_index);
-		DBG("parse: polygon: force: " << poly.force);
-		for (const auto& vec : poly.vectors) {
-			DBG("parse: polygon: vector:");
-			vec.print();
-		}
-	}
-
-	DBG("parse: number of meshes: " << ast.library_defs.meshes.size());
-	for (const auto& mesh : ast.library_defs.meshes) {
-		DBG("parse: mesh: name: " << mesh.name);
-		for (const auto& poly : mesh.polygons) {
-			DBG("parse: mesh: polygon: " << poly);
-		}
-	}
-
-	DBG("parse: number of elements: " << ast.library_defs.lib_elem_defs.size());
-	for (const auto& elem : ast.library_defs.lib_elem_defs) {
-		DBG("parse: element: name: " << elem.name);
-		DBG("parse: element: mesh: " << elem.mesh);
-	}
-
-	DBG("parse: Scenes:");
-	DBG("parse: number of scenes: " << ast.scene_defs.size());
-	for (const auto& scene : ast.scene_defs) {
-		DBG("parse: scene: name: " << scene.name);
-		DBG("parse: scene: number of elements " << scene.scene_elem_defs.size());
-		for (const auto& elem : scene.scene_elem_defs) {
-			DBG("parse: element: name: " << elem.name);
-			DBG("parse: element: active: " << elem.active);
-			if (elem.parent.has_value()) {
-				if (elem.parent.value().empty()) {
-					DBG("parse: element: parent: empty");
-				}
-				else {
-					DBG("parse: element: parent: " << elem.parent.value());
-				}
-			}
-			else {
-				DBG("parse: element: parent: null");
-			}
-
-			if (elem.ref.has_value()) {
-				if (elem.ref.value().empty()) {
-					DBG("parse: element: ref: empty");
-				}
-				else {
-					DBG("parse: element: ref: " << elem.ref.value());
-				}
-			}
-
-			if (elem.origin.has_value()) {
-				DBG("parse: element: origin: ");
-				elem.origin.value().print();
-			}
-
-			if (elem.motion.has_value()) {
-				DBG("parse: element: motion: ");
-				elem.motion.value().print();
-			}
-		}
-	}
-
-#endif
 	return true;
 }
 
@@ -345,7 +276,7 @@ void my_scene::set_defaults()
 	frame_ctx.state->run.loop_delay = DEF_LOOP_DELAY;
 
 	// limits for validations
-	ast.valids.max_colors = frame_ctx.state->grfx.gfx->get_num_colors();
+	ast.valids.max_color_idx = frame_ctx.state->grfx.gfx->get_num_colors();
 }
 
 } // namespace scene_ns

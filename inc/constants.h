@@ -27,11 +27,17 @@ constexpr uint32_t Z_(2U);
 constexpr uint32_t O_(3U);
 
 // array sizes
-constexpr uint32_t MIN_VECTORS(3U);
-constexpr uint32_t MAX_VECTORS(8U);
 constexpr uint32_t NUM_POINTS(2U);
 constexpr uint32_t NUM_ATTRIBUTES(7U);
 constexpr uint32_t NUM_COORDS(O_);
+constexpr uint32_t MIN_VECTORS(3U);
+constexpr uint32_t MAX_VECTORS(8U);
+constexpr uint32_t MIN_POLYGONS(1U);
+constexpr uint32_t MIN_MESHES(1U);
+constexpr uint32_t MIN_LIB_ELEMS(1U);
+constexpr uint32_t MIN_LIBRARY(1U);
+constexpr uint32_t MIN_SCN_ELEMS(2U);
+constexpr uint32_t MIN_SCENES(1U);
 
 // constexpr values
 constexpr unit DEG(180.0f);
