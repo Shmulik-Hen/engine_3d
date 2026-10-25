@@ -9,7 +9,6 @@
 #include "polygon.h"
 #include "treenode.h"
 #include "scene_types.h"
-#include "config_document.h"
 
 // clang-format off
 namespace attrib_ns   { class attrib; }

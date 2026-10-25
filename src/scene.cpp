@@ -243,7 +243,7 @@ void my_scene::set_defaults()
 	max_pos = frame_ctx.state->grfx.gfx->get_max_position();
 
 	// light
-	frame_ctx.state->light.type = light_type::directional;
+	frame_ctx.state->light.type = config_ns::light_type::directional;
 	frame_ctx.state->light.direction = {LIGHT_DIR_X, LIGHT_DIR_Y, LIGHT_DIR_Z};
 	frame_ctx.state->light.position = {LIGHT_POS_X, LIGHT_POS_Y, LIGHT_POS_Z};
 	DBG("light type: " << (int)frame_ctx.state->light.type);

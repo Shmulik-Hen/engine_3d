@@ -14,8 +14,8 @@ using color_idx = graphics::color_idx; // same for color_idx
 using color_map = graphics::color_map; // same for color_map
 using input_state = graphics::input_state;
 
-constexpr std::int32_t DEFAULT_WIDTH = MAX_X;
-constexpr std::int32_t DEFAULT_HEIGHT = MAX_Y;
+constexpr std::int32_t DEFAULT_WIDTH = DEF_RES_WIDTH;
+constexpr std::int32_t DEFAULT_HEIGHT = DEF_RES_HEIGHT;
 constexpr std::int32_t DEFAULT_SCALE = 1;
 constexpr const char* DEFAULT_NAME = "Graphics_SDL2";
 
@@ -49,8 +49,8 @@ graphics::graphics(const char* title) :
 
 graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
 	_title {title},
-	_w {std::min(width, (int)MAX_X)},
-	_h {std::min(height, (int)MAX_Y)},
+	_w {std::min(width, (int)MAX_RES_WIDTH)},
+	_h {std::min(height, (int)MAX_RES_HEIGHT)},
 	_scale {scale},
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},

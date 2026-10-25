@@ -7,7 +7,6 @@
 #include "graphics.h"
 #include "polygon.h"
 #include "scene_types.h"
-#include "config_document.h"
 
 // clang-format off
 namespace element_ns { class element; }

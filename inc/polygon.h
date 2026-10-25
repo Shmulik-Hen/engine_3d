@@ -10,7 +10,6 @@
 #include "unit.h"
 #include "vector_3.h"
 #include "scene_types.h"
-#include "config_document.h"
 
 // clang-format off
 namespace graphics_ns { class graphics; }

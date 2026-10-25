@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "unit.h"
 #include "vector_3.h"
+#include "config_document.h"
 
 // clang-format off
 namespace polygon_ns { class polygon; }
@@ -22,15 +23,9 @@ struct graphics_state
 	graphics_ns::graphics::ARGB clear_color {};
 };
 
-enum class light_type
-{
-	directional = 0, // sun-like
-	point            // light-bulb
-};
-
 struct light_state
 {
-	light_type type;
+	config_ns::light_type type;
 
 	// Convention: direction is "surface -> light", should be normalized
 	vector_3_ns::vector_3 direction;

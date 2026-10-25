@@ -135,12 +135,12 @@ static bool parse_json_vector(const Json::Value& vector, const std::string& name
 static bool parse_json_pair(const Json::Value& pair, const std::string& name, uint32_t array[NUM_POINTS])
 {
 	if (!pair.isArray()) {
-		ERR(STR_PRS << PFX << STR_PAIR << PFX << name << PFX << ERR_ARR);
+		ERR(STR_PRS << PFX << STR_ARR << PFX << name << PFX << ERR_ARR);
 		return false;
 	}
 
 	if (pair.size() != NUM_POINTS) {
-		ERR(STR_PRS << PFX << STR_PAIR << PFX << name << PFX << ERR_SIZE
+		ERR(STR_PRS << PFX << STR_ARR << PFX << name << PFX << ERR_SIZE
 		            << PFX << ERR_REQ << PFX << NUM_POINTS << SEP
 		            << ERR_CURR << PFX << pair.size());
 		return false;
@@ -148,13 +148,13 @@ static bool parse_json_pair(const Json::Value& pair, const std::string& name, ui
 
 	for (uint32_t i = 0; i < NUM_POINTS; i++) {
 		if (!pair[i].isUInt()) {
-			ERR(STR_PRS << PFX << STR_PAIR << PFX << name
+			ERR(STR_PRS << PFX << STR_ARR << PFX << name
 			            << LB << (i + 1) << RB << PFX << ERR_UINT);
 			return false;
 		}
 
 		array[i] = pair[i].asUInt();
-		DBG(STR_PRS << PFX << DBG_PAIR << PFX << name << PFX << STR_PAIR
+		DBG(STR_PRS << PFX << DBG_PAIR << PFX << name << PFX << STR_ARR
 		            << LB << (i + 1) << RB << PFX << array[i]);
 	}
 
@@ -522,7 +522,7 @@ static bool parse_json_library(const Json::Value& library, library_def& ld)
 	return true;
 }
 
-static bool parse_json_environment(const Json::Value& env, environ_def& ed, runtime_def& rd)
+static bool parse_json_environment(const Json::Value& env, environ_def& ed)
 {
 	bool rc;
 
@@ -658,30 +658,54 @@ static bool parse_json_environment(const Json::Value& env, environ_def& ed, runt
 		ed.max_pos = config_ns::point_def {points[0], points[1]};
 	}
 
-	if (env.isMember(JSON_STR_LOOPS)) {
+	if (env.isMember(JSON_STR_RES)) {
+		DBG(STR_PRS << PFX << DBG_ENV << PFX << DBG_FOUND << SPC << JSON_STR_RES);
+		uint32_t res[NUM_POINTS];
+		rc = parse_json_pair(env[JSON_STR_RES], JSON_STR_RES, res);
+		if (!rc) {
+			ERR(STR_PRS << PFX << JSON_STR_ENV << PFX << JSON_STR_RES << PFX
+			            << "parse_json_pair()" << SPC << ERR_FAIL);
+			return false;
+		}
+
+		// DBG(STR_PRS << PFX << DBG_ENV << PFX << JSON_STR_RES + PFX
+		//             << points[0] << 'x' << points[1]);
+		resolution_def rd;
+		rd.width = res[0];
+		rd.height = res[1];
+		ed.resolution = rd;
+		DBG(STR_PRS + PFX + JSON_STR_ENV + PFX + JSON_STR_RES + PFX + std::to_string(ed.resolution.value().width) + 'x' + std::to_string(ed.resolution.value().height));
+	}
+
+	return true;
+}
+
+static bool parse_json_runtime(const Json::Value& run, runtime_def& rd)
+{
+	if (run.isMember(JSON_STR_LOOPS)) {
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << DBG_FOUND << SPC << JSON_STR_LOOPS);
-		if (!env[JSON_STR_LOOPS].isInt()) {
+		if (!run[JSON_STR_LOOPS].isInt()) {
 			ERR(STR_PRS << PFX << JSON_STR_ENV << PFX
 			            << JSON_STR_LOOPS << PFX << ERR_INT);
 			return false;
 		}
 
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << JSON_STR_LOOPS << PFX
-		            << env[JSON_STR_LOOPS].asInt());
-		rd.loops = env[JSON_STR_LOOPS].asInt();
+		            << run[JSON_STR_LOOPS].asInt());
+		rd.loops = run[JSON_STR_LOOPS].asInt();
 	}
 
-	if (env.isMember(JSON_STR_LOOP_DELAY)) {
+	if (run.isMember(JSON_STR_LOOP_DELAY)) {
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << DBG_FOUND << SPC << JSON_STR_LOOP_DELAY);
-		if (!env[JSON_STR_LOOP_DELAY].isUInt()) {
+		if (!run[JSON_STR_LOOP_DELAY].isUInt()) {
 			ERR(STR_PRS << PFX << JSON_STR_ENV << PFX
 			            << JSON_STR_LOOP_DELAY << PFX << ERR_UINT);
 			return false;
 		}
 
 		DBG(STR_PRS << PFX << DBG_ENV << PFX << JSON_STR_LOOP_DELAY << PFX
-		            << env[JSON_STR_LOOP_DELAY].asUInt());
-		rd.loop_delay = env[JSON_STR_LOOP_DELAY].asUInt();
+		            << run[JSON_STR_LOOP_DELAY].asUInt());
+		rd.loop_delay = run[JSON_STR_LOOP_DELAY].asUInt();
 	}
 
 	return true;
@@ -741,10 +765,17 @@ static bool parse_json_scene(const Json::Value& scene, const int idx, scene_def&
 		environ_def ed {};
 		runtime_def rd {};
 
-		rc = parse_json_environment(env, ed, rd);
+		rc = parse_json_environment(env, ed);
 		if (!rc) {
 			ERR(STR_PRS << PFX << STR_SCN << PFX
 			            << "parse_json_environment()" << SPC << ERR_FAIL);
+			return false;
+		}
+
+		rc = parse_json_runtime(env, rd);
+		if (!rc) {
+			ERR(STR_PRS << PFX << STR_SCN << PFX
+			            << "parse_json_runtime()" << SPC << ERR_FAIL);
 			return false;
 		}
 

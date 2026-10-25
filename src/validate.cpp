@@ -44,8 +44,21 @@ static void check_range_real(const unit val, const unit min, const unit max, con
 				  ERR_ILG + SPC +
 				  LB + set_precision(min) + DASH +
 				  set_precision(max) + RB;
-		add_error(err, errs);
 		// clang-format on
+		add_error(err, errs);
+	}
+}
+
+static void check_range_int(const int val, const int min, const int max, const std::string path, errors_t& errs)
+{
+	if (val < min || val > max) {
+		// clang-format off
+		std::string err = path + std::to_string(val) + SPC +
+				  ERR_ILG+ SPC +
+				  LB + std::to_string(min) + DASH +
+				  std::to_string(max) + RB;
+		// clang-format on
+		add_error(err, errs);
 	}
 }
 
@@ -57,8 +70,8 @@ static void check_range_uint(const uint32_t val, const uint32_t min, const uint3
 				  ERR_ILG+ SPC +
 				  LB + std::to_string(min) + DASH +
 				  std::to_string(max) + RB;
-		add_error(err, errs);
 		// clang-format on
+		add_error(err, errs);
 	}
 }
 
@@ -118,27 +131,15 @@ static void validate_polygon_values(const polygon_def& poly, const std::string p
 		add_error(name + SPC + ERR_EMPTY, errs);
 	}
 
-	// clang-format off
-	std::string color = path + JSON_STR_COLOR + PFX +
-			    std::to_string(poly.color_index);
-	DBG(color);
-	// clang-format on
+	DBG(path + JSON_STR_COLOR + PFX + std::to_string(poly.color_index));
 
-	// clang-format off
 	std::string err = path + JSON_STR_COLOR;
-	// clang-format on
 	check_range_uint(poly.color_index, 0, valids.max_color_idx, err + PFX, errs);
-	// if (poly.color_index > valids.max_color_idx) {
-	// 	add_error(color + SPC + ERR_ILG + SPC + LB + std::to_string(valids.max_color_idx) + RB, errs);
-	// }
 
-	std::string force = path + JSON_STR_FORCE + PFX + BOOL(poly.force);
-	DBG(force);
+	DBG(path + JSON_STR_FORCE + PFX + BOOL(poly.force));
 
-	// clang-format off
 	std::string str = path + STR_NUM + SPC + JSON_STR_VECS;
 	DBG(str + PFX + std::to_string(poly.vectors.size()));
-	// clang-format on
 	check_range_uint(poly.vectors.size(), MIN_VECTORS, MAX_VECTORS, str + PFX, errs);
 	int i = 0;
 	for (const auto& vector : poly.vectors) {
@@ -252,12 +253,86 @@ static void validate_scene_elem_values(const scene_elem_def& elem, const std::st
 
 static void validate_environment(const environ_def& env, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
 {
-	DBG(path);
+	if (env.color_idx.has_value()) {
+		// clang-format off
+		DBG(path + JSON_STR_COLOR + PFX +
+		    std::to_string(env.color_idx.value()));
+		// clang-format on
+
+		std::string str = path + JSON_STR_COLOR;
+		check_range_uint(env.color_idx.value(), 0, valids.max_color_idx, str + PFX, errs);
+	}
+
+	if (env.light_type.has_value()) {
+		// clang-format off
+		DBG(path + JSON_STR_LIGHT_TYPE + PFX +
+		    std::to_string(env.light_type.value()));
+		// clang-format on
+
+		std::string str = path + JSON_STR_LIGHT_TYPE;
+		check_range_uint(env.light_type.value(), __lt_min__, __lt_max__ - 1, str + PFX, errs);
+	}
+
+	if (env.light_direction.has_value()) {
+		std::string str = path + JSON_STR_LIGHT_DIR;
+		validate_vector_values(env.light_direction.value(), str + PFX, errs, valids);
+	}
+
+	if (env.light_position.has_value()) {
+		std::string str = path + JSON_STR_LIGHT_POS;
+		validate_vector_values(env.light_position.value(), str + PFX, errs, valids);
+	}
+
+	if (env.camera_position.has_value()) {
+		std::string str = path + JSON_STR_CAM_POS;
+		validate_vector_values(env.camera_position.value(), str + PFX, errs, valids);
+	}
+
+	if (env.focal_len.has_value()) {
+		std::string str = path + JSON_STR_FOCAL_LEN;
+		check_range_real(env.focal_len.value(), MIN_FOCAL_LEN, MAX_FOCAL_LEN, str + PFX, errs);
+	}
+
+	if (env.near_eps.has_value()) {
+		std::string str = path + JSON_STR_NEAR_EPS;
+		check_range_real(env.near_eps.value(), MIN_NEAR_EPS, MAX_NEAR_EPSN, str + PFX, errs);
+	}
+
+	if (env.near_eps.has_value()) {
+		std::string str = path + JSON_STR_NEAR_EPS;
+		check_range_real(env.near_eps.value(), MIN_NEAR_EPS, MAX_NEAR_EPSN, str + PFX, errs);
+	}
+
+	if (env.resolution.has_value()) {
+		std::string str = path + JSON_STR_RES + PFX + STR_WID;
+		check_range_uint(env.resolution.value().width, MIN_RES_WIDTH, MAX_RES_WIDTH, str + PFX, errs);
+		str = path + JSON_STR_RES + PFX + STR_HGT;
+		check_range_uint(env.resolution.value().height, MIN_RES_HEIGHT, MAX_RES_HEIGHT, str + PFX, errs);
+		DBG(path + JSON_STR_RES + PFX + std::to_string(env.resolution.value().width) + 'x' + std::to_string(env.resolution.value().height));
+	}
 }
 
 static void validate_runtime(const runtime_def& run, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
 {
-	DBG(path);
+	if (run.loops.has_value()) {
+		// clang-format off
+		DBG(path + JSON_STR_LOOPS + PFX +
+		    std::to_string(run.loops.value()));
+		// clang-format on
+
+		std::string str = path + JSON_STR_LOOPS;
+		check_range_int(run.loops.value(), MIN_LOOPS, MAX_LOOPS, str + PFX, errs);
+	}
+
+	if (run.loop_delay.has_value()) {
+		// clang-format off
+		DBG(path + JSON_STR_LOOP_DELAY + PFX +
+		    std::to_string(run.loop_delay.value()));
+		// clang-format on
+
+		std::string str = path + JSON_STR_LOOP_DELAY;
+		check_range_int(run.loop_delay.value(), MIN_LOOP_DELAY, MAX_LOOP_DELAY, str + PFX, errs);
+	}
 }
 
 static void validate_library(const library_def& lib, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
@@ -361,13 +436,11 @@ static void validate_scene(const scene_def& scene, const std::string path, error
 
 	if (scene.env.has_value()) {
 		std::string env = path + JSON_STR_ENV;
-		// DBG(env);
 		validate_environment(scene.env.value(), env + PFX, errs, valids);
 	}
 
 	if (scene.run.has_value()) {
-		std::string run = path + STR_RUN;
-		// DBG(run);
+		std::string run = path + JSON_STR_ENV + PFX + STR_RNTM;
 		validate_runtime(scene.run.value(), run + PFX, errs, valids);
 	}
 }

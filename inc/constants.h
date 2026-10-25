@@ -14,11 +14,16 @@ constexpr uint32_t JSON_VER_MIN(0U);
 constexpr uint32_t JSON_VER_REV(3U);
 constexpr uint32_t JSON_VER_FIELDS(3U);
 
-// screen resolution
-constexpr uint32_t MIN_X = 0;
-constexpr uint32_t MIN_Y = 0;
-constexpr uint32_t MAX_X = 1280; // 16:10
-constexpr uint32_t MAX_Y = 800;
+// screen resolution (1 based)
+constexpr uint32_t MIN_RES_WIDTH(320U); // DOS era "graphics" (16:10)
+constexpr uint32_t MIN_RES_HEIGHT(200U);
+constexpr uint32_t MAX_RES_WIDTH(1600U); // 16:10
+constexpr uint32_t MAX_RES_HEIGHT(1000U);
+// screen pixel positions (zero based)
+constexpr uint32_t MIN_X_POS(0);
+constexpr uint32_t MIN_Y_POS(0);
+constexpr uint32_t MAX_X_POS(MAX_RES_WIDTH - 1U);
+constexpr uint32_t MAX_Y_POS(MAX_RES_HEIGHT - 1U);
 
 // coordinates
 constexpr uint32_t X_(0U);
@@ -38,6 +43,20 @@ constexpr uint32_t MIN_LIB_ELEMS(1U);
 constexpr uint32_t MIN_LIBRARY(1U);
 constexpr uint32_t MIN_SCN_ELEMS(2U);
 constexpr uint32_t MIN_SCENES(1U);
+
+// validation limits
+constexpr unit MIN_REAL_VAL(-1000.0f);
+constexpr unit MAX_REAL_VAL(1000.0f);
+constexpr unit MIN_FOCAL_LEN(100.0f);
+constexpr unit MAX_FOCAL_LEN(3000.0f);
+constexpr unit MIN_NEAR_EPS(0.5f);
+constexpr unit MAX_NEAR_EPSN(3.0f);
+constexpr unit MIN_SCALE(0.1f);
+constexpr unit MAX_SCALE(10.0f);
+constexpr uint32_t MIN_LOOP_DELAY(1U);
+constexpr uint32_t MAX_LOOP_DELAY(200U);
+constexpr int MIN_LOOPS(-1);
+constexpr int MAX_LOOPS(100);
 
 // constexpr values
 constexpr unit DEG(180.0f);
@@ -61,21 +80,11 @@ constexpr unit CAM_POS_Z(1000.0f);
 constexpr unit FOCAL_LEN(2000.0f);
 constexpr unit NEAR_EPS(UNIT);
 constexpr unit NORMAL_SCALE_FACTOR(50.0f);
-// Scale factor for EPSILON when computing the squared tolerance
-// for detecting nearly-duplicate polygon vectors.
-constexpr unit CONSEC_TOLERANCE_SCALE(10.0f);
+constexpr uint32_t DEF_RES_WIDTH(1280U); // 16:10
+constexpr uint32_t DEF_RES_HEIGHT(800U);
 constexpr uint32_t DEF_LOOP_DELAY(20U);
 constexpr int FORWARD_LOOKING_SIGN(-1);
 constexpr int DEF_LOOP_NUM(-1); // endless
-
-// validation limits
-constexpr unit MIN_REAL_VAL(-1000.0f);
-constexpr unit MAX_REAL_VAL(1000.0f);
-constexpr unit MIN_FOCAL_LEN(100.0f);
-constexpr unit MAX_FOCAL_LEN(3000.0f);
-constexpr unit MIN_NEAR_EPSN(0.5f);
-constexpr unit MAX_NEAR_EPSN(3.0f);
-constexpr unit MIN_SCALE(0.1f);
-constexpr unit MAX_SCALE(10.0f);
-constexpr uint32_t MIN_LOOP_DELAY(1U);
-constexpr uint32_t MAX_LOOP_DELAY(200U);
+// Scale factor for EPSILON when computing the squared tolerance
+// for detecting nearly-duplicate polygon vectors.
+constexpr unit CONSEC_TOLERANCE_SCALE(10.0f);

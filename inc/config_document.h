@@ -15,7 +15,7 @@ using vector_3 = vector_3_ns::vector_3;
 using attrib = attrib_ns::attrib;
 
 // clang-format off
-// supported field names
+// supported field names - jsoncpp uses only std::string
 const std::string JSON_STR_VER   = "version";
 const std::string JSON_STR_NAME  = "name";
 const std::string JSON_STR_LIB   = "library";
@@ -42,17 +42,19 @@ const std::string JSON_STR_FOCAL_LEN  = "focal_len";
 const std::string JSON_STR_NEAR_EPS   = "near_eps";
 const std::string JSON_STR_MIN_POS    = "min_pos";
 const std::string JSON_STR_MAX_POS    = "max_pos";
+const std::string JSON_STR_RES        = "resolution";
 const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
 // error/debug messages
 constexpr std::string_view STR_NUM  = "num";
-constexpr std::string_view STR_RUN  = "run";
+constexpr std::string_view STR_RNTM = "run_time";
 constexpr std::string_view STR_PRS  = "parse";
 constexpr std::string_view STR_VAL  = "validate";
 constexpr std::string_view STR_SCN  = "scene";
 constexpr std::string_view STR_ATT  = "attrib";
 constexpr std::string_view STR_VEC  = "vector";
 constexpr std::string_view STR_PAIR = "pair";
+constexpr std::string_view STR_ARR  = "array";
 constexpr std::string_view STR_POLY = "polygon";
 constexpr std::string_view STR_ELEM = "element";
 constexpr std::string_view STR_ROTX = "rotation X";
@@ -67,6 +69,8 @@ constexpr std::string_view STR_VLDT = "validate";
 constexpr std::string_view STR_VALS = "values";
 constexpr std::string_view STR_REFS = "references";
 constexpr std::string_view STR_HIER = "hierarchy";
+constexpr std::string_view STR_WID  = "width";
+constexpr std::string_view STR_HGT  = "height";
 constexpr std::string_view STR_CORD = "coord";
 constexpr std::string_view ERR_VER  = " unsupported version";
 constexpr std::string_view ERR_REQ  = "requires";
@@ -87,6 +91,14 @@ constexpr std::string_view ERR_NULL = "is null";
 constexpr std::string_view ERR_ATLST = "at least";
 constexpr std::string_view ERR_EMPTY = "is empty";
 // clang-format on
+
+enum light_type
+{
+	__lt_min__,               // dummy
+	directional = __lt_min__, // sun-like
+	point,                    // light-bulb
+	__lt_max__                // dummy
+};
 
 struct polygon_def
 {
@@ -145,6 +157,13 @@ struct point_def
 	uint32_t y {0};
 };
 
+struct resolution_def
+{
+	// required fields
+	uint32_t width {0};
+	uint32_t height {0};
+};
+
 struct runtime_def
 {
 	// optional fields
@@ -164,6 +183,7 @@ struct environ_def
 	std::optional<unit> near_eps;
 	std::optional<point_def> min_pos;
 	std::optional<point_def> max_pos;
+	std::optional<resolution_def> resolution;
 };
 
 struct library_def

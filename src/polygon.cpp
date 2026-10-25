@@ -880,7 +880,7 @@ void polygon::update(matrix& m_trans, matrix& m_rot, frame_context& frame_ctx)
 		return;
 	}
 
-	if (frame_ctx.state->light.type == scene_ns::light_type::directional) {
+	if (frame_ctx.state->light.type == config_ns::light_type::directional) {
 		// Convention: light.direction is surface->light
 		L = vector_3::normalize(frame_ctx.state->light.direction);
 	}

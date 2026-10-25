@@ -103,6 +103,7 @@ The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for tw
 
 | Field | JSON type | Description |
 |---|---|---|
+| `color_idx` | Unsigned integer | Background color index. |
 | `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light. |
 | `light_direction` | Vector | Direction of the light. |
 | `light_position` | Vector | Position of the light. |
@@ -110,11 +111,11 @@ The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for tw
 | `focal_len` | Floating-point number | Perspective projection and magnification. |
 | `near_eps` | Floating-point number | Near-plane/depth tolerance. |
 | `min_pos`, `max_pos` | Array | Each contains exactly two unsigned integers defining the screen viewport. |
-| `color_idx` | Unsigned integer | Background color index. |
+| `resolution` | Array | Contains exactly two unsigned integers defining the window size. |
 | `loops` | Integer | Number of loops; `-1` means endless. |
 | `loop_delay` | Unsigned integer | Delay between frames, in milliseconds. |
 
-**Maximum supported viewport dimensions:** 1280 × 800 (16:10).
+**Maximum supported resolution:** 1600 × 1000 (16:10).
 
 ## JSON configuration example
 
@@ -187,6 +188,7 @@ See [`config/template.json`](./config/template.json).
 				"near_eps": 1.0,
 				"min_pos": [ 0, 0 ],
 				"max_pos": [ 1279, 799 ],
+				"resolution": [ 1280, 800 ],
 				"loops": -1,
 				"loop_delay": 20
 			}
