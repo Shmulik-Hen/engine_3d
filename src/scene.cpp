@@ -44,22 +44,14 @@ element* my_scene::add_element()
 
 bool my_scene::parse(std::ifstream& ifs)
 {
-	bool rc;
+	DBG(STR_PRS);
 
-	DBG("parse");
-
-	rc = config_ns::parse_json(ifs, ast);
-	if (!rc) {
-		ERR("parse_json() failed");
-		return false;
-	}
-
-	return true;
+	return config_ns::parse_json(ifs, ast);
 }
 
 bool my_scene::validate()
 {
-	DBG("validate");
+	DBG(STR_VAL);
 
 	return config_ns::validate_ast(ast);
 }

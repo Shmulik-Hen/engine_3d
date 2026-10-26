@@ -11,14 +11,17 @@ attrib::attrib(const unit dx, const unit dy, const unit dz,
 	       const unit z) :
 	_rot_x {dx}, _rot_y {dy}, _rot_z {dz},
 	_trans_x {ox}, _trans_y {oy}, _trans_z {oz},
-	_scale {z}
+	_scale {z},
+	_arr {_rot_x, _rot_y, _rot_z, _trans_x, _trans_y, _trans_z, _scale}
 {
 }
 
 attrib::attrib(const unit atts[NUM_ATTRIBUTES]) :
 	_rot_x {atts[0]}, _rot_y {atts[1]}, _rot_z {atts[2]},
 	_trans_x {atts[3]}, _trans_y {atts[4]}, _trans_z {atts[5]},
-	_scale {atts[6]}
+	_scale {atts[6]},
+	_arr {_rot_x, _rot_y, _rot_z, _trans_x, _trans_y, _trans_z, _scale}
+
 {
 }
 // clang-format on

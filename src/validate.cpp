@@ -1,7 +1,4 @@
 #include <vector>
-#include <cmath>
-#include <array>
-#include <charconv>
 
 // #define DEBUG_PRINTS
 #include "utils.h"
@@ -11,8 +8,6 @@
 namespace config_ns
 {
 
-using errors_t = std::vector<std::string>;
-
 static void add_error(const std::string& str, errors_t& errs)
 {
 	errs.push_back(str);
@@ -20,20 +15,10 @@ static void add_error(const std::string& str, errors_t& errs)
 
 static void print_errors(const config_ns::errors_t errs)
 {
-	PRN(ERR_PFX + ERR_DET);
+	PRN(ERR_PFX + STR_VAL + SPC + ERR_DET);
 	for (const auto& err : errs) {
 		PRN(TAB + err);
 	}
-}
-
-static std::string set_precision(const unit val, const uint32_t digits = 3)
-{
-	std::array<char, 10> buf;
-
-	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
-
-	std::string s(buf.data(), ptr);
-	return s;
 }
 
 static void check_range_real(const unit val, const unit min, const unit max, const std::string path, errors_t& errs)
@@ -77,34 +62,12 @@ static void check_range_uint(const uint32_t val, const uint32_t min, const uint3
 
 static void validate_attrib_values(const attrib& att, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
 {
-	unit val = att.get_rot_x();
-	std::string str = path + STR_ROTX + PFX + "   ";
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_rot_y();
-	str = path + STR_ROTY + PFX + "   ";
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_rot_z();
-	str = path + STR_ROTZ + PFX + "   ";
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_trans_x();
-	str = path + STR_TRNX + PFX;
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_trans_y();
-	str = path + STR_TRNY + PFX;
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_trans_z();
-	str = path + STR_TRNZ + PFX;
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
-	val = att.get_scale();
-	str = path + STR_SCL + PFX + SPC;
-	DBG(str + set_precision(val));
-	check_range_real(val, MIN_SCALE, MAX_SCALE, str, errs);
+	for (uint32_t i = 0; i < NUM_ATTRIBUTES; i++) {
+		std::string str = path + get_att_name(i) + PFX;
+		unit val = att[i];
+		DBG(str + set_precision(val));
+		check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
+	}
 }
 
 static void validate_vector_values(const vector_3& vec, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
@@ -113,7 +76,7 @@ static void validate_vector_values(const vector_3& vec, const std::string path, 
 		unit coord = vec.get(i);
 		// clang-format off
 		std::string str = path + STR_CORD +
-				  LB + std::to_string(i + 1) + RB +
+				  LB + get_coord_name(i) + RB +
 				  PFX;
 		// clang-format on
 
@@ -141,11 +104,11 @@ static void validate_polygon_values(const polygon_def& poly, const std::string p
 	std::string str = path + STR_NUM + SPC + JSON_STR_VECS;
 	DBG(str + PFX + std::to_string(poly.vectors.size()));
 	check_range_uint(poly.vectors.size(), MIN_VECTORS, MAX_VECTORS, str + PFX, errs);
-	int i = 0;
+	int i = 1;
 	for (const auto& vector : poly.vectors) {
 		// clang-format off
 		std::string vec = path + STR_VEC + LB +
-				  std::to_string(i + 1) + RB;
+				  std::to_string(i) + RB;
 		// clang-format on
 		// DBG(vec);
 		validate_vector_values(vector, vec + PFX, errs, valids);
@@ -173,11 +136,11 @@ static void validate_mesh_values(const mesh_def& mesh, const std::string path, e
 		add_error(err, errs);
 	}
 	else {
-		int i = 0;
+		int i = 1;
 		for (const auto& poly : mesh.polygons) {
 			// clang-format off
 			std::string pol = path + STR_POLY +
-			                  LB + std::to_string(i + 1) + RB;
+			                  LB + std::to_string(i) + RB;
 			// clang-format on
 			DBG(pol + PFX + QT + poly + QT);
 
@@ -298,11 +261,6 @@ static void validate_environment(const environ_def& env, const std::string path,
 		check_range_real(env.near_eps.value(), MIN_NEAR_EPS, MAX_NEAR_EPSN, str + PFX, errs);
 	}
 
-	if (env.near_eps.has_value()) {
-		std::string str = path + JSON_STR_NEAR_EPS;
-		check_range_real(env.near_eps.value(), MIN_NEAR_EPS, MAX_NEAR_EPSN, str + PFX, errs);
-	}
-
 	if (env.resolution.has_value()) {
 		std::string str = path + JSON_STR_RES + PFX + STR_WID;
 		check_range_uint(env.resolution.value().width, MIN_RES_WIDTH, MAX_RES_WIDTH, str + PFX, errs);
@@ -348,11 +306,11 @@ static void validate_library(const library_def& lib, const std::string path, err
 		add_error(err, errs);
 	}
 	else {
-		int i = 0;
+		int i = 1;
 		for (const auto& polygon : lib.polygons) {
 			// clang-format off
 			std::string polygons = path + STR_POLY +
-					       LB + std::to_string(i + 1) + RB;
+					       LB + std::to_string(i) + RB;
 			// clang-format on
 			validate_polygon_values(polygon, polygons + PFX, errs, valids);
 			i++;
@@ -370,11 +328,11 @@ static void validate_library(const library_def& lib, const std::string path, err
 		add_error(err, errs);
 	}
 	else {
-		int i = 0;
+		int i = 1;
 		for (const auto& mesh : lib.meshes) {
 			// clang-format off
 			std::string meshes = path + JSON_STR_MESH +
-					     LB + std::to_string(i + 1) + RB;
+					     LB + std::to_string(i) + RB;
 			// clang-format on
 			validate_mesh_values(mesh, meshes + PFX, errs, valids);
 			i++;
@@ -392,11 +350,11 @@ static void validate_library(const library_def& lib, const std::string path, err
 		add_error(err, errs);
 	}
 	else {
-		int i = 0;
+		int i = 1;
 		for (const auto& element : lib.lib_elem_defs) {
 			// clang-format off
 			std::string elems = path + STR_ELEM +
-					    LB + std::to_string(i + 1) + RB;
+					    LB + std::to_string(i) + RB;
 			// clang-format on
 			validate_lib_elem_values(element, elems + PFX, errs, valids);
 			i++;
@@ -424,11 +382,11 @@ static void validate_scene(const scene_def& scene, const std::string path, error
 		add_error(err, errs);
 	}
 
-	int i = 0;
+	int i = 1;
 	for (const auto& elem : scene.scene_elem_defs) {
 		// clang-format off
 		std::string elems = path + STR_ELEM +
-				    LB + std::to_string(i + 1) + RB;
+				    LB + std::to_string(i) + RB;
 		// clang-format on
 		validate_scene_elem_values(elem, elems + PFX, errs, valids);
 		i++;
@@ -474,11 +432,11 @@ static void validate_values(const config_ns::AST& ast, const std::string path, e
 		add_error(err, errs);
 	}
 	else {
-		int i = 0;
+		int i = 1;
 		for (const auto& scene : ast.scene_defs) {
 			// clang-format off
 			std::string scn = scenes + PFX + STR_SCN +
-					  LB + std::to_string(i + 1) + RB;
+					  LB + std::to_string(i) + RB;
 			// clang-format on
 			validate_scene(scene, scn + PFX, errs, ast.valids);
 			i++;

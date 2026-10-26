@@ -14,7 +14,8 @@ class attrib
 	unit _trans_x {ZERO}; // x-axis translation
 	unit _trans_y {ZERO}; // y-axis translation
 	unit _trans_z {ZERO}; // z-axis translation
-	unit _scale {UNIT};
+	unit _scale {UNIT};   // scale factor
+	unit _arr[NUM_ATTRIBUTES];
 
 public:
 
@@ -35,6 +36,7 @@ public:
 
 	attrib& operator=(unit[NUM_ATTRIBUTES]);
 	attrib& operator+=(const attrib&);
+	inline unit operator[](uint32_t i) const { return (i < NUM_ATTRIBUTES) ? _arr[i] : ZERO; };
 };
 
 } // namespace attrib_ns

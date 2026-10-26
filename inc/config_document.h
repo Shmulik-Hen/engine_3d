@@ -4,6 +4,10 @@
 #include <vector>
 #include <optional>
 #include <string_view>
+#include <cmath>
+#include <array>
+#include <map>
+#include <charconv>
 
 #include "attrib.h"
 #include "vector_3.h"
@@ -13,6 +17,9 @@ namespace config_ns
 
 using vector_3 = vector_3_ns::vector_3;
 using attrib = attrib_ns::attrib;
+using errors_t = std::vector<std::string>;
+using att_names_t = std::map<uint32_t, std::string_view>;
+using coord_names_t = std::map<uint32_t, std::string_view>;
 
 // clang-format off
 // supported field names - jsoncpp uses only std::string
@@ -46,51 +53,105 @@ const std::string JSON_STR_RES        = "resolution";
 const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
 // error/debug messages
-constexpr std::string_view STR_NUM  = "num";
-constexpr std::string_view STR_RNTM = "run_time";
-constexpr std::string_view STR_PRS  = "parse";
-constexpr std::string_view STR_VAL  = "validate";
-constexpr std::string_view STR_SCN  = "scene";
-constexpr std::string_view STR_ATT  = "attrib";
-constexpr std::string_view STR_VEC  = "vector";
-constexpr std::string_view STR_PAIR = "pair";
-constexpr std::string_view STR_ARR  = "array";
-constexpr std::string_view STR_POLY = "polygon";
-constexpr std::string_view STR_ELEM = "element";
-constexpr std::string_view STR_ROTX = "rotation X";
-constexpr std::string_view STR_ROTY = "rotation Y";
-constexpr std::string_view STR_ROTZ = "rotation Z";
-constexpr std::string_view STR_TRNX = "translation X";
-constexpr std::string_view STR_TRNY = "translation Y";
-constexpr std::string_view STR_TRNZ = "translation Z";
-constexpr std::string_view STR_SCL  = "scale factor";
-constexpr std::string_view STR_AST  = "ast";
-constexpr std::string_view STR_VLDT = "validate";
-constexpr std::string_view STR_VALS = "values";
-constexpr std::string_view STR_REFS = "references";
-constexpr std::string_view STR_HIER = "hierarchy";
-constexpr std::string_view STR_WID  = "width";
-constexpr std::string_view STR_HGT  = "height";
-constexpr std::string_view STR_CORD = "coord";
-constexpr std::string_view ERR_VER  = " unsupported version";
-constexpr std::string_view ERR_REQ  = "requires";
-constexpr std::string_view ERR_CURR = "current";
-constexpr std::string_view ERR_OBJ  = "not an object";
-constexpr std::string_view ERR_ARR  = "not an array";
-constexpr std::string_view ERR_UINT = "not an unsigned integer";
-constexpr std::string_view ERR_INT  = "not an integer";
-constexpr std::string_view ERR_STR  = "not a string";
-constexpr std::string_view ERR_REAL = "not a floating point";
-constexpr std::string_view ERR_BOOL = "not a boolean";
-constexpr std::string_view ERR_SIZE = "illegal array size";
-constexpr std::string_view ERR_FAIL = "failed";
-constexpr std::string_view ERR_DET  = "errors detected !";
-constexpr std::string_view ERR_MISS = "is missing";
-constexpr std::string_view ERR_ILG  = "is illegal";
-constexpr std::string_view ERR_NULL = "is null";
-constexpr std::string_view ERR_ATLST = "at least";
+constexpr std::string_view STR_JSON  = "JSON";
+constexpr std::string_view STR_ROOT  = "root";
+constexpr std::string_view STR_NUM   = "num";
+constexpr std::string_view STR_FNLN  = "final num";
+constexpr std::string_view STR_RNTM  = "run_time";
+constexpr std::string_view STR_PRS   = "parse";
+constexpr std::string_view STR_PRSR  = "parseer";
+constexpr std::string_view STR_VAL   = "validate";
+constexpr std::string_view STR_SCN   = "scene";
+constexpr std::string_view STR_ATT   = "attrib";
+constexpr std::string_view STR_VEC   = "vector";
+constexpr std::string_view STR_PAIR  = "pair";
+constexpr std::string_view STR_ARR   = "array";
+constexpr std::string_view STR_POLY  = "polygon";
+constexpr std::string_view STR_ELEM  = "element";
+constexpr std::string_view STR_ROTX  = "rotation X:    ";
+constexpr std::string_view STR_ROTY  = "rotation Y:    ";
+constexpr std::string_view STR_ROTZ  = "rotation Z:    ";
+constexpr std::string_view STR_TRNX  = "translation X: ";
+constexpr std::string_view STR_TRNY  = "translation Y: ";
+constexpr std::string_view STR_TRNZ  = "translation Z: ";
+constexpr std::string_view STR_SCL   = "scale factor:  ";
+constexpr std::string_view STR_AST   = "ast";
+constexpr std::string_view STR_VLDT  = "validate";
+constexpr std::string_view STR_VALS  = "values";
+constexpr std::string_view STR_REFS  = "references";
+constexpr std::string_view STR_HIER  = "hierarchy";
+constexpr std::string_view STR_WID   = "width";
+constexpr std::string_view STR_HGT   = "height";
+constexpr std::string_view STR_CORD  = "coord";
+constexpr std::string_view STR_SIZE  = "size";
+constexpr std::string_view STR_FOUND = "found";
+constexpr std::string_view STR_FLD   = "fields";
+constexpr std::string_view ERR_VER   = " unsupported version";
+constexpr std::string_view ERR_REQ   = "requires";
+constexpr std::string_view ERR_CURR  = "current";
+constexpr std::string_view ERR_OBJ   = "not an object";
+constexpr std::string_view ERR_ARR   = "not an array";
+constexpr std::string_view ERR_UINT  = "not an unsigned integer";
+constexpr std::string_view ERR_INT   = "not an integer";
+constexpr std::string_view ERR_STR   = "not a string";
+constexpr std::string_view ERR_REAL  = "not a floating point";
+constexpr std::string_view ERR_BOOL  = "not a boolean";
+constexpr std::string_view ERR_MISS  = "is missing";
+constexpr std::string_view ERR_ILG   = "is illegal";
+constexpr std::string_view ERR_NULL  = "is null";
 constexpr std::string_view ERR_EMPTY = "is empty";
+constexpr std::string_view ERR_ATLST = "at least";
+constexpr std::string_view ERR_SIZE  = "illegal array size";
+constexpr std::string_view ERR_FAIL  = "failed";
+constexpr std::string_view ERR_FAILW = "failed with";
+constexpr std::string_view ERR_DET   = "errors detected !";
 // clang-format on
+
+const att_names_t att_names = {
+	{0, STR_ROTX},
+	{1, STR_ROTY},
+	{2, STR_ROTZ},
+	{3, STR_TRNX},
+	{4, STR_TRNY},
+	{5, STR_TRNZ},
+	{6,  STR_SCL}
+};
+
+const coord_names_t coord_names = {
+	{0, "X"},
+	{1, "Y"},
+	{2, "Z"},
+};
+
+inline std::string_view get_att_name(const uint32_t i)
+{
+	auto it = att_names.find(i);
+	if (it != att_names.end()) {
+		return it->second;
+	}
+
+	return std::string_view("");
+}
+
+inline std::string_view get_coord_name(const uint32_t i)
+{
+	auto it = coord_names.find(i);
+	if (it != coord_names.end()) {
+		return it->second;
+	}
+
+	return std::string_view("");
+}
+
+inline std::string set_precision(const unit val, const uint32_t digits = 3)
+{
+	std::array<char, 10> buf;
+
+	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
+
+	std::string s(buf.data(), ptr);
+	return s;
+}
 
 enum light_type
 {
