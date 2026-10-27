@@ -41,15 +41,14 @@ const std::string JSON_STR_ORIG  = "origin";
 const std::string JSON_STR_MOTN  = "motion";
 const std::string JSON_STR_ENV   = "environment";
 // environment field names
+const std::string JSON_STR_RES        = "resolution";
 const std::string JSON_STR_LIGHT_TYPE = "light_type";
 const std::string JSON_STR_LIGHT_DIR  = "light_direction";
 const std::string JSON_STR_LIGHT_POS  = "light_position";
 const std::string JSON_STR_CAM_POS    = "camera_position";
 const std::string JSON_STR_FOCAL_LEN  = "focal_len";
 const std::string JSON_STR_NEAR_EPS   = "near_eps";
-const std::string JSON_STR_MIN_POS    = "min_pos";
-const std::string JSON_STR_MAX_POS    = "max_pos";
-const std::string JSON_STR_RES        = "resolution";
+// runtime
 const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
 // error/debug messages
@@ -85,6 +84,7 @@ constexpr std::string_view STR_HGT   = "height";
 constexpr std::string_view STR_CORD  = "coord";
 constexpr std::string_view STR_SIZE  = "size";
 constexpr std::string_view STR_FOUND = "found";
+constexpr std::string_view ERR_NFND  = "not found";
 constexpr std::string_view STR_FLD   = "fields";
 constexpr std::string_view ERR_VER   = " unsupported version";
 constexpr std::string_view ERR_REQ   = "requires";
@@ -122,36 +122,6 @@ const coord_names_t coord_names = {
 	{1, "Y"},
 	{2, "Z"},
 };
-
-inline std::string_view get_att_name(const uint32_t i)
-{
-	auto it = att_names.find(i);
-	if (it != att_names.end()) {
-		return it->second;
-	}
-
-	return std::string_view("");
-}
-
-inline std::string_view get_coord_name(const uint32_t i)
-{
-	auto it = coord_names.find(i);
-	if (it != coord_names.end()) {
-		return it->second;
-	}
-
-	return std::string_view("");
-}
-
-inline std::string set_precision(const unit val, const uint32_t digits = 3)
-{
-	std::array<char, 10> buf;
-
-	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
-
-	std::string s(buf.data(), ptr);
-	return s;
-}
 
 enum light_type
 {
@@ -211,13 +181,6 @@ struct element_def
 	std::optional<attrib> motion;
 };
 
-struct point_def
-{
-	// required fields
-	uint32_t x {0};
-	uint32_t y {0};
-};
-
 struct resolution_def
 {
 	// required fields
@@ -235,6 +198,7 @@ struct runtime_def
 struct environ_def
 {
 	// optional fields
+	std::optional<resolution_def> resolution;
 	std::optional<uint32_t> color_idx;
 	std::optional<uint32_t> light_type;
 	std::optional<vector_3> light_direction;
@@ -242,9 +206,6 @@ struct environ_def
 	std::optional<vector_3> camera_position;
 	std::optional<unit> focal_len;
 	std::optional<unit> near_eps;
-	std::optional<point_def> min_pos;
-	std::optional<point_def> max_pos;
-	std::optional<resolution_def> resolution;
 };
 
 struct library_def
@@ -277,5 +238,35 @@ struct AST
 	std::vector<scene_def> scene_defs;
 	validate_def valids;
 };
+
+inline std::string_view get_att_name(const uint32_t i)
+{
+	auto it = att_names.find(i);
+	if (it != att_names.end()) {
+		return it->second;
+	}
+
+	return std::string_view("");
+}
+
+inline std::string_view get_coord_name(const uint32_t i)
+{
+	auto it = coord_names.find(i);
+	if (it != coord_names.end()) {
+		return it->second;
+	}
+
+	return std::string_view("");
+}
+
+inline std::string set_precision(const unit val, const uint32_t digits = 3)
+{
+	std::array<char, 10> buf;
+
+	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
+
+	std::string s(buf.data(), ptr);
+	return s;
+}
 
 } // namespace config_ns

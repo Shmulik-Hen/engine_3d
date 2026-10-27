@@ -44,113 +44,139 @@ element* my_scene::add_element()
 
 bool my_scene::parse(std::ifstream& ifs)
 {
-	DBG(STR_PRS);
-
 	return config_ns::parse_json(ifs, ast);
 }
 
 bool my_scene::validate()
 {
-	DBG(STR_VAL);
-
 	return config_ns::validate_ast(ast);
 }
 
-void my_scene::build()
+config_ns::scene_def* my_scene::find_scene(const std::string& name)
 {
-#if 0
-	DBG("build");
-
-	DBG("build: num polygon defs: " << (int)ast.polygons.size());
-	for (const auto& def : ast.polygons) {
-		polygon* poly = add_polygon();
-		poly->init_from_def(frame_ctx, def);
-		DBG("build: polygon:");
-		poly->print();
-	}
-
-	DBG("build: num element defs: " << (int)ast.elements.size());
-	for (const auto& def : ast.elements) {
-		element* elem = add_element();
-		if (!root) {
-			root = elem;
+	for (auto& scn : ast.scene_defs) {
+		if (scn.name == name) {
+			return &scn;
 		}
-		elem->init_from_def(poly_list, root, def);
-		DBG("build: element:");
-		elem->print();
 	}
+
+	return nullptr;
+}
+
+void my_scene::build(const config_ns::scene_def& scene_def)
+{
+	DBG("build" << PFX << scene_def.name);
+	// DBG("build: num polygon defs: " << (int)ast.library_defs.polygons.size());
+	// for (const auto& def : ast.library_defs.polygons) {
+	// 	polygon* poly = add_polygon();
+	// 	poly->init_from_def(frame_ctx, def);
+	// 	DBG("build: polygon:");
+	// 	poly->print();
+	// }
+
+	// DBG("build: num element defs: " << (int)ast.library_defs.elements.size());
+	// for (const auto& def : ast.library_defs.lib_elem_defs) {
+	// 	element* elem = add_element();
+	// 	if (!root) {
+	// 		root = elem;
+	// 	}
+	// 	elem->init_from_def(poly_list, root, def);
+	// 	DBG("build: element:");
+	// 	elem->print();
+	// }
 
 	DBG("build: environment:");
-	if (ast.env.color_idx.has_value()) {
-		DBG("build: override: color_idx");
-		frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(static_cast<graphics_ns::graphics::color_idx>(ast.env.color_idx.value()));
+
+	if (scene_def.env.has_value()) {
+		config_ns::environ_def env = scene_def.env.value();
+
+		if (env.resolution.has_value()) {
+			DBG("build: override: resolution");
+
+			config_ns::resolution_def res = env.resolution.value();
+			bool res_changed = false;
+
+			if ((res.width - 1) != max_pos.x) {
+				frame_ctx.state->win.max_pos.x = res.width - 1;
+				DBG(" build:override : max_pos.x : " << DEC(frame_ctx.state->win.max_pos.x, 4));
+				res_changed = true;
+			}
+
+			if ((res.height - 1) != max_pos.y) {
+				frame_ctx.state->win.max_pos.y = res.height - 1;
+				DBG(" build:override : max_pos.y : " << DEC(frame_ctx.state->win.max_pos.y, 4));
+				res_changed = true;
+			}
+
+			if (res_changed) {
+				frame_ctx.state->win.mid_pos.x = frame_ctx.state->win.max_pos.x / 2;
+				DBG("build: override: mid_pos.x: " << DEC(frame_ctx.state->win.mid_pos.x, 4));
+				frame_ctx.state->win.mid_pos.y = frame_ctx.state->win.max_pos.y / 2;
+				DBG("build: override: mid_pos.y: " << DEC(frame_ctx.state->win.mid_pos.y, 4));
+			}
+		}
+
+		if (env.color_idx.has_value()) {
+			DBG("build: override: color_idx");
+			// clang-fotmat off
+			frame_ctx.state->grfx.clear_color = frame_ctx.state->grfx.gfx->get_color_val(
+				static_cast<graphics_ns::graphics::color_idx>(env.color_idx.value()));
+			// clang=format on
+		}
+
+		if (env.light_type.has_value()) {
+			DBG("build: override: light_type");
+			// clang-fotmat off
+			frame_ctx.state->light.type =
+				env.light_type.value() ?
+					config_ns::light_type::point :
+					config_ns::light_type::directional;
+			// clang=format on
+		}
+
+		if (env.light_direction.has_value()) {
+			DBG("build: override: light_direction");
+			frame_ctx.state->light.direction = env.light_direction.value();
+			frame_ctx.state->light.direction.print();
+		}
+
+		if (env.light_position.has_value()) {
+			DBG("build: override: light_position");
+			frame_ctx.state->light.position = env.light_position.value();
+			frame_ctx.state->light.position.print();
+		}
+
+		if (env.camera_position.has_value()) {
+			DBG("build: override: camera_position");
+			frame_ctx.state->camera.position = env.camera_position.value();
+			frame_ctx.state->camera.position.print();
+		}
+
+		if (env.focal_len.has_value()) {
+			DBG("build: override: focal_len");
+			frame_ctx.state->proj.focal_len = env.focal_len.value();
+		}
+
+		if (env.near_eps.has_value()) {
+			DBG("build: override: near_eps");
+			frame_ctx.state->proj.near_eps = env.near_eps.value();
+		}
 	}
 
-	if (ast.env.light_type.has_value()) {
-		DBG("build: override: light_type");
-		frame_ctx.state->light.type = ast.env.light_type.value() ? light_type::point : light_type::directional;
-	}
+	if (scene_def.run.has_value()) {
+		config_ns::runtime_def run = scene_def.run.value();
+		if (run.loops.has_value()) {
+			DBG("build: override: 1: loops: " << frame_ctx.state->run.loops);
+			frame_ctx.state->run.loops = run.loops.value();
+			DBG("build: override: 2: loops: " << frame_ctx.state->run.loops);
+		}
 
-	if (ast.env.light_direction.has_value()) {
-		DBG("build: override: light_direction");
-		frame_ctx.state->light.direction = ast.env.light_direction.value();
+		if (run.loop_delay.has_value()) {
+			DBG("build: override: 1: loop_delay: " << frame_ctx.state->run.loop_delay);
+			frame_ctx.state->run.loop_delay = run.loop_delay.value();
+			DBG("build: override: 2: loop_delay: " << frame_ctx.state->run.loop_delay);
+		}
 	}
-
-	if (ast.env.light_position.has_value()) {
-		DBG("build: override: light_position");
-		frame_ctx.state->light.position = ast.env.light_position.value();
-	}
-
-	if (ast.env.camera_position.has_value()) {
-		DBG("build: override: camera_position");
-		frame_ctx.state->camera.position = ast.env.camera_position.value();
-	}
-
-	if (ast.env.focal_len.has_value()) {
-		DBG("build: override: focal_len");
-		frame_ctx.state->proj.focal_len = ast.env.focal_len.value();
-	}
-
-	if (ast.env.near_eps.has_value()) {
-		DBG("build: override: near_eps");
-		frame_ctx.state->proj.near_eps = ast.env.near_eps.value();
-	}
-
-	bool vp_changed = false;
-	if (ast.env.min_pos.has_value()) {
-		vp_changed = true;
-		DBG("build: override: 1: min_pos.x: " << DEC(frame_ctx.state->vp.min_pos.x, 4) << ", min_pos.y: " << DEC(frame_ctx.state->vp.min_pos.y, 4));
-		frame_ctx.state->vp.min_pos.x = std::min(min_pos.x, ast.env.min_pos.value().x);
-		frame_ctx.state->vp.min_pos.y = std::min(min_pos.y, ast.env.min_pos.value().y);
-		DBG("build: override: 2: min_pos.x: " << DEC(frame_ctx.state->vp.min_pos.x, 4) << ", min_pos.y: " << DEC(frame_ctx.state->vp.min_pos.y, 4));
-	}
-
-	if (ast.env.max_pos.has_value()) {
-		vp_changed = true;
-		DBG("build: override: 1: max_pos.x: " << DEC(frame_ctx.state->vp.max_pos.x, 4) << ", max_pos.y: " << DEC(frame_ctx.state->vp.max_pos.y, 4));
-		frame_ctx.state->vp.max_pos.x = std::min(max_pos.x, ast.env.max_pos.value().x);
-		frame_ctx.state->vp.max_pos.y = std::min(max_pos.y, ast.env.max_pos.value().y);
-		DBG("build: override: 2: max_pos.x: " << DEC(frame_ctx.state->vp.max_pos.x, 4) << ", max_pos.y: " << DEC(frame_ctx.state->vp.max_pos.y, 4));
-	}
-
-	if (vp_changed) {
-		frame_ctx.state->vp.mid_pos.x = frame_ctx.state->vp.min_pos.x + (frame_ctx.state->vp.max_pos.x - frame_ctx.state->vp.min_pos.x) / 2;
-		frame_ctx.state->vp.mid_pos.y = frame_ctx.state->vp.min_pos.y + (frame_ctx.state->vp.max_pos.y - frame_ctx.state->vp.min_pos.y) / 2;
-		DBG("build: override: mid_pos.x: " << DEC(frame_ctx.state->vp.mid_pos.x, 4) << ", mid_pos.y: " << DEC(frame_ctx.state->vp.mid_pos.y, 4));
-	}
-
-	if (ast.run.loops.has_value()) {
-		DBG("build: override: 1: loops: " << frame_ctx.state->run.loops);
-		frame_ctx.state->run.loops = ast.run.loops.value();
-		DBG("build: override: 2: loops: " << frame_ctx.state->run.loops);
-	}
-
-	if (ast.run.loop_delay.has_value()) {
-		DBG("build: override: 1: loop_delay: " << frame_ctx.state->run.loop_delay);
-		frame_ctx.state->run.loop_delay = ast.run.loop_delay.value();
-		DBG("build: override: 2: loop_delay: " << frame_ctx.state->run.loop_delay);
-	}
-#endif // 0
 }
 
 void my_scene::update()
@@ -236,8 +262,8 @@ void my_scene::set_defaults()
 
 	// light
 	frame_ctx.state->light.type = config_ns::light_type::directional;
-	frame_ctx.state->light.direction = {LIGHT_DIR_X, LIGHT_DIR_Y, LIGHT_DIR_Z};
-	frame_ctx.state->light.position = {LIGHT_POS_X, LIGHT_POS_Y, LIGHT_POS_Z};
+	frame_ctx.state->light.direction = {DEF_LIGHT_DIR_X, DEF_LIGHT_DIR_Y, DEF_LIGHT_DIR_Z};
+	frame_ctx.state->light.position = {DEF_LIGHT_POS_X, DEF_LIGHT_POS_Y, DEF_LIGHT_POS_Z};
 	DBG("light type: " << (int)frame_ctx.state->light.type);
 	DBG("light direction:");
 	frame_ctx.state->light.direction.print();
@@ -245,24 +271,24 @@ void my_scene::set_defaults()
 	frame_ctx.state->light.position.print();
 
 	// camera
-	frame_ctx.state->camera.position = {CAM_POS_X, CAM_POS_Y, CAM_POS_Z};
+	frame_ctx.state->camera.position = {DEF_CAM_POS_X, DEF_CAM_POS_Y, DEF_CAM_POS_Z};
 	DBG("camera position:");
 	frame_ctx.state->camera.position.print();
 
 	// projection
-	frame_ctx.state->proj.focal_len = FOCAL_LEN;
-	frame_ctx.state->proj.near_eps = NEAR_EPS;
+	frame_ctx.state->proj.focal_len = DEF_FOCAL_LEN;
+	frame_ctx.state->proj.near_eps = DEF_NEAR_EPS;
 	DBG("projection: focal len: " << FLT(frame_ctx.state->proj.focal_len, 3) << ", near_eps: " << FLT(frame_ctx.state->proj.near_eps, 3));
 
 	// screen
-	frame_ctx.state->vp.min_pos = min_pos;
-	frame_ctx.state->vp.max_pos = max_pos;
-	frame_ctx.state->vp.mid_pos.x = min_pos.x + (max_pos.x - min_pos.x) / 2;
-	frame_ctx.state->vp.mid_pos.y = min_pos.y + (max_pos.y - min_pos.y) / 2;
+	frame_ctx.state->win.min_pos = min_pos;
+	frame_ctx.state->win.max_pos = max_pos;
+	frame_ctx.state->win.mid_pos.x = max_pos.x / 2;
+	frame_ctx.state->win.mid_pos.y = max_pos.y / 2;
 
-	DBG("min_pos: {" << DEC(frame_ctx.state->vp.min_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.min_pos.y, 4) << "}");
-	DBG("max_pos: {" << DEC(frame_ctx.state->vp.max_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.max_pos.y, 4) << "}");
-	DBG("mid_pos: {" << DEC(frame_ctx.state->vp.mid_pos.x, 4) << SEP << DEC(frame_ctx.state->vp.mid_pos.y, 4) << "}");
+	DBG("min_pos: {" << DEC(frame_ctx.state->win.min_pos.x, 4) << SEP << DEC(frame_ctx.state->win.min_pos.y, 4) << "}");
+	DBG("max_pos: {" << DEC(frame_ctx.state->win.max_pos.x, 4) << SEP << DEC(frame_ctx.state->win.max_pos.y, 4) << "}");
+	DBG("mid_pos: {" << DEC(frame_ctx.state->win.mid_pos.x, 4) << SEP << DEC(frame_ctx.state->win.mid_pos.y, 4) << "}");
 
 	frame_ctx.state->run.loops = DEF_LOOP_NUM;
 	frame_ctx.state->run.loop_delay = DEF_LOOP_DELAY;

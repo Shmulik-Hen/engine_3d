@@ -216,6 +216,14 @@ static void validate_scene_elem_values(const scene_elem_def& elem, const std::st
 
 static void validate_environment(const environ_def& env, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
 {
+	if (env.resolution.has_value()) {
+		std::string str = path + JSON_STR_RES + PFX + STR_WID;
+		check_range_uint(env.resolution.value().width, MIN_RES_WIDTH, MAX_RES_WIDTH, str + PFX, errs);
+		str = path + JSON_STR_RES + PFX + STR_HGT;
+		check_range_uint(env.resolution.value().height, MIN_RES_HEIGHT, MAX_RES_HEIGHT, str + PFX, errs);
+		DBG(path + JSON_STR_RES + PFX + std::to_string(env.resolution.value().width) + 'x' + std::to_string(env.resolution.value().height));
+	}
+
 	if (env.color_idx.has_value()) {
 		// clang-format off
 		DBG(path + JSON_STR_COLOR + PFX +
@@ -259,14 +267,6 @@ static void validate_environment(const environ_def& env, const std::string path,
 	if (env.near_eps.has_value()) {
 		std::string str = path + JSON_STR_NEAR_EPS;
 		check_range_real(env.near_eps.value(), MIN_NEAR_EPS, MAX_NEAR_EPSN, str + PFX, errs);
-	}
-
-	if (env.resolution.has_value()) {
-		std::string str = path + JSON_STR_RES + PFX + STR_WID;
-		check_range_uint(env.resolution.value().width, MIN_RES_WIDTH, MAX_RES_WIDTH, str + PFX, errs);
-		str = path + JSON_STR_RES + PFX + STR_HGT;
-		check_range_uint(env.resolution.value().height, MIN_RES_HEIGHT, MAX_RES_HEIGHT, str + PFX, errs);
-		DBG(path + JSON_STR_RES + PFX + std::to_string(env.resolution.value().width) + 'x' + std::to_string(env.resolution.value().height));
 	}
 }
 

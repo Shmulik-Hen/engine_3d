@@ -47,11 +47,11 @@ graphics::graphics(const char* title) :
 	init_graphics();
 }
 
-graphics::graphics(const char* title, val_t width, val_t height, val_t scale) :
+graphics::graphics(const char* title, uval_t width, uval_t height, uval_t scale) :
 	_title {title},
-	_w {std::min(width, (int)MAX_RES_WIDTH)},
-	_h {std::min(height, (int)MAX_RES_HEIGHT)},
-	_scale {scale},
+	_w {std::min((int)width, (int)MAX_RES_WIDTH)},
+	_h {std::min((int)height, (int)MAX_RES_HEIGHT)},
+	_scale {(int)scale},
 	_scaled_w {_w * _scale},
 	_scaled_h {_h * _scale},
 	_win_size {_w * _h},
@@ -279,7 +279,7 @@ void graphics::init_graphics()
 	// clang-format on
 
 	_colors.clear();
-	for (int i = __first_color__; i < __last_color__; i++) {
+	for (color_t i = __first_color__; i < __last_color__; i++) {
 		color_idx idx = static_cast<color_idx>(i);
 		const char* s = tmp_col[i];
 		ARGB color;
@@ -302,7 +302,7 @@ void graphics::init_graphics()
 	}
 
 	_alphas.clear();
-	for (int i = __first_alpha__; i < __last_alpha__; i++) {
+	for (uval_t i = __first_alpha__; i < __last_alpha__; i++) {
 		alpha_idx idx = static_cast<alpha_idx>(i);
 		std::pair p = {idx, alpha_vals[idx]};
 		_alphas.insert(p);

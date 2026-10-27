@@ -12,7 +12,7 @@ namespace graphics_ns
 
 using val_t = std::int32_t;
 using uval_t = std::uint32_t;
-using coord_t = val_t;
+using coord_t = uval_t;
 using color_t = uval_t;
 
 class graphics
@@ -111,7 +111,7 @@ public:
 
 	graphics();
 	graphics(const char*);
-	graphics(const char*, val_t, val_t, val_t);
+	graphics(const char*, uval_t, uval_t, uval_t);
 	~graphics();
 
 	// class with allocated resource should not be copied
@@ -135,9 +135,9 @@ public:
 	void set_alpha(ARGB&, const uint8_t);
 	val_t get_num_colors() const { return __last_color__ - 1; }
 	val_t get_num_alphas() const { return __last_alpha__ - 1; }
-	point get_min_position() const { return point {0, 0}; }
-	point get_max_position() const { return point {_w - 1, _h - 1}; }
-	bool is_in_bounds(point p) const { return ((uval_t)p.x < (uval_t)_w && (uval_t)p.y < (uval_t)_h); }
+	point get_min_position() const { return point {MIN_X_POS, MIN_Y_POS}; }
+	point get_max_position() const { return point {(uval_t)_w - 1, (uval_t)_h - 1}; }
+	bool is_in_bounds(point p) const { return (p.x < (uval_t)_w && p.y < (uval_t)_h); }
 
 private:
 

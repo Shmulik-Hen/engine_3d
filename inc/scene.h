@@ -46,10 +46,11 @@ public:
 	element_ns::element* add_element();
 	bool parse(std::ifstream&);
 	bool validate();
-	void build();
+	void build(const config_ns::scene_def&);
 	void update();
 	void render();
 	bool keep_going();
+	config_ns::scene_def* find_scene(const std::string&);
 
 private:
 

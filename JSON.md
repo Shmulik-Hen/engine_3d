@@ -1,7 +1,8 @@
 # JSON Configuration
 
-**Parsing** verifies JSON syntax, field types, and fixed-length arrays.
-**Validation** checks duplicates, completeness, value constraints, references, and scene hierarchy.
+**Parsing** verifies JSON syntax, field types, and fixed-length arrays.\
+**Validation** checks duplicates, completeness, value constraints, references, and scene hierarchy.\
+**valid values:** See [`inc/constants.h`](./inc/constants.h).
 
 ## Sections
 
@@ -29,23 +30,24 @@ The library contains definitions of **polygons**, **meshes**, and **elements**, 
 | `name` | String | Non-null, nonempty object identifier. |
 | `force` | Boolean | Render the polygon regardless of its facing direction. |
 | `color_idx` | Unsigned integer | Color palette index (see below). |
-| `vectors` | Array | At least three vectors defining the polygon. |
+| `vectors` | Array | At least three vectors defining a valid polygon. |
 
-Each vector is an unnamed array containing **exactly three floating-point coordinates**: `[x, y, z]`.
+**Vector:** is an unnamed array containing **exactly three floating-point coordinates**: `[x, y, z]`.\
+**Coordinate valid values:** [ -1000.0 - 1000.0 ].
 
 #### `library.meshes`
 
 | Field | JSON type | Description |
 |---|---|---|
 | `name` | String | Non-null, nonempty object identifier. |
-| `polygons` | Array of strings | Names of at least one valid polygon. |
+| `polygons` | Array of strings | Nonempty names of at least one valid polygon. |
 
 #### `library.elements`
 
 | Field | JSON type | Description |
 |---|---|---|
 | `name` | String | Non-null, nonempty object identifier. |
-| `mesh` | String | Name of exactly one valid mesh. |
+| `mesh` | String | Non-null, nonempty name of exactly one valid mesh. |
 
 #### Color palette
 
@@ -64,8 +66,8 @@ Each vector is an unnamed array containing **exactly three floating-point coordi
 
 `scenes` is an array containing **at least one scene** in a valid configuration.
 
-- Each scene contains a list of elements and optional environment settings.
-- The elements form a hierarchy tree with **exactly one root element** and at least one child element.
+- Each scene contains a list of elements and optional environment and runtime settings.
+- The elements form a hierarchy tree with **exactly one root element** and **at least one other child element**.
 - Multiple children may share a parent (siblings).
 - The root is identified by a `null` parent.
 - Child elements may reference a library element, and multiple scene elements may reuse the same library definition.
@@ -78,9 +80,9 @@ Each vector is an unnamed array containing **exactly three floating-point coordi
 | Field | JSON type | Description |
 |---|---|---|
 | `name` | String | Non-null, nonempty scene-element identifier. |
-| `parent` | String or null | Name of a valid parent; `null` identifies the root. |
+| `parent` | String or null | Nonempty name of a valid parent; `null` identifies the root. |
 | `active` | Boolean | Enables or disables the scene element. |
-| `ref` | String | Optional name of a valid library element. |
+| `ref` | String | Optional Non-null, nonempty name of a valid library element. |
 | `origin` | Array | Optional initial position and orientation attributes. (see below) |
 | `motion` | Array | Optional continuous movement attributes. (see below) |
 
@@ -90,32 +92,50 @@ Each attribute is an array containing **exactly seven floating-point values**:
 Attribute fields:
 
 ```text
-[ X Rotation, Y Rotation, Z Rotation,
-  X Translation, Y Translation, Z Translation,
-  Scale factor ]
+[ X Rotation, Y Rotation, Z Rotation, X Translation, Y Translation, Z Translation, Scale factor ]
 ```
 
 The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for twice the size.
 
+**Rotation/Translation valid values:** `[ -1000.0 - 1000.0 ]`.\
+**Scale values:** `[ 0.1 - 10.0 ]`.
+######Default: `[ 0, 0, 0, 0, 0, 0, 1 ]`.
+
 #### Environment
 
-`environment` is an **optional JSON object**. All its fields are optional overrides.
+`environment` is an **optional JSON object** setting the graphical properties.\
+All its fields are optional overrides.
 
 | Field | JSON type | Description |
 |---|---|---|
-| `color_idx` | Unsigned integer | Background color index. |
-| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light. |
-| `light_direction` | Vector | Direction of the light. |
-| `light_position` | Vector | Position of the light. |
-| `camera_position` | Vector | Position of the camera. |
-| `focal_len` | Floating-point number | Perspective projection and magnification. |
-| `near_eps` | Floating-point number | Near-plane/depth tolerance. |
-| `min_pos`, `max_pos` | Array | Each contains exactly two unsigned integers defining the screen viewport. |
 | `resolution` | Array | Contains exactly two unsigned integers defining the window size. |
-| `loops` | Integer | Number of loops; `-1` means endless. |
-| `loop_delay` | Unsigned integer | Delay between frames, in milliseconds. |
+| `color_idx` | Unsigned integer | Background color index (see above). |
+| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light (default: `0`). |
+| `light_direction` | Vector | Direction of the light source (default: `[ 0, 0, 1 ]`). |
+| `light_position` | Vector | Position of the light source (default: `[ 0, 20, 75 ]`). |
+| `camera_position` | Vector | Position of the camera (default: `[ 0, 0, 1000 ]`). |
+| `focal_len` | Floating-point number | Perspective projection and magnification (default: `2000`). |
+| `near_eps` | Floating-point number | Near-plane/depth tolerance (default: `1`). |
 
-**Maximum supported resolution:** 1600 × 1000 (16:10).
+**Minimum supported resolution:** `320 × 200` (16:10).\
+**Maximum supported resolution:** `1600 × 1000` (16:10).\
+**Default resolution:** `1280 × 800` (16:10).\
+**Vectors:** see polygon vectors above.\
+**Focal length valid range:** `[ 100.0 - 3000.0 ]`.\
+**Near epsilon valid range:** `[ 0.5 - 3.0 ]`.
+
+#### Runtime
+
+`runtime` is an **optional JSON object** setting the runtime properties.\
+All its fields are optional overrides.
+
+| Field | JSON type | Description |
+|---|---|---|
+| `loops` | Integer | Number of loops; `-1` means endless (default: `-1`).|
+| `loop_delay` | Unsigned integer | Delay between frames, in milliseconds (default: `20`).|
+
+**Loops valid range:** `[ -1 - 100 ]`.\
+**Loop delay valid range:** `[ 1 - 200 ]`.
 
 ## JSON configuration example
 
@@ -174,11 +194,12 @@ See [`config/template.json`](./config/template.json).
 					"parent": "world",
 					"active": true,
 					"ref": "cube_body",
-					"origin": [ 0, 0, 0, 0, 0, 0, 1 ],
-					"motion": [ 0, 0, 0, 0, 0, 0, 1 ]
+					"origin": [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ],
+					"motion": [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 ]
 				}
 			],
 			"environment": {
+				"resolution": [ 1280, 800 ],
 				"color_idx": 0,
 				"light_type": 0,
 				"light_direction": [ 0.0, 0.0, 1.0 ],
@@ -186,9 +207,8 @@ See [`config/template.json`](./config/template.json).
 				"camera_position": [ 0.0, 0.0, 1000.0 ],
 				"focal_len": 2000.0,
 				"near_eps": 1.0,
-				"min_pos": [ 0, 0 ],
-				"max_pos": [ 1279, 799 ],
-				"resolution": [ 1280, 800 ],
+			},
+			"runtime": {
 				"loops": -1,
 				"loop_delay": 20
 			}

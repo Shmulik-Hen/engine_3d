@@ -39,7 +39,7 @@ void vector_3::print() const
 {
 	DBG(STR("  vector:", 1));
 	for (uint32_t i = X_; i <= Z_; i++) {
-		DBG("    i: " << i << PFX << FLT(_coords[i], 3));
+		DBG("       " << i + 1 << PFX << FLT(_coords[i], 3));
 	}
 }
 

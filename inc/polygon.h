@@ -70,12 +70,15 @@ class polygon
 		vector_3_ns::vector_3 _debug_fill;
 		graphics_ns::graphics::color_idx _debug_color {graphics_ns::graphics::white};
 		graphics_ns::graphics::color_idx _bbox_color {graphics_ns::graphics::green};
-		graphics_ns::graphics::color_idx _vp_color {graphics_ns::graphics::blue};
+		graphics_ns::graphics::color_idx _win_color {graphics_ns::graphics::blue};
 		graphics_ns::graphics::color_idx _normal_color {graphics_ns::graphics::lime};
 		graphics_ns::graphics::color_idx _fill_color {graphics_ns::graphics::red};
 		point _normal_point;
 		point _fill_point;
-#endif
+
+		// Optional: keep for debug outline rendering. Not used for filling anymore.
+		void clamp_to_win(scene_ns::frame_context&, point&);
+#endif // DEBUG_POLYGON
 
 		drawing() = default;
 		~drawing() = default;
@@ -93,10 +96,8 @@ class polygon
 		void putpixel(scene_ns::frame_context&, const point&);
 
 		// Fast scanline bar (no per-pixel bounds checks)
-		void bar(scene_ns::frame_context&, graphics_ns::val_t y, graphics_ns::val_t x_left, graphics_ns::val_t x_right);
+		void bar(scene_ns::frame_context&, graphics_ns::uval_t y, graphics_ns::uval_t x_left, graphics_ns::uval_t x_right);
 
-		// Optional: keep for debug outline rendering. Not used for filling anymore.
-		void clamp_to_vp(scene_ns::frame_context&, point&);
 		int check_boundaries(scene_ns::frame_context&, point&);
 		bool cs_clip_line(scene_ns::frame_context&, point&, point&);
 

@@ -48,7 +48,7 @@ struct projection_state
 	unit near_eps; // avoid divide by ~0
 };
 
-struct viewport_state
+struct window_state
 {
 	// screen min/max points
 	graphics_ns::graphics::point min_pos;
@@ -68,7 +68,7 @@ struct scene_state
 	light_state light;
 	camera_state camera;
 	projection_state proj;
-	viewport_state vp;
+	window_state win;
 	runtime_state run;
 };
 

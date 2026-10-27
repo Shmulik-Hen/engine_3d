@@ -168,9 +168,14 @@ int main(int argc, char** argv)
 			sys_error("scene->validate() failed");
 		}
 
-#if 0
-		scene->build();
+		config_ns::scene_def* scn = scene->find_scene(conf_name);
+		if (!scn) {
+			sys_error("couldn't find a scene with name ", conf_name.c_str());
+		}
 
+		scene->build(*scn);
+
+#if 0
 		if (!scene->root) {
 			sys_error("root is null");
 		}

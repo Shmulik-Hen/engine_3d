@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#define DEBUG_PRINTS
+// #define DEBUG_PRINTS
 #include "utils.h"
 #include "parse_json.h"
 
@@ -112,31 +112,6 @@ static bool parse_json_vector(const Json::Value& vector, const std::string& path
 
 		array[i] = vector[i].asFloat();
 		DBG(str + PFX + set_precision(array[i]));
-	}
-
-	return true;
-}
-
-static bool parse_json_pair(const Json::Value& pair, const std::string& path, uint32_t array[NUM_POINTS])
-{
-	if (pair.size() != NUM_POINTS) {
-		// clang-format off
-		ERR(path + ERR_SIZE + PFX +
-		    ERR_REQ + PFX + std::to_string(NUM_POINTS) + SEP +
-		    ERR_CURR + PFX + std::to_string(pair.size()));
-		// clang-format on
-		return false;
-	}
-
-	for (uint32_t i = 0; i < NUM_POINTS; i++) {
-		std::string str = path + STR_PAIR + LB + std::to_string(i + 1) + RB;
-		if (!pair[i].isUInt()) {
-			ERR(str + PFX + ERR_UINT);
-			return false;
-		}
-
-		array[i] = pair[i].asUInt();
-		DBG(str + PFX + std::to_string(array[i]));
 	}
 
 	return true;
@@ -379,10 +354,52 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const std::str
 	return true;
 }
 
+static bool parse_json_resolution(const Json::Value& res, const std::string& path, uint32_t array[2])
+{
+	if (res.size() != 2) {
+		// clang-format off
+		ERR(path + ERR_SIZE + PFX +
+		    ERR_REQ + PFX + std::to_string(2) + SEP +
+		    ERR_CURR + PFX + std::to_string(res.size()));
+		// clang-format on
+		return false;
+	}
+
+	if (!res[0].isDouble() || !res[1].isDouble()) {
+		ERR(path + PFX + STR_WID + " or " + STR_HGT + " are " + ERR_UINT);
+		return false;
+	}
+
+	array[0] = res[0].asUInt();
+	array[1] = res[1].asUInt();
+
+	return true;
+}
+
 static bool parse_json_environment(const Json::Value& env, const std::string path, environ_def& ed)
 {
 	std::string str;
 	bool rc;
+
+	if (env.isMember(JSON_STR_RES)) {
+		DBG(path + STR_FOUND + SPC + JSON_STR_RES);
+
+		str = path + JSON_STR_RES;
+		uint32_t res[2];
+
+		if (!env[JSON_STR_RES].isArray()) {
+			ERR(str + PFX + ERR_ARR);
+			return false;
+		}
+
+		rc = parse_json_resolution(env[JSON_STR_RES], str + PFX, res);
+		if (!rc) {
+			return false;
+		}
+
+		DBG(str + PFX + std::to_string(res[0]) + 'x' + std::to_string(res[1]));
+		ed.resolution = config_ns::resolution_def {res[0], res[1]};
+	}
 
 	if (env.isMember(JSON_STR_COLOR)) {
 		DBG(path + STR_FOUND + SPC + JSON_STR_COLOR);
@@ -497,66 +514,6 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 
 		DBG(str + PFX + std::to_string(env[JSON_STR_NEAR_EPS].asFloat()));
 		ed.near_eps = env[JSON_STR_NEAR_EPS].asFloat();
-	}
-
-	if (env.isMember(JSON_STR_MIN_POS)) {
-		DBG(path + STR_FOUND + SPC + JSON_STR_MIN_POS);
-
-		str = path + JSON_STR_MIN_POS;
-		uint32_t points[NUM_POINTS];
-
-		if (!env[JSON_STR_MIN_POS].isArray()) {
-			ERR(str + PFX + ERR_ARR);
-			return false;
-		}
-
-		rc = parse_json_pair(env[JSON_STR_MIN_POS], str + PFX, points);
-		if (!rc) {
-			return false;
-		}
-
-		DBG(str + LP + std::to_string(points[0]) + SEP + std::to_string(points[1]) + RP);
-		ed.min_pos = config_ns::point_def {points[0], points[1]};
-	}
-
-	if (env.isMember(JSON_STR_MAX_POS)) {
-		DBG(path + STR_FOUND + SPC + JSON_STR_MAX_POS);
-
-		str = path + JSON_STR_MAX_POS;
-		uint32_t points[NUM_POINTS];
-
-		if (!env[JSON_STR_MAX_POS].isArray()) {
-			ERR(str + PFX + ERR_ARR);
-			return false;
-		}
-
-		rc = parse_json_pair(env[JSON_STR_MAX_POS], str + PFX, points);
-		if (!rc) {
-			return false;
-		}
-
-		DBG(str + LP + std::to_string(points[0]) + SEP + std::to_string(points[1]) + RP);
-		ed.max_pos = config_ns::point_def {points[0], points[1]};
-	}
-
-	if (env.isMember(JSON_STR_RES)) {
-		DBG(path + STR_FOUND + SPC + JSON_STR_RES);
-
-		str = path + JSON_STR_RES;
-		uint32_t res[NUM_POINTS];
-
-		if (!env[JSON_STR_RES].isArray()) {
-			ERR(str + PFX + ERR_ARR);
-			return false;
-		}
-
-		rc = parse_json_pair(env[JSON_STR_RES], str + PFX, res);
-		if (!rc) {
-			return false;
-		}
-
-		DBG(str + PFX + std::to_string(res[0]) + 'x' + std::to_string(res[1]));
-		ed.resolution = config_ns::resolution_def {res[0], res[1]};
 	}
 
 	return true;
