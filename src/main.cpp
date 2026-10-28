@@ -144,8 +144,7 @@ int main(int argc, char** argv)
 
 		if (!(scene &&
 		      scene->frame_ctx.draw_vec.get() &&
-		      scene->frame_ctx.state.get() &&
-		      scene->frame_ctx.state->grfx.gfx.get())) {
+		      scene->frame_ctx.state.get())) {
 			sys_error("failed to initialize scene");
 		}
 
@@ -174,6 +173,11 @@ int main(int argc, char** argv)
 		}
 
 		scene->build(*scn);
+		scene->init_graphics();
+		graphics* gfx = scene->frame_ctx.state->grfx.gfx.get();
+		if (!gfx) {
+			sys_error("graphics system has not been initialized yet");
+		}
 
 #if 0
 		if (!scene->root) {
@@ -222,13 +226,14 @@ int main(int argc, char** argv)
 
 		// attrib(rotationX, rotationY, rotationZ, translationX, translationY, translationZ, scale)
 		attrib keep_moving(0, 0, 0, 0, 0, 0, 1);
+#endif // 0
 
 		input_state in {};
-		graphics* gfx = scene->frame_ctx.state->grfx.gfx.get();
 
 		while (!in.quit) {
 			gfx->poll_events(in);
 			DBG("in.quit: " << in.quit << " in.esc: " << in.key_escape);
+#if 0
 
 			if (gimbal) {
 				if (gimbal->has_motion()) {
@@ -258,12 +263,13 @@ int main(int argc, char** argv)
 			}
 
 			scene->update();
+#endif // 0
 			scene->render();
 			if (!scene->keep_going()) {
 				break;
 			}
 		}
-#endif // 0
+
 		return 0;
 	}
 	catch (const std::exception& e) {

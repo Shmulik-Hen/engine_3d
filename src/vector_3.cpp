@@ -172,4 +172,18 @@ vector_3& vector_3::operator-=(const vector_3& v)
 	return *this;
 }
 
+bool vector_3::operator==(const vector_3& v)
+{
+	return (_coords[0] == v._coords[0] &&
+	        _coords[1] == v._coords[1] &&
+	        _coords[2] == v._coords[2]);
+}
+
+bool vector_3::operator!=(const vector_3& v)
+{
+	return !(_coords[0] == v._coords[0] &&
+	         _coords[1] == v._coords[1] &&
+	         _coords[2] == v._coords[2]);
+}
+
 } // namespace vector_3_ns

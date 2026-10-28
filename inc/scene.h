@@ -9,9 +9,9 @@
 #include "scene_types.h"
 
 // clang-format off
-namespace element_ns { class element; }
+namespace element_ns  { class element; }
 namespace graphics_ns { class graphics; }
-namespace polygon_ns { class polygon; }
+namespace polygon_ns  { class polygon; }
 // clang-format on
 
 namespace scene_ns
@@ -47,6 +47,7 @@ public:
 	bool parse(std::ifstream&);
 	bool validate();
 	void build(const config_ns::scene_def&);
+	void init_graphics();
 	void update();
 	void render();
 	bool keep_going();
@@ -55,8 +56,7 @@ public:
 private:
 
 	static bool _keep_going;
-	graphics_ns::graphics::point min_pos;
-	graphics_ns::graphics::point max_pos;
+
 	void sort();
 	void draw();
 	void set_defaults();

@@ -9,12 +9,14 @@
 #include <map>
 #include <charconv>
 
+#include "graphics.h"
 #include "attrib.h"
 #include "vector_3.h"
 
 namespace config_ns
 {
 
+using graphics = graphics_ns::graphics;
 using vector_3 = vector_3_ns::vector_3;
 using attrib = attrib_ns::attrib;
 using errors_t = std::vector<std::string>;
@@ -40,6 +42,7 @@ const std::string JSON_STR_REF   = "ref";
 const std::string JSON_STR_ORIG  = "origin";
 const std::string JSON_STR_MOTN  = "motion";
 const std::string JSON_STR_ENV   = "environment";
+const std::string JSON_STR_RUN   = "runtime";
 // environment field names
 const std::string JSON_STR_RES        = "resolution";
 const std::string JSON_STR_LIGHT_TYPE = "light_type";
@@ -56,9 +59,8 @@ constexpr std::string_view STR_JSON  = "JSON";
 constexpr std::string_view STR_ROOT  = "root";
 constexpr std::string_view STR_NUM   = "num";
 constexpr std::string_view STR_FNLN  = "final num";
-constexpr std::string_view STR_RNTM  = "run_time";
 constexpr std::string_view STR_PRS   = "parse";
-constexpr std::string_view STR_PRSR  = "parseer";
+constexpr std::string_view STR_PRSR  = "parser";
 constexpr std::string_view STR_VAL   = "validate";
 constexpr std::string_view STR_SCN   = "scene";
 constexpr std::string_view STR_ATT   = "attrib";
@@ -199,7 +201,7 @@ struct environ_def
 {
 	// optional fields
 	std::optional<resolution_def> resolution;
-	std::optional<uint32_t> color_idx;
+	std::optional<graphics::color_idx> color_idx;
 	std::optional<uint32_t> light_type;
 	std::optional<vector_3> light_direction;
 	std::optional<vector_3> light_position;
@@ -229,7 +231,7 @@ struct scene_def
 
 struct validate_def
 {
-	uint32_t max_color_idx {0};
+	graphics::color_idx max_color_idx;
 };
 
 struct AST
@@ -261,9 +263,13 @@ inline std::string_view get_coord_name(const uint32_t i)
 
 inline std::string set_precision(const unit val, const uint32_t digits = 3)
 {
-	std::array<char, 10> buf;
+	std::array<char, 100> buf;
 
 	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
+
+	if (ec == std::errc::value_too_large) {
+		return "";
+	}
 
 	std::string s(buf.data(), ptr);
 	return s;

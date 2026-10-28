@@ -8,6 +8,8 @@
 namespace graphics_ns
 {
 
+constexpr std::uint32_t DEFAULT_SCALE(1U);
+
 #define MAKE_COLOR(a, r, g, b) (((a) << 24) | ((r) << 16) | ((g) << 8) | (b))
 
 using val_t = std::int32_t;

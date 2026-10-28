@@ -411,7 +411,7 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 		}
 
 		DBG(str + PFX + std::to_string(env[JSON_STR_COLOR].asUInt()));
-		ed.color_idx = env[JSON_STR_COLOR].asUInt();
+		ed.color_idx = (graphics::color_idx)env[JSON_STR_COLOR].asUInt();
 	}
 
 	if (env.isMember(JSON_STR_LIGHT_TYPE)) {
@@ -735,7 +735,10 @@ static bool parse_json_scene(const Json::Value& scene, const std::string path, s
 		}
 
 		const Json::Value& env = scene[JSON_STR_ENV];
-		DBG(str + STR_NUM + SPC + STR_FLD + PFX + std::to_string(env.size()));
+		// clang-format off
+		DBG(str + SPC + STR_NUM + SPC + STR_FLD +
+		    PFX + std::to_string(env.size()));
+		// clang-format on
 
 		environ_def ed {};
 		rc = parse_json_environment(env, str + PFX, ed);
@@ -744,12 +747,22 @@ static bool parse_json_scene(const Json::Value& scene, const std::string path, s
 		}
 
 		sd.env = std::move(ed);
+	}
+
+	if (scene.isMember(JSON_STR_RUN)) {
+		std::string str = path + JSON_STR_RUN;
+
+		if (!scene[JSON_STR_RUN].isObject()) {
+			ERR(str + PFX + ERR_OBJ);
+			return false;
+		}
+
+		const Json::Value& run = scene[JSON_STR_RUN];
+		DBG(str + SPC + STR_NUM + SPC + STR_FLD + PFX + std::to_string(run.size()));
 
 		runtime_def rd {};
-		rc = parse_json_runtime(env, str + PFX, rd);
+		rc = parse_json_runtime(run, str + PFX, rd);
 		if (!rc) {
-			ERR(STR_PRS << PFX << STR_SCN << PFX
-			            << "parse_json_runtime()" << SPC << ERR_FAIL);
 			return false;
 		}
 

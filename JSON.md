@@ -99,7 +99,7 @@ The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for tw
 
 **Rotation/Translation valid values:** `[ -1000.0 - 1000.0 ]`.\
 **Scale values:** `[ 0.1 - 10.0 ]`.
-######Default: `[ 0, 0, 0, 0, 0, 0, 1 ]`.
+###### Default: `[ 0, 0, 0, 0, 0, 0, 1 ]`.
 
 #### Environment
 

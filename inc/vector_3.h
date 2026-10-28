@@ -38,6 +38,8 @@ public:
 	vector_3& operator=(const vector_3&) = default;
 	vector_3& operator+=(const vector_3&);
 	vector_3& operator-=(const vector_3&);
+	bool operator==(const vector_3&);
+	bool operator!=(const vector_3&);
 };
 
 } // namespace vector_3_ns

@@ -16,7 +16,6 @@ using input_state = graphics::input_state;
 
 constexpr std::int32_t DEFAULT_WIDTH = DEF_RES_WIDTH;
 constexpr std::int32_t DEFAULT_HEIGHT = DEF_RES_HEIGHT;
-constexpr std::int32_t DEFAULT_SCALE = 1;
 constexpr const char* DEFAULT_NAME = "Graphics_SDL2";
 
 graphics::graphics() :

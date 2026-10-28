@@ -63,10 +63,19 @@ static void check_range_uint(const uint32_t val, const uint32_t min, const uint3
 static void validate_attrib_values(const attrib& att, const std::string path, errors_t& errs, const validate_def valids [[maybe_unused]])
 {
 	for (uint32_t i = 0; i < NUM_ATTRIBUTES; i++) {
-		std::string str = path + get_att_name(i) + PFX;
+		unit min_val = MIN_REAL_VAL;
+		unit max_val = MAX_REAL_VAL;
+		std::string_view name = get_att_name(i);
+
+		if (name == STR_SCL) {
+			min_val = MIN_SCALE;
+			max_val = MAX_SCALE;
+		}
+
+		std::string str = path + name + PFX;
 		unit val = att[i];
 		DBG(str + set_precision(val));
-		check_range_real(val, MIN_REAL_VAL, MAX_REAL_VAL, str, errs);
+		check_range_real(val, min_val, max_val, str, errs);
 	}
 }
 
@@ -221,17 +230,22 @@ static void validate_environment(const environ_def& env, const std::string path,
 		check_range_uint(env.resolution.value().width, MIN_RES_WIDTH, MAX_RES_WIDTH, str + PFX, errs);
 		str = path + JSON_STR_RES + PFX + STR_HGT;
 		check_range_uint(env.resolution.value().height, MIN_RES_HEIGHT, MAX_RES_HEIGHT, str + PFX, errs);
-		DBG(path + JSON_STR_RES + PFX + std::to_string(env.resolution.value().width) + 'x' + std::to_string(env.resolution.value().height));
+		// clang-format off
+		DBG(path + JSON_STR_RES + PFX +
+		    std::to_string(env.resolution.value().width) + 'x' +
+		    std::to_string(env.resolution.value().height));
+		// clang-format on
 	}
 
 	if (env.color_idx.has_value()) {
 		// clang-format off
 		DBG(path + JSON_STR_COLOR + PFX +
-		    std::to_string(env.color_idx.value()));
-		// clang-format on
+		    std::to_string((uint32_t)env.color_idx.value()));
 
 		std::string str = path + JSON_STR_COLOR;
-		check_range_uint(env.color_idx.value(), 0, valids.max_color_idx, str + PFX, errs);
+		check_range_uint((uint32_t)env.color_idx.value(), 0,
+				 (uint32_t)valids.max_color_idx, str + PFX, errs);
+		// clang-format on
 	}
 
 	if (env.light_type.has_value()) {
@@ -289,7 +303,7 @@ static void validate_runtime(const runtime_def& run, const std::string path, err
 		// clang-format on
 
 		std::string str = path + JSON_STR_LOOP_DELAY;
-		check_range_int(run.loop_delay.value(), MIN_LOOP_DELAY, MAX_LOOP_DELAY, str + PFX, errs);
+		check_range_uint(run.loop_delay.value(), MIN_LOOP_DELAY, MAX_LOOP_DELAY, str + PFX, errs);
 	}
 }
 
@@ -398,7 +412,7 @@ static void validate_scene(const scene_def& scene, const std::string path, error
 	}
 
 	if (scene.run.has_value()) {
-		std::string run = path + JSON_STR_ENV + PFX + STR_RNTM;
+		std::string run = path + JSON_STR_RUN;
 		validate_runtime(scene.run.value(), run + PFX, errs, valids);
 	}
 }
