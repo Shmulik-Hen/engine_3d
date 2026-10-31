@@ -10,6 +10,135 @@
 namespace config_ns
 {
 
+static size_t levenshtein_distance(const std::string& source, const std::string& target)
+{
+	std::vector<size_t> previous_row(target.size() + 1);
+	std::vector<size_t> current_row(target.size() + 1);
+
+	std::iota(previous_row.begin(), previous_row.end(), 0);
+
+	for (size_t source_idx = 1; source_idx <= source.size(); ++source_idx) {
+		current_row[0] = source_idx;
+
+		for (size_t target_idx = 1; target_idx <= target.size(); ++target_idx) {
+			size_t substitution_cost =
+				(source[source_idx - 1] == target[target_idx - 1]) ? 0 : 1;
+
+			current_row[target_idx] =
+				std::min({previous_row[target_idx] + 1,    // deletion
+			                  current_row[target_idx - 1] + 1, // insertion
+			                  previous_row[target_idx - 1] + substitution_cost});
+		}
+
+		std::swap(previous_row, current_row);
+	}
+
+	return previous_row[target.size()];
+}
+
+static std::string suggest_field(const std::string& invalid)
+{
+	size_t best_distance = 3;
+	std::string best_match;
+
+	for (const auto& field : valid_field_names) {
+		size_t distance = levenshtein_distance(invalid, field);
+
+		if (distance < best_distance) {
+			best_distance = distance;
+			best_match = field;
+		}
+	}
+
+	return best_match;
+}
+
+static std::string get_hint(const std::string invalid)
+{
+	std::string hint = suggest_field(invalid);
+	return SPC + LP + "did you mean" + SPC + TAG + hint + TAG + SPC + '?' + RP;
+}
+
+static void check_valid_field_name(const Json::Value& root, const std::string& field, errors_t& errs, const std::string& path = "")
+{
+	if (!root.isNull() && field.size()) {
+		DBG("checking" + SPC + path + PFX + TAG + field + TAG);
+		bool rc = is_valid_field_name(field);
+		if (!rc) {
+			std::string err = path + PFX + QT + field + QT + SPC + ERR_ILG + DOT;
+			DBG(err /*  + NL */);
+			std::string hint = get_hint(field);
+			if (!hint.empty()) {
+				err = path + PFX + QT + field + QT + SPC + ERR_ILG + DOT + hint;
+			}
+
+			DBG("logging an error for" + path + PFX + SPC + QT + field + QT /*  + NL */);
+			add_error(err, errs);
+			return;
+		}
+		else if (valid_field_names.find(field) == valid_field_names.end()) {
+			DBG("couldn't find " + QT + field + QT + SPC + "in valid_field_names" /*  + NL */);
+			if (ignored_field_names.find(field) == ignored_field_names.end()) {
+				DBG("couldn't find " + path + PFX + QT + field + QT + SPC + "in ignored_field_names either" /*  + NL */);
+				std::string err = path + PFX + ERR_UNS + PFX + QT + field + QT + DOT;
+				DBG(err /*  + NL */);
+				std::string hint = get_hint(field);
+				if (!hint.empty()) {
+					err = path + PFX + ERR_UNS + PFX + QT + field + QT + DOT + hint;
+				}
+
+				DBG("logging an error for" + path + PFX + SPC + QT + field + QT /*  + NL */);
+				add_error(err, errs);
+				return;
+			}
+			else {
+				DBG("but found" + SPC + TAG + field + TAG + SPC + "in ignored_field_names" /*  + NL */);
+			}
+		}
+	}
+
+	switch (root.type()) {
+	case Json::nullValue:
+		DBG(path + " = null");
+		break;
+	case Json::intValue:
+		DBG(path + " = " + std::to_string(root.asInt()));
+		break;
+	case Json::uintValue:
+		DBG(path + " = " + std::to_string(root.asUInt()));
+		break;
+	case Json::realValue:
+		DBG(path + " = " + set_precision(root.asFloat()));
+		break;
+	case Json::stringValue:
+		DBG(path + " = " + TAG + root.asString() + TAG);
+		break;
+	case Json::booleanValue:
+		DBG(path + " = " + BOOL(root.asBool()));
+		break;
+	case Json::arrayValue:
+		DBG(path + " = array");
+		// Loop through each element in the array using its index
+		DBG(path + " size: " + std::to_string(root.size()));
+		for (Json::Value::ArrayIndex i = 0; i < root.size(); i++) {
+			std::string arrayPath = path + "[" + std::to_string(i) + "]";
+			DBG(arrayPath);
+			check_valid_field_name(root[i], field, errs, arrayPath);
+		}
+		break;
+	case Json::objectValue: {
+		DBG(path + " = object");
+		Json::Value::Members members = root.getMemberNames();
+		for (const auto& member : members) {
+			std::string objectPath = path.empty() ? member : path + "." + member;
+			DBG(objectPath);
+			check_valid_field_name(root[member], member, errs, objectPath);
+		}
+		break;
+	}
+	}
+}
+
 static bool check_json_version(const Json::Value& ver, const std::string& path, const uint32_t array[JSON_VER_FIELDS])
 {
 	if (ver.size() != JSON_VER_FIELDS) {
@@ -173,7 +302,7 @@ static bool parse_json_polygon(const Json::Value& polygon, const std::string pat
 				return false;
 			}
 
-			rc = parse_json_vector(vector, str + PFX, coords);
+			rc = parse_json_vector(vector, str + DOT, coords);
 			if (!rc) {
 				return false;
 			}
@@ -322,7 +451,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const std::str
 			return false;
 		}
 
-		rc = parse_json_attrib(element[JSON_STR_ORIG], str + PFX, array);
+		rc = parse_json_attrib(element[JSON_STR_ORIG], str + DOT, array);
 		if (!rc) {
 			return false;
 		}
@@ -341,7 +470,7 @@ static bool parse_json_scene_elem_def(const Json::Value& element, const std::str
 			return false;
 		}
 
-		rc = parse_json_attrib(element[JSON_STR_MOTN], str + PFX, array);
+		rc = parse_json_attrib(element[JSON_STR_MOTN], str + DOT, array);
 		if (!rc) {
 			return false;
 		}
@@ -392,7 +521,7 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 			return false;
 		}
 
-		rc = parse_json_resolution(env[JSON_STR_RES], str + PFX, res);
+		rc = parse_json_resolution(env[JSON_STR_RES], str + DOT, res);
 		if (!rc) {
 			return false;
 		}
@@ -438,7 +567,7 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 			return false;
 		}
 
-		rc = parse_json_vector(env[JSON_STR_LIGHT_DIR], str + PFX, coords);
+		rc = parse_json_vector(env[JSON_STR_LIGHT_DIR], str + DOT, coords);
 		if (!rc) {
 			return false;
 		}
@@ -459,7 +588,7 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 			return false;
 		}
 
-		rc = parse_json_vector(env[JSON_STR_LIGHT_POS], str + PFX, coords);
+		rc = parse_json_vector(env[JSON_STR_LIGHT_POS], str + DOT, coords);
 		if (!rc) {
 			return false;
 		}
@@ -480,7 +609,7 @@ static bool parse_json_environment(const Json::Value& env, const std::string pat
 			return false;
 		}
 
-		rc = parse_json_vector(env[JSON_STR_CAM_POS], str + PFX, coords);
+		rc = parse_json_vector(env[JSON_STR_CAM_POS], str + DOT, coords);
 		if (!rc) {
 			return false;
 		}
@@ -580,7 +709,7 @@ static bool parse_json_library(const Json::Value& library, const std::string pat
 				return false;
 			}
 
-			rc = parse_json_polygon(polygon, str + PFX, pd);
+			rc = parse_json_polygon(polygon, str + DOT, pd);
 			if (!rc) {
 				return false;
 			}
@@ -615,7 +744,7 @@ static bool parse_json_library(const Json::Value& library, const std::string pat
 				return false;
 			}
 
-			rc = parse_json_mesh(mesh, str + PFX, md);
+			rc = parse_json_mesh(mesh, str + DOT, md);
 			if (!rc) {
 				return false;
 			}
@@ -650,7 +779,7 @@ static bool parse_json_library(const Json::Value& library, const std::string pat
 				return false;
 			}
 
-			rc = parse_json_lib_elem_def(element, str + PFX, ed);
+			rc = parse_json_lib_elem_def(element, str + DOT, ed);
 			if (!rc) {
 				return false;
 			}
@@ -711,7 +840,7 @@ static bool parse_json_scene(const Json::Value& scene, const std::string path, s
 			}
 
 			scene_elem_def ed {};
-			rc = parse_json_scene_elem_def(element, err + PFX, ed);
+			rc = parse_json_scene_elem_def(element, err + DOT, ed);
 			if (!rc) {
 				return false;
 			}
@@ -741,7 +870,7 @@ static bool parse_json_scene(const Json::Value& scene, const std::string path, s
 		// clang-format on
 
 		environ_def ed {};
-		rc = parse_json_environment(env, str + PFX, ed);
+		rc = parse_json_environment(env, str + DOT, ed);
 		if (!rc) {
 			return false;
 		}
@@ -761,7 +890,7 @@ static bool parse_json_scene(const Json::Value& scene, const std::string path, s
 		DBG(str + SPC + STR_NUM + SPC + STR_FLD + PFX + std::to_string(run.size()));
 
 		runtime_def rd {};
-		rc = parse_json_runtime(run, str + PFX, rd);
+		rc = parse_json_runtime(run, str + DOT, rd);
 		if (!rc) {
 			return false;
 		}
@@ -783,17 +912,27 @@ bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 	builder["collectComments"] = false;
 	builder["rejectDupKeys"] = true;
 	builder["allowTrailingCommas"] = false;
+	builder["emitUTF8"] = false;
 
 	DBG(STR_PRS);
 
 	std::string path = STR_PRS + PFX;
+	std::string str;
 
 	rc = parseFromStream(builder, ifs, &root, &json_errs);
 	if (!rc) {
 		// clang-format off
-		ERR(path + STR_JSON + SPC + STR_PRSR +
-		    ERR_FAILW + PFX + json_errs);
+		str = path + STR_JSON + SPC + STR_PRSR +
+		    ERR_FAILW + PFX + json_errs;
+		ERR(str);
 		// clang-format on
+		return false;
+	}
+
+	check_valid_field_name(root, "", errs);
+	if (errs.size()) {
+		PRN(WARN_PFX + STR_PRS + PFX + ERR_UNK + NL);
+		print_errors(errs);
 		return false;
 	}
 
@@ -802,7 +941,7 @@ bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 		return false;
 	}
 
-	std::string str = path + JSON_STR_VER;
+	str = path + JSON_STR_VER;
 
 	// Mandatory. checked during parse
 	if (!root.isMember(JSON_STR_VER)) {
@@ -817,7 +956,7 @@ bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 	}
 
 	uint32_t version[JSON_VER_FIELDS] = {JSON_VER_MAJ, JSON_VER_MIN, JSON_VER_REV};
-	rc = check_json_version(ver, str + PFX, version);
+	rc = check_json_version(ver, str + DOT, version);
 	if (!rc) {
 		return false;
 	}
@@ -835,7 +974,7 @@ bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 		const Json::Value& library = root[JSON_STR_LIB];
 		library_def ld {};
 
-		rc = parse_json_library(library, str + PFX, ld);
+		rc = parse_json_library(library, str + DOT, ld);
 		if (!rc) {
 			return false;
 		}
@@ -863,14 +1002,14 @@ bool parse_json(std::ifstream& ifs, config_ns::AST& ast)
 		for (const auto& scene : scenes) {
 			scene_def sd {};
 
-			str += PFX + STR_SCN + LB + std::to_string(i) + RB;
+			str += DOT + STR_SCN + LB + std::to_string(i) + RB;
 
 			if (!scene.isObject()) {
 				ERR(str + PFX + ERR_ARR);
 				return false;
 			}
 
-			rc = parse_json_scene(scene, str + PFX, sd);
+			rc = parse_json_scene(scene, str + DOT, sd);
 			if (!rc) {
 				return false;
 			}

@@ -8,6 +8,9 @@
 #include <array>
 #include <map>
 #include <charconv>
+#include <unordered_set>
+#include <algorithm>
+#include <numeric>
 
 #include "graphics.h"
 #include "attrib.h"
@@ -26,23 +29,22 @@ using coord_names_t = std::map<uint32_t, std::string_view>;
 // clang-format off
 // supported field names - jsoncpp uses only std::string
 const std::string JSON_STR_VER   = "version";
-const std::string JSON_STR_NAME  = "name";
 const std::string JSON_STR_LIB   = "library";
-const std::string JSON_STR_POLYS = "polygons";
-const std::string JSON_STR_COLOR = "color_idx";
-const std::string JSON_STR_FORCE = "force";
 const std::string JSON_STR_VECS  = "vectors";
+const std::string JSON_STR_POLYS = "polygons";
 const std::string JSON_STR_MESHS = "meshes";
 const std::string JSON_STR_ELEMS = "elements";
 const std::string JSON_STR_MESH  = "mesh";
 const std::string JSON_STR_SCNS  = "scenes";
+const std::string JSON_STR_NAME  = "name";
+const std::string JSON_STR_COLOR = "color_idx";
+const std::string JSON_STR_FORCE = "force";
 const std::string JSON_STR_PAREN = "parent";
 const std::string JSON_STR_ACT   = "active";
 const std::string JSON_STR_REF   = "ref";
 const std::string JSON_STR_ORIG  = "origin";
 const std::string JSON_STR_MOTN  = "motion";
 const std::string JSON_STR_ENV   = "environment";
-const std::string JSON_STR_RUN   = "runtime";
 // environment field names
 const std::string JSON_STR_RES        = "resolution";
 const std::string JSON_STR_LIGHT_TYPE = "light_type";
@@ -51,9 +53,13 @@ const std::string JSON_STR_LIGHT_POS  = "light_position";
 const std::string JSON_STR_CAM_POS    = "camera_position";
 const std::string JSON_STR_FOCAL_LEN  = "focal_len";
 const std::string JSON_STR_NEAR_EPS   = "near_eps";
+const std::string JSON_STR_RUN        = "runtime";
 // runtime
 const std::string JSON_STR_LOOPS      = "loops";
 const std::string JSON_STR_LOOP_DELAY = "loop_delay";
+// ignored fields
+const std::string JSON_STR_IGN_ENC   = "encoding";
+
 // error/debug messages
 constexpr std::string_view STR_JSON  = "JSON";
 constexpr std::string_view STR_ROOT  = "root";
@@ -103,11 +109,48 @@ constexpr std::string_view ERR_ILG   = "is illegal";
 constexpr std::string_view ERR_NULL  = "is null";
 constexpr std::string_view ERR_EMPTY = "is empty";
 constexpr std::string_view ERR_ATLST = "at least";
+constexpr std::string_view ERR_INV   = "is invalid";
 constexpr std::string_view ERR_SIZE  = "illegal array size";
 constexpr std::string_view ERR_FAIL  = "failed";
 constexpr std::string_view ERR_FAILW = "failed with";
 constexpr std::string_view ERR_DET   = "errors detected !";
+constexpr std::string_view ERR_UNK   = "unknown fields detected";
+constexpr std::string_view ERR_UNS   = "unsupported field";
 // clang-format on
+
+const std::unordered_set<std::string> valid_field_names = {
+	JSON_STR_VER,
+	JSON_STR_LIB,
+	JSON_STR_VECS,
+	JSON_STR_MESHS,
+	JSON_STR_POLYS,
+	JSON_STR_ELEMS,
+	JSON_STR_MESH,
+	JSON_STR_SCNS,
+	JSON_STR_NAME,
+	JSON_STR_COLOR,
+	JSON_STR_FORCE,
+	JSON_STR_PAREN,
+	JSON_STR_ACT,
+	JSON_STR_REF,
+	JSON_STR_ORIG,
+	JSON_STR_MOTN,
+	JSON_STR_ENV,
+	JSON_STR_RES,
+	JSON_STR_LIGHT_TYPE,
+	JSON_STR_LIGHT_DIR,
+	JSON_STR_LIGHT_POS,
+	JSON_STR_CAM_POS,
+	JSON_STR_FOCAL_LEN,
+	JSON_STR_NEAR_EPS,
+	JSON_STR_RUN,
+	JSON_STR_LOOPS,
+	JSON_STR_LOOP_DELAY,
+};
+
+const std::unordered_set<std::string> ignored_field_names = {
+	JSON_STR_IGN_ENC,
+};
 
 const att_names_t att_names = {
 	{0, STR_ROTX},
@@ -241,38 +284,12 @@ struct AST
 	validate_def valids;
 };
 
-inline std::string_view get_att_name(const uint32_t i)
-{
-	auto it = att_names.find(i);
-	if (it != att_names.end()) {
-		return it->second;
-	}
-
-	return std::string_view("");
-}
-
-inline std::string_view get_coord_name(const uint32_t i)
-{
-	auto it = coord_names.find(i);
-	if (it != coord_names.end()) {
-		return it->second;
-	}
-
-	return std::string_view("");
-}
-
-inline std::string set_precision(const unit val, const uint32_t digits = 3)
-{
-	std::array<char, 100> buf;
-
-	auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), val, std::chars_format::fixed, digits);
-
-	if (ec == std::errc::value_too_large) {
-		return "";
-	}
-
-	std::string s(buf.data(), ptr);
-	return s;
-}
+void add_error(const std::string& str, errors_t& errs);
+void print_errors(const config_ns::errors_t errs, const std::string str = "");
+bool is_valid_field_name(const std::string& field);
+bool is_valid_field_value(const std::string& value);
+std::string_view get_att_name(const uint32_t i);
+std::string_view get_coord_name(const uint32_t i);
+std::string set_precision(const unit val, const uint32_t digits = 3);
 
 } // namespace config_ns

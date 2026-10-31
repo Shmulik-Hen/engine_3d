@@ -1,14 +1,19 @@
 # JSON Configuration
 
-**Parsing** verifies JSON syntax, field types, and fixed-length arrays.\
-**Validation** checks duplicates, completeness, value constraints, references, and scene hierarchy.\
-**valid values:** See [`inc/constants.h`](./inc/constants.h).
+**Parsing** verifies JSON syntax, field types, field names, and fixed-length arrays.\
+**Validation** checks duplicates, completeness, value constraints, references, and scene hierarchy.
+
+### Value constraints
+(1) **valid field names:** Any combination of `[a-z][_]`\
+(2) **valid string values:** Any combination of `[a-z][A-Z][0-9][~!@#$%^&*-_=+;:|,.<>/?]`\
+(3) **valid numeric values:** See [`inc/constants.h`](./inc/constants.h).
 
 ## Sections
 
 ### Version
 
-`version` is **mandatory** and contains exactly three unsigned integers. The currently supported version is **`[0, 0, 3]`**.
+`version` is **mandatory** and contains exactly three unsigned integers.  (3)\
+The currently supported version is **`[0, 0, 3]`**.
 
 ### Library
 
@@ -27,27 +32,27 @@ The library contains definitions of **polygons**, **meshes**, and **elements**, 
 
 | Field | JSON type | Description |
 |---|---|---|
-| `name` | String | Non-null, nonempty object identifier. |
+| `name` | String | Non-null, nonempty, valid object identifier. (2)|
 | `force` | Boolean | Render the polygon regardless of its facing direction. |
-| `color_idx` | Unsigned integer | Color palette index (see below). |
-| `vectors` | Array | At least three vectors defining a valid polygon. |
+| `color_idx` | Unsigned integer | Color palette index (see below). (3)|
+| `vectors` | Array | At least three vectors defining a valid polygon.|
 
 **Vector:** is an unnamed array containing **exactly three floating-point coordinates**: `[x, y, z]`.\
-**Coordinate valid values:** [ -1000.0 - 1000.0 ].
+**Coordinate valid values:** [ -1000.0 - 1000.0 ].  (3)
 
 #### `library.meshes`
 
 | Field | JSON type | Description |
 |---|---|---|
-| `name` | String | Non-null, nonempty object identifier. |
-| `polygons` | Array of strings | Nonempty names of at least one valid polygon. |
+| `name` | String | Non-null, nonempty, valid object identifier. (2)|
+| `polygons` | Array of strings | Nonempty, valid names of at least one valid polygon. (2)|
 
 #### `library.elements`
 
 | Field | JSON type | Description |
 |---|---|---|
-| `name` | String | Non-null, nonempty object identifier. |
-| `mesh` | String | Non-null, nonempty name of exactly one valid mesh. |
+| `name` | String | Non-null, nonempty, valid object identifier. (2)|
+| `mesh` | String | Non-null, nonempty, valid name of exactly one valid mesh. (2)|
 
 #### Color palette
 
@@ -79,10 +84,10 @@ The library contains definitions of **polygons**, **meshes**, and **elements**, 
 
 | Field | JSON type | Description |
 |---|---|---|
-| `name` | String | Non-null, nonempty scene-element identifier. |
-| `parent` | String or null | Nonempty name of a valid parent; `null` identifies the root. |
+| `name` | String | Non-null, nonempty, valid scene-element identifier. (2)|
+| `parent` | String or null | Nonempty, valid name of a valid parent; `null` identifies the root. (0)|
 | `active` | Boolean | Enables or disables the scene element. |
-| `ref` | String | Optional Non-null, nonempty name of a valid library element. |
+| `ref` | String | Optional Non-null, nonempty, valid name of a valid library element. (2)|
 | `origin` | Array | Optional initial position and orientation attributes. (see below) |
 | `motion` | Array | Optional continuous movement attributes. (see below) |
 
@@ -97,9 +102,9 @@ Attribute fields:
 
 The scale factor is `1.0` for normal size, `0.5` for half size, and `2.0` for twice the size.
 
-**Rotation/Translation valid values:** `[ -1000.0 - 1000.0 ]`.\
+**Rotation/Translation valid values:** `[ -1000.0 - 1000.0 ]`.  (3)\
 **Scale values:** `[ 0.1 - 10.0 ]`.
-###### Default: `[ 0, 0, 0, 0, 0, 0, 1 ]`.
+###### Default: `[ 0, 0, 0, 0, 0, 0, 1 ]`.  (3)
 
 #### Environment
 
@@ -108,21 +113,21 @@ All its fields are optional overrides.
 
 | Field | JSON type | Description |
 |---|---|---|
-| `resolution` | Array | Contains exactly two unsigned integers defining the window size. |
-| `color_idx` | Unsigned integer | Background color index (see above). |
-| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light (default: `0`). |
-| `light_direction` | Vector | Direction of the light source (default: `[ 0, 0, 1 ]`). |
-| `light_position` | Vector | Position of the light source (default: `[ 0, 20, 75 ]`). |
-| `camera_position` | Vector | Position of the camera (default: `[ 0, 0, 1000 ]`). |
-| `focal_len` | Floating-point number | Perspective projection and magnification (default: `2000`). |
-| `near_eps` | Floating-point number | Near-plane/depth tolerance (default: `1`). |
+| `resolution` | Array | Contains exactly two unsigned integers defining the window size.|
+| `color_idx` | Unsigned integer | Background color index (see above). (3) |
+| `light_type` | Unsigned integer | `0`: directional (sunlight); `1`: point light (default: `0`). (3)|
+| `light_direction` | Vector | Direction of the light source (default: `[ 0, 0, 1 ]`). (3)|
+| `light_position` | Vector | Position of the light source (default: `[ 0, 20, 75 ]`). (3)|
+| `camera_position` | Vector | Position of the camera (default: `[ 0, 0, 1000 ]`). (3)|
+| `focal_len` | Floating-point number | Perspective projection and magnification (default: `2000`). (3)|
+| `near_eps` | Floating-point number | Near-plane/depth tolerance (default: `1`). (3)|
 
-**Minimum supported resolution:** `320 × 200` (16:10).\
-**Maximum supported resolution:** `1600 × 1000` (16:10).\
-**Default resolution:** `1280 × 800` (16:10).\
+**Minimum supported resolution:** `320 × 200` (16:10). (3)\
+**Maximum supported resolution:** `1600 × 1000` (16:10). (3)\
+**Default resolution:** `1280 × 800` (16:10). (3)\
 **Vectors:** see polygon vectors above.\
-**Focal length valid range:** `[ 100.0 - 3000.0 ]`.\
-**Near epsilon valid range:** `[ 0.5 - 3.0 ]`.
+**Focal length valid range:** `[ 100.0 - 3000.0 ]`. (3)\
+**Near epsilon valid range:** `[ 0.5 - 3.0 ]`.  (3)
 
 #### Runtime
 
@@ -134,8 +139,8 @@ All its fields are optional overrides.
 | `loops` | Integer | Number of loops; `-1` means endless (default: `-1`).|
 | `loop_delay` | Unsigned integer | Delay between frames, in milliseconds (default: `20`).|
 
-**Loops valid range:** `[ -1 - 100 ]`.\
-**Loop delay valid range:** `[ 1 - 200 ]`.
+**Loops valid range:** `[ -1 - 100 ]`. (3)\
+**Loop delay valid range:** `[ 1 - 200 ]`.  (3)
 
 ## JSON configuration example
 
@@ -144,11 +149,6 @@ See [`config/template.json`](./config/template.json).
 ```json
 {
 	"encoding": "UTF-8",
-	"indent":
-	{
-		"length": 4,
-		"use_space": false
-	},
 
 	"version": [ 0, 0, 3 ],
 

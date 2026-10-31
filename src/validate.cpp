@@ -8,19 +8,6 @@
 namespace config_ns
 {
 
-static void add_error(const std::string& str, errors_t& errs)
-{
-	errs.push_back(str);
-}
-
-static void print_errors(const config_ns::errors_t errs)
-{
-	PRN(ERR_PFX + STR_VAL + SPC + ERR_DET);
-	for (const auto& err : errs) {
-		PRN(TAB + err);
-	}
-}
-
 static void check_range_real(const unit val, const unit min, const unit max, const std::string path, errors_t& errs)
 {
 	if (!std::isfinite(val) || val < min || val > max) {
@@ -99,8 +86,8 @@ static void validate_polygon_values(const polygon_def& poly, const std::string p
 	std::string name = path + JSON_STR_NAME;
 	DBG(name + PFX + QT + poly.name + QT);
 
-	if (poly.name.empty()) {
-		add_error(name + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(poly.name)) {
+		add_error(name + SPC + ERR_INV + PFX + QT + poly.name + QT, errs);
 	}
 
 	DBG(path + JSON_STR_COLOR + PFX + std::to_string(poly.color_index));
@@ -120,7 +107,7 @@ static void validate_polygon_values(const polygon_def& poly, const std::string p
 				  std::to_string(i) + RB;
 		// clang-format on
 		// DBG(vec);
-		validate_vector_values(vector, vec + PFX, errs, valids);
+		validate_vector_values(vector, vec + DOT, errs, valids);
 		i++;
 	}
 }
@@ -130,8 +117,8 @@ static void validate_mesh_values(const mesh_def& mesh, const std::string path, e
 	std::string msh = path + JSON_STR_NAME;
 	DBG(msh + PFX + QT + mesh.name + QT);
 
-	if (mesh.name.empty()) {
-		add_error(msh + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(mesh.name)) {
+		add_error(msh + SPC + ERR_INV + PFX + QT + mesh.name + QT, errs);
 	}
 
 	DBG(path + STR_NUM + SPC + JSON_STR_POLYS + PFX + std::to_string(mesh.polygons.size()));
@@ -153,9 +140,8 @@ static void validate_mesh_values(const mesh_def& mesh, const std::string path, e
 			// clang-format on
 			DBG(pol + PFX + QT + poly + QT);
 
-			if (poly.empty()) {
-				std::string err = pol + SPC + ERR_EMPTY;
-				add_error(err, errs);
+			if (!is_valid_field_value(poly)) {
+				add_error(pol + SPC + ERR_INV + PFX + QT + poly + QT, errs);
 			}
 			i++;
 		}
@@ -167,15 +153,15 @@ static void validate_lib_elem_values(const lib_elem_def& elem, const std::string
 	std::string name = path + JSON_STR_NAME;
 	DBG(name + PFX + QT + elem.name + QT);
 
-	if (elem.name.empty()) {
-		add_error(name + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(elem.name)) {
+		add_error(name + SPC + ERR_INV + PFX + QT + elem.name + QT, errs);
 	}
 
 	std::string mesh = path + JSON_STR_MESH;
 	DBG(mesh + PFX + QT + elem.mesh + QT);
 
-	if (elem.mesh.empty()) {
-		add_error(mesh + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(elem.mesh)) {
+		add_error(mesh + SPC + ERR_INV + PFX + QT + elem.mesh + QT, errs);
 	}
 }
 
@@ -183,16 +169,16 @@ static void validate_scene_elem_values(const scene_elem_def& elem, const std::st
 {
 	std::string name = path + JSON_STR_NAME;
 	DBG(name + PFX + QT + elem.name + QT);
-	if (elem.name.empty()) {
-		add_error(name + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(elem.name)) {
+		add_error(name + SPC + ERR_INV + PFX + QT + elem.name + QT, errs);
 	}
 
 	std::string parent = path + JSON_STR_PAREN;
 	if (elem.parent.has_value()) {
 		DBG(parent + PFX + QT + elem.parent.value() + QT);
 
-		if (elem.parent.value().empty()) {
-			add_error(parent + SPC + ERR_EMPTY, errs);
+		if (!is_valid_field_value(elem.parent.value())) {
+			add_error(parent + SPC + ERR_INV + PFX + QT + elem.parent.value() + QT, errs);
 		}
 	}
 #ifdef DEBUG_PRINTS
@@ -207,19 +193,19 @@ static void validate_scene_elem_values(const scene_elem_def& elem, const std::st
 	if (elem.ref.has_value()) {
 		DBG(ref + PFX + QT + elem.ref.value() + QT);
 
-		if (elem.ref.value().empty()) {
-			add_error(ref + SPC + ERR_EMPTY, errs);
+		if (!is_valid_field_value(elem.ref.value())) {
+			add_error(ref + SPC + ERR_INV + PFX + QT + elem.ref.value() + QT, errs);
 		}
 	}
 
 	std::string origin = path + JSON_STR_ORIG;
 	if (elem.origin.has_value()) {
-		validate_attrib_values(elem.origin.value(), origin + PFX, errs, valids);
+		validate_attrib_values(elem.origin.value(), origin + DOT, errs, valids);
 	}
 
 	std::string motion = path + JSON_STR_MOTN;
 	if (elem.motion.has_value()) {
-		validate_attrib_values(elem.motion.value(), motion + PFX, errs, valids);
+		validate_attrib_values(elem.motion.value(), motion + DOT, errs, valids);
 	}
 }
 
@@ -260,17 +246,17 @@ static void validate_environment(const environ_def& env, const std::string path,
 
 	if (env.light_direction.has_value()) {
 		std::string str = path + JSON_STR_LIGHT_DIR;
-		validate_vector_values(env.light_direction.value(), str + PFX, errs, valids);
+		validate_vector_values(env.light_direction.value(), str + DOT, errs, valids);
 	}
 
 	if (env.light_position.has_value()) {
 		std::string str = path + JSON_STR_LIGHT_POS;
-		validate_vector_values(env.light_position.value(), str + PFX, errs, valids);
+		validate_vector_values(env.light_position.value(), str + DOT, errs, valids);
 	}
 
 	if (env.camera_position.has_value()) {
 		std::string str = path + JSON_STR_CAM_POS;
-		validate_vector_values(env.camera_position.value(), str + PFX, errs, valids);
+		validate_vector_values(env.camera_position.value(), str + DOT, errs, valids);
 	}
 
 	if (env.focal_len.has_value()) {
@@ -326,7 +312,7 @@ static void validate_library(const library_def& lib, const std::string path, err
 			std::string polygons = path + STR_POLY +
 					       LB + std::to_string(i) + RB;
 			// clang-format on
-			validate_polygon_values(polygon, polygons + PFX, errs, valids);
+			validate_polygon_values(polygon, polygons + DOT, errs, valids);
 			i++;
 		}
 	}
@@ -348,7 +334,7 @@ static void validate_library(const library_def& lib, const std::string path, err
 			std::string meshes = path + JSON_STR_MESH +
 					     LB + std::to_string(i) + RB;
 			// clang-format on
-			validate_mesh_values(mesh, meshes + PFX, errs, valids);
+			validate_mesh_values(mesh, meshes + DOT, errs, valids);
 			i++;
 		}
 	}
@@ -370,7 +356,7 @@ static void validate_library(const library_def& lib, const std::string path, err
 			std::string elems = path + STR_ELEM +
 					    LB + std::to_string(i) + RB;
 			// clang-format on
-			validate_lib_elem_values(element, elems + PFX, errs, valids);
+			validate_lib_elem_values(element, elems + DOT, errs, valids);
 			i++;
 		}
 	}
@@ -381,8 +367,8 @@ static void validate_scene(const scene_def& scene, const std::string path, error
 	std::string name = path + JSON_STR_NAME;
 	DBG(name + PFX + QT + scene.name + QT);
 
-	if (scene.name.empty()) {
-		add_error(name + SPC + ERR_EMPTY, errs);
+	if (!is_valid_field_value(scene.name)) {
+		add_error(name + SPC + ERR_INV + PFX + QT + scene.name + QT, errs);
 	}
 
 	DBG(path + STR_NUM + SPC + JSON_STR_ELEMS + PFX + std::to_string(scene.scene_elem_defs.size()));
@@ -402,18 +388,18 @@ static void validate_scene(const scene_def& scene, const std::string path, error
 		std::string elems = path + STR_ELEM +
 				    LB + std::to_string(i) + RB;
 		// clang-format on
-		validate_scene_elem_values(elem, elems + PFX, errs, valids);
+		validate_scene_elem_values(elem, elems + DOT, errs, valids);
 		i++;
 	}
 
 	if (scene.env.has_value()) {
 		std::string env = path + JSON_STR_ENV;
-		validate_environment(scene.env.value(), env + PFX, errs, valids);
+		validate_environment(scene.env.value(), env + DOT, errs, valids);
 	}
 
 	if (scene.run.has_value()) {
 		std::string run = path + JSON_STR_RUN;
-		validate_runtime(scene.run.value(), run + PFX, errs, valids);
+		validate_runtime(scene.run.value(), run + DOT, errs, valids);
 	}
 }
 
@@ -426,7 +412,7 @@ static void validate_values(const config_ns::AST& ast, const std::string path, e
 	std::string lib = local_path + PFX + JSON_STR_LIB;
 	DBG(lib);
 
-	validate_library(ast.library_defs, lib + PFX, errs, ast.valids);
+	validate_library(ast.library_defs, lib + DOT, errs, ast.valids);
 
 	std::string scenes = local_path + PFX + JSON_STR_SCNS;
 	DBG(scenes);
@@ -449,10 +435,10 @@ static void validate_values(const config_ns::AST& ast, const std::string path, e
 		int i = 1;
 		for (const auto& scene : ast.scene_defs) {
 			// clang-format off
-			std::string scn = scenes + PFX + STR_SCN +
+			std::string scn = scenes + DOT + STR_SCN +
 					  LB + std::to_string(i) + RB;
 			// clang-format on
-			validate_scene(scene, scn + PFX, errs, ast.valids);
+			validate_scene(scene, scn + DOT, errs, ast.valids);
 			i++;
 		}
 	}
@@ -481,6 +467,7 @@ bool validate_ast(const config_ns::AST& ast)
 
 	validate_values(ast, path, errs);
 	if (errs.size()) {
+		PRN(ERR_PFX + STR_VAL + SPC + ERR_DET + NL);
 		print_errors(errs);
 		return false;
 	}

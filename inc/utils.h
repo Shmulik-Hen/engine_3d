@@ -101,11 +101,13 @@ constexpr std::string_view SEP  = ", ";
 constexpr std::string_view PFX  = ": ";
 constexpr std::string_view SFX  = ";";
 constexpr std::string_view DOT  = ".";
+constexpr std::string_view TAG  = "'";
 constexpr std::string_view LP   = "(";
 constexpr std::string_view RP   = ")";
 constexpr std::string_view LB   = "[";
 constexpr std::string_view RB   = "]";
 constexpr std::string_view QT   = "\"";
+constexpr std::string_view NL   = "\n";
 constexpr std::string_view DASH = " - ";
 constexpr std::string_view TAB  = "       ";
 constexpr std::string_view ERR_PFX  = "Error: ";
@@ -125,7 +127,7 @@ constexpr std::string_view INFO_PFX = "Info: ";
 #define ERR(s)    std::cerr << STR(ERR_PFX, 1) << s << PFX << FUNC << ENDL << FLUSH
 #define WARN(s)   std::cerr << STR(WARN_PFX, 1) << s << PFX << FUNC << ENDL << FLUSH
 #define INFO(s)   std::cout << STR(INFO_PFX, 1) << s << ENDL << FLUSH
-#define PRN(s)    std::cout << s << ENDL << FLUSH
+#define PRN(s)    std::cout << s /*<< ENDL*/ << FLUSH
 
 #ifdef DEBUG_PRINTS
 constexpr std::string_view DBG_PFX = "Debug: ";
